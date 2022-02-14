@@ -34,7 +34,7 @@
 //  Encoder
 
 // Comum used
-#define Nominal_pulses 600
+#define Nominal_pulses 360
 #define pitch_pulley 125.66
 #define Mode 4
 
@@ -53,3 +53,4 @@
 #define ki_x  0.0001
 #define kd_x  10
 
+#endif 

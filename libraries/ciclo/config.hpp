@@ -35,22 +35,22 @@
 
 // Comum used
 #define Nominal_pulses 360
-#define pitch_pulley 125.66
+#define pitch_pulley 125
 #define Mode 4
 
-#define A_pin_X 23 // Green cable
-#define B_pin_X 22 // White cable
+#define A_pin 2 // Green cable
+#define B_pin 3 // White cable
 
 
 // BTS
-#define MAX_PWM 100
-#define R_pin_X 27 // L Bts
-#define L_pin_X 26 // R Bts
+#define MAX_PWM 50
+#define R_pin 6 // L Bts
+#define L_pin 5 // R Bts
 
 
 // PID
-#define kp_x  0.4
-#define ki_x  0.0001
-#define kd_x  10
+#define kp  2
+#define ki  0
+#define kd  0.01
 
 #endif 

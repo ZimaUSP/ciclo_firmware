@@ -20,18 +20,18 @@ class PID {
 
         unsigned long current_time;
         unsigned long previus_time = 0;
-        double delta_time;
+        long delta_time;
 
         
-        double i_error;
-        double d_error;
+        long i_error =0;
+        float d_error;
 
-        double k_p;
-        double k_i;
-        double k_d;
+        float k_p;
+        float k_i;
+        float k_d;
 
-        double error;
-        double previus_error;
+        float error;
+        float previus_error;
 
     public:
         /**
@@ -41,7 +41,7 @@ class PID {
          * @param k_i Integrative constant 
          * @param k_d Derivative constant 
          */
-        PID(double k_p,double k_i,double k_d);
+        PID(float k_p,float k_i,float k_d);
 
         /**
          * @brief Computes PID value
@@ -49,7 +49,7 @@ class PID {
          * @param Input input value 
          * @param setpoint Set goal, the value that input should be
          */
-        double computePID(double input,float setpoint); 
+        float computePID(float input,float setpoint); 
 
         /**
          * @brief Reset PID values

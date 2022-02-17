@@ -29,21 +29,21 @@ void H_bridge_controller::init(){
 }
 
 void H_bridge_controller::SetPWM_R(int PWM) {
-  analogWrite(this->R_channel, PWM);
+  analogWrite(this->R_pin, PWM);
 }
 
 void H_bridge_controller::SetPWM_L(int PWM) {
-  analogWrite(this->L_channel, PWM);
+  analogWrite(this->L_pin, PWM);
 }
 
 void H_bridge_controller::Set_R(int PWM) {
-  analogWrite(this->L_channel, 0);
-  analogWrite(this->R_channel, PWM);
+  analogWrite(this->L_pin, 0);
+  analogWrite(this->R_pin, PWM);
 }
 
 void H_bridge_controller::Set_L(int PWM) {
-  analogWrite(this->R_channel, 0);
-  analogWrite(this->L_channel, PWM);
+  analogWrite(this->R_pin, 0);
+  analogWrite(this->L_pin, PWM);
 }
 
 

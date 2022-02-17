@@ -17,12 +17,14 @@
 
 class Encoder {
     private:
+
         int A_pin;
         int B_pin;
         int PulsesPerRev;
         int PitchPerRev;
         int pulses=0;
         int mode;
+        float k;
         //nickgammon ideia
         const byte whichISR_;
 

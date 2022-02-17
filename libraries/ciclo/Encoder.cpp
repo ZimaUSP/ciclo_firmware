@@ -23,10 +23,13 @@ Encoder::Encoder(int A_pin,int B_pin, byte which,int PulsesPerRev,int PitchPerRe
     this->mode=mode;
     if(mode==1){
       this->PulsesPerRev=PulsesPerRev;
+      this->k=0.347;
     }else if(mode==2){
       this->PulsesPerRev=2*PulsesPerRev;
+      this->k=0.173;
     }else if(mode==4){
       this->PulsesPerRev=4*PulsesPerRev;
+      this->k=0.086;
     }
     
     pinMode(this->A_pin,INPUT_PULLUP);
@@ -109,7 +112,8 @@ int Encoder::getPulses() {
 }
 
 float Encoder::getPosition() {
- return this->pulses*this->PitchPerRev/this->PulsesPerRev;
+ 
+ return this->pulses*this->k;
 }
 
 void Encoder::setPulses(int num) {

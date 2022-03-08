@@ -28,7 +28,12 @@
     // until a whole packet is read
 #define max_i2c_slave_response 32
 
-/// X axis ///
+
+// State
+#define STAND_BY 0
+#define ACTIVE 1
+#define PASSIVE 2
+
 
 
 //  Encoder

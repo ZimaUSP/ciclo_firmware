@@ -19,11 +19,11 @@ rele *stand_by_active_rele; // normaly open-> stand_by // normaly close -> activ
 PID *PID_vel; 
 double current_t;
 double last_t;
-double delta_t;a
+double delta_t;
 
-float current_position;
-float last_position;
-float delta_position;
+float current_pulses;
+float last_pulses;
+float delta_pulses;
 
 int current_cicles;
 int last_cicles=0;
@@ -41,7 +41,7 @@ float actual_vel;
 void setup() {     
   Serial.begin (9600);
 
-  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,pitch_pulley,Mode);
+  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,pitch_pulley,1);
   encoder->init();
 
   BTS= new H_bridge_controller( r_pin, l_pin);
@@ -57,10 +57,11 @@ void setup() {
   PID_vel = new PID(kp,ki,kd);
 
   last_t=millis();
-  last_position=encoder->getPosition();
+  last_pulses=encoder->getPulses();
   }
    
 void loop() {
+    Serial.println(encoder->getPulses());
     switch(STATE) {
         case STAND_BY :        
           check_state();
@@ -145,20 +146,20 @@ void read_vel_cicles(){
   current_t=millis();
   delta_t = current_t-last_t;
   last_t=current_t;
-
   // calculates positions varibles
-  current_position=encoder->getPosition();
-  delta_position = current_position-last_position;
-  last_position=current_position;
+  current_pulses=encoder->getPulses();
+  delta_pulses = current_pulses-last_pulses;
+  last_pulses=current_pulses;
+
 
   //calculates number of cicles that has been passed
-  current_cicles = int(current_position/Mode*Nominal_pulses);
+  current_cicles = int(current_pulses/Mode*Nominal_pulses);
   delta_cicles = current_cicles-last_cicles;
   last_cicles = current_cicles;
 
   //goal_vel = map(analogRead(),1023,0,2);
   goal_vel=50; // RPM
   // PID_vel
-  actual_vel=int((delta_position/delta_t*pitch_gear)*60); // Pegando apenas as 2 primeiras casas decimais RPM
+  actual_vel=int((delta_pulses/delta_t*pitch_gear)*60); // Pegando apenas as 2 primeiras casas decimais RPM
 
 }

@@ -23,10 +23,10 @@ int actual_vel_100x;
 void setup() {     
   Serial.begin (9600);
 
-  encoder = new Encoder(A_pin,B_pin,0,Nominal_pulses,pitch_pulley,Mode);
+  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,pitch_pulley,Mode);
   encoder->init();
 
-  BTS= new H_bridge_controller( R_pin, L_pin);
+  BTS= new H_bridge_controller( r_pin, l_pin);
   BTS->init();
 
   PID_vel = new PID(kp,ki,kd);
@@ -49,7 +49,7 @@ void loop() {
     // PID_vel
     actual_vel=int((delta_position/delta_t)*100); // Pegando apenas as 2 primeiras casas decimais Metros /100 Segundos
 
-    
+    Serial.print(actual_vel);
     output = PID_vel->computePID(actual_vel,goal_vel);
     // Setting direction of motion acording to output_x PID
     if (output < 0) {

@@ -24,6 +24,7 @@ class Timer {
     unsigned long  unpause_time = 0;
     unsigned long  last_min;
     unsigned long  last_sec;
+    bool paused = false;
 
     public:
         /**

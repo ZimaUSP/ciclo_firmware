@@ -19,30 +19,45 @@
 Timer::Timer(){
   this->pause_time=pause_time;
   this->unpause_time=unpause_time;
+  this->paused= paused;
 }
 
 void Timer::init(int period) {
-  this->period = period*60*1000;
+  this->period = period*60000UL;
   this->init_t = millis();
 }
 
-int  Timer::current_min() {
 
-  this->passed_time = this->period - (millis() - this->init_t - (this->unpause_time - this->pause_time));
-  return int(this->passed_time/60*1000);
+int  Timer::current_min() {
+  if (paused){
+    return int(this->passed_time/60000UL);
+  }
+  if (millis() >this->period){
+    return 0;
+  }
+  this->passed_time = this->period - (millis() - this->init_t );
+  return int(this->passed_time/60000UL);
 }
 
 int  Timer::current_sec() {
-  this->passed_time = this->period - (millis() - this->init_t - (this->unpause_time - this->pause_time));
-  return int(this->passed_time/1000 - this->current_min()*60);
+  if (paused){
+    return int(this->passed_time/1000UL - this->current_min()*60UL);
+  }
+  if (millis() >this->period){
+    return 0;
+  }
+  this->passed_time = this->period - (millis() - this->init_t);
+  return int(this->passed_time/1000UL - this->current_min()*60UL);
 }
 
 void Timer::pause() {
-  this->pause_time = millis();
+  this->paused=true;
   return;
 }
 
 void Timer::unpause() {
-  this->unpause_time = millis();
+  this->period=this->passed_time;
+  this->init_t=millis();
+  this->paused=false;
   return;
 }

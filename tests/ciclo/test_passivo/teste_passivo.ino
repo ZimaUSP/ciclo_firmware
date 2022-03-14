@@ -7,16 +7,18 @@ Encoder *encoder;
 H_bridge_controller *BTS;
 
 PID *PID_vel; 
+
 double current_t;
 double last_t;
 double delta_t;
-float current_position;
-float last_position;
-float delta_position;
+
+long current_pulses;
+long last_pulses;
+long delta_pulses;
+
 int output;
 float goal_vel;
 float actual_vel;
-int actual_vel_100x;
 
 //PID constants
  
@@ -30,27 +32,30 @@ void setup() {
   BTS->init();
 
   PID_vel = new PID(kp,ki,kd);
+
   last_t=millis();
-  last_position=encoder->getPosition();
+  last_pulses=encoder->getPulses();
   }
    
 void loop() {
     current_t=millis();
-    current_position=encoder->getPosition();
+    current_pulses=encoder->getPulses();
 
     delta_t = current_t-last_t;
-    delta_position = current_position-last_position;
+    delta_pulses = current_pulses-last_pulses;
     
     last_t=millis();
-    last_position=encoder->getPosition();
+    last_pulses=current_pulses;
 
     //goal_vel = map(analogRead(),1023,0,2);
-    goal_vel=50; // metros a cada 100 segundos 
-    // PID_vel
-    actual_vel=int((delta_position/delta_t)*100); // Pegando apenas as 2 primeiras casas decimais Metros /100 Segundos
 
-    
+    goal_vel=5; // metros a cada 100 segundos 
+
+    // PID_vel
+
+    actual_vel=int((delta_pulses/delta_t*Nominal_pulses*Mode)*60000L); // rpm
     output = PID_vel->computePID(actual_vel,goal_vel);
+
     // Setting direction of motion acording to output_x PID
     if (output < 0) {
         if (output < -MAX_PWM) {

@@ -106,8 +106,7 @@ void loop() {
 
 void check_state(){
   read_vel();
-  if (actual_vel<ref_vel)
-  {
+  if (actual_vel<ref_vel){
    STATE=PASSIVE;
   }else if(actual_vel<actual_vel*1.1){
     STATE=STAND_BY;
@@ -130,5 +129,5 @@ void check_state(){
     goal_vel=50; // metros a cada 100 segundos 
     // PID_vel
     actual_vel=int((delta_position/delta_t)*100); // Pegando apenas as 2 primeiras casas decimais Metros /100 Segundos
-
+  
   }

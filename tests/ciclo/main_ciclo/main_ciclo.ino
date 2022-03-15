@@ -1,11 +1,10 @@
 // Header file which contain Pin, constanst, states and etc...
 #include "config.hpp"
 
-
 //STATE
 char STATE = 0 ; 
 
-
+// including libs
 #include "Encoder.hpp"
 #include "H_bridge_controller.hpp"
 #include "PID.hpp"
@@ -16,14 +15,18 @@ H_bridge_controller *BTS;
 rele *passive_active_rele; // normaly open ->active normaly // normaly close passive
 rele *stand_by_active_rele; // normaly open-> stand_by // normaly close -> active
 
-PID *PID_vel; 
+PID *PID_vel;
+int output;
+
 double current_t;
 double last_t;
 double delta_t;
-float current_position;
-float last_position;
-float delta_position;
-int output;
+
+long current_pulses;
+long last_pulses;
+long delta_pulses;
+
+
 float goal_vel;
 float actual_vel;
 
@@ -44,11 +47,10 @@ void setup() {
   stand_by_active_rele= new rele(3);
   stand_by_active_rele->init();
 
-
   PID_vel = new PID(kp,ki,kd);
 
   last_t=millis();
-  last_position=encoder->getPosition();
+  last_pulses=encoder->getPulses();
   }
    
 void loop() {
@@ -86,7 +88,6 @@ void loop() {
   void passive(){
     passive_active_rele->turn_on();
     stand_by_active_rele->turn_off();
-    read_vel();
     output = PID_vel->computePID(actual_vel,goal_vel);
     // Setting direction of motion acording to output_x PID
     if (output < 0) {
@@ -105,10 +106,13 @@ void loop() {
   }
 
 void check_state(){
-  read_vel();
-  if (actual_vel<ref_vel){
-   STATE=PASSIVE;
-  }else if(actual_vel<actual_vel*1.1){
+  read_rpm();
+  if (actual_vel<goal_vel){
+    STATE=PASSIVE;
+    return;
+  }
+  PID_vel->reset();
+  if(actual_vel<goal_vel*1.1){
     STATE=STAND_BY;
   }else{
     STATE=ACTIVE;
@@ -116,18 +120,20 @@ void check_state(){
 }
 
   // Reads the goal vel seted by the physiotherapist and calculates the actual vel
-  void read_vel(){
-    current_t=millis();
+  void read_rpm(){
+    current_t = millis();
     delta_t = current_t-last_t;
-    last_t=current_t;
+    last_t = current_t;
 
-    current_position=encoder->getPosition();
-    delta_position = current_position-last_position;
-    last_position=current_position;
-
+    current_pulses = encoder->getPulses();
+    delta_pulses = current_pulses-last_pulses;
+    last_pulses = current_pulses;
+    
     //goal_vel = map(analogRead(),1023,0,2);
-    goal_vel=50; // metros a cada 100 segundos 
+
+    goal_vel = 5; // metros a cada 100 segundos 
+
     // PID_vel
-    actual_vel=int((delta_position/delta_t)*100); // Pegando apenas as 2 primeiras casas decimais Metros /100 Segundos
-  
+    actual_vel = int((delta_pulses/delta_t*Nominal_pulses*Mode)*60000L); // rpm
+    return;
   }

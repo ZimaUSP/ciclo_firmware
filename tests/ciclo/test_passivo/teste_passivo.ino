@@ -8,13 +8,13 @@ H_bridge_controller *BTS;
 
 PID *PID_vel; 
 
-double current_t;
-double last_t;
-double delta_t;
+unsigned long current_t;
+unsigned long last_t;
+unsigned long delta_t;
 
-long current_pulses;
-long last_pulses;
-long delta_pulses;
+long current_position;
+long last_position;
+long delta_position;
 
 int output;
 float goal_vel;
@@ -38,6 +38,19 @@ void setup() {
   }
    
 void loop() {
+    current_t=millis();
+    delta_t = current_t-last_t;
+    
+    
+    if(delta_t>500){
+      current_position=encoder->getPosition();
+      delta_position= current_position - last_position;
+      actual_vel=(delta_position/500);//meter/s
+      actual_rpm=actual_vel*60/pitch_gear;
+      last_t=current_t;
+      last_position=current_position;
+      Serial.println(actual_rpm); 
+    }
     current_t=millis();
     current_pulses=encoder->getPulses();
 

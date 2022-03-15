@@ -40,8 +40,9 @@
 
 // Comum used
 #define Nominal_pulses 360
-#define pitch_pulley 125
-#define Mode 4
+#define pitch_pulley 125 //PITCH ENCODER PULLEY IN MM
+#define pitch_gear 0.596 //PITCH GEAR IN METERS
+#define Mode 1
 
 #define A_pin 2 // Green cable
 #define B_pin 3 // White cable
@@ -49,8 +50,8 @@
 
 // BTS
 #define MAX_PWM 50
-#define R_pin 6 // L Bts
-#define L_pin 5 // R Bts
+#define r_pin 6 // L Bts
+#define l_pin 5 // R Bts
 
 
 // PID

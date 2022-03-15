@@ -49,14 +49,14 @@
 
 
 // BTS
-#define MAX_PWM 50
-#define r_pin 6 // L Bts
-#define l_pin 5 // R Bts
+#define MAX_PWM 100
+#define r_pin 5 // L Bts
+#define l_pin 6 // R Bts
 
 
 // PID
-#define kp  2
-#define ki  0
+#define kp  1
+#define ki  0.001
 #define kd  0.01
 
 #endif 

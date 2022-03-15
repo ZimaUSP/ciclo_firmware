@@ -7,20 +7,19 @@ Encoder *encoder;
 H_bridge_controller *BTS;
 
 PID *PID_vel; 
-
 unsigned long current_t;
 unsigned long last_t;
 unsigned long delta_t;
 
-long current_position;
-long last_position;
-long delta_position;
+double current_position;
+double last_position;
+double delta_position;
 
 int output;
 float goal_vel;
 float actual_vel;
+float actual_rpm;
 
-//PID constants
  
 void setup() {     
   Serial.begin (9600);
@@ -28,13 +27,13 @@ void setup() {
   encoder = new Encoder(A_pin,B_pin,0,Nominal_pulses,pitch_pulley,Mode);
   encoder->init();
 
-  BTS= new H_bridge_controller( R_pin, L_pin);
+  BTS= new H_bridge_controller( r_pin, l_pin);
   BTS->init();
 
   PID_vel = new PID(kp,ki,kd);
 
   last_t=millis();
-  last_pulses=encoder->getPulses();
+  last_position=encoder->getPosition();
   }
    
 void loop() {
@@ -42,39 +41,34 @@ void loop() {
     delta_t = current_t-last_t;
     
     
-    if(delta_t>500){
+    if(delta_t>200){
       current_position=encoder->getPosition();
       delta_position= current_position - last_position;
-      actual_vel=(delta_position/500);//meter/s
-      actual_rpm=actual_vel*60/pitch_gear;
+      actual_vel=(delta_position/200);//meter/s
+      actual_rpm=actual_vel*60/pitch_gear;// RPM
       last_t=current_t;
       last_position=current_position;
       Serial.println(actual_rpm); 
+      Serial.println(output); 
+      if (current_position>10000 || current_position<-10000){
+        encoder->setPulses(0);
+        last_position=0;
+      }
+      
     }
-    current_t=millis();
-    current_pulses=encoder->getPulses();
-
-    delta_t = current_t-last_t;
-    delta_pulses = current_pulses-last_pulses;
-    
-    last_t=millis();
-    last_pulses=current_pulses;
-
-    //goal_vel = map(analogRead(),1023,0,2);
-
-    goal_vel=5; // metros a cada 100 segundos 
+    goal_vel=-20; // metros a cada 100 segundos 
 
     // PID_vel
 
-    actual_vel=int((delta_pulses/delta_t*Nominal_pulses*Mode)*60000L); // rpm
-    output = PID_vel->computePID(actual_vel,goal_vel);
+    output = PID_vel->computePID(actual_rpm,goal_vel);
+    delay(5);
 
     // Setting direction of motion acording to output_x PID
     if (output < 0) {
         if (output < -MAX_PWM) {
           output = -MAX_PWM;
         }
-        //BTS->Set_R(-output);
+        BTS->Set_R(-output);
         return;
       } else {
         if (output > MAX_PWM) {

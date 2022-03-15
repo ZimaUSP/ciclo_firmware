@@ -4,6 +4,7 @@
 #include "H_bridge_controller.hpp"
 Encoder *encoder;
 H_bridge_controller *BTS;
+
 unsigned long current_t;
 unsigned long last_t;
 unsigned long delta_t;

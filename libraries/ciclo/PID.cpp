@@ -28,7 +28,10 @@ float PID::computePID(float input,float setpoint) {
   this->delta_time = (long)(this->current_time - this->previus_time);        //compute time elapsed from previous computation
 
   this->error = setpoint - input;   // determine error
-  this->i_error += (this->error*this->delta_time);                           // compute integral
+  this->i_error += (this->error*this->delta_time);   
+  if(this->i_error>255){
+    this->i_error=255;
+  }                        // compute integral
   this->d_error = (this->error - this->previus_error)*1000 / this->delta_time;             // compute derivative
   
   float out = this->k_p * this->error + this->k_i * this->i_error + this->k_d * this->d_error;  //PID output
@@ -36,6 +39,9 @@ float PID::computePID(float input,float setpoint) {
   this->previus_error = this->error;                                         //remember current error
   this->previus_time =  this->current_time;                                //remember current time
 
+  // debug print
+  //Serial.print(this->error); Serial.print(' '); Serial.print(this->k_i * this->i_error); Serial.print(' '); Serial.println(out); 
+  
   return out;                                                 //have function return the PID output
 }
 

@@ -17,7 +17,7 @@
 
 class rele {
     private:
-
+        bool reverse_logic;
         int pin;
 
     public:
@@ -26,7 +26,7 @@ class rele {
          * 
          * @param pin digital pin that comands relay 
          */
-        rele(int pin);
+        rele(int pin,bool reverse_logic);
 
         /**
          * @brief initialize pin

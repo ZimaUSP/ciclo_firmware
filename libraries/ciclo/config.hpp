@@ -35,7 +35,6 @@
 #define PASSIVE 2
 
 
-
 //  Encoder
 
 // Comum used
@@ -44,8 +43,8 @@
 #define pitch_gear 0.596 //PITCH GEAR IN METERS
 #define Mode 1
 
-#define A_pin 2 // Green cable
-#define B_pin 3 // White cable
+#define a_pin 2 // Green cable
+#define b_pin 3 // White cable
 
 
 // BTS
@@ -59,4 +58,7 @@
 #define ki  0.001
 #define kd  0.01
 
+// Read vel
+
+#define sample_t 100
 #endif 

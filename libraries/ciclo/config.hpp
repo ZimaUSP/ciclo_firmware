@@ -26,7 +26,7 @@
 #define perimeter_pulley 125.66 // in mm
 #define pitch_gear 0.596 //PITCH GEAR IN METERS
 #define perimeter_gear  584.3 //in  milimeter
-#define Mode 4
+#define Mode 1
 
 #define a_pin 2 // Green cable
 #define b_pin 3 // White cable
@@ -39,12 +39,11 @@
 
 
 // PID
-#define kp  2
-#define ki  0
+#define kp  1
+#define ki  0.001
 #define kd  0.01
 
 // Read vel
 
 #define sample_t 100
-
 #endif 

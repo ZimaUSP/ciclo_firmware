@@ -23,8 +23,9 @@
 
 // Comum used
 #define Nominal_pulses 360
-#define pitch_pulley 125
-#define pitch_gear 10
+#define perimeter_pulley 125.66 // in mm
+#define pitch_gear 0.596 //PITCH GEAR IN METERS
+#define perimeter_gear  584.3 //in  milimeter
 #define Mode 4
 
 #define a_pin 2 // Green cable
@@ -41,5 +42,9 @@
 #define kp  2
 #define ki  0
 #define kd  0.01
+
+// Read vel
+
+#define sample_t 100
 
 #endif 

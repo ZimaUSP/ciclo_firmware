@@ -36,7 +36,7 @@ float PID::computePID(float input,float setpoint) {
   this->previus_error = this->error;                                         //remember current error
   this->previus_time =  this->current_time;                                //remember current time
 
-  //Serial.println(out);
+  
   return out;                                                 //have function return the PID output
 }
 

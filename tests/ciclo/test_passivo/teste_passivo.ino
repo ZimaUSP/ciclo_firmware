@@ -24,7 +24,7 @@ float actual_rpm;
 void setup() {     
   Serial.begin (9600);
 
-  encoder = new Encoder(A_pin,B_pin,0,Nominal_pulses,pitch_pulley,Mode);
+  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,pitch_pulley,Mode);
   encoder->init();
 
   BTS= new H_bridge_controller( r_pin, l_pin);

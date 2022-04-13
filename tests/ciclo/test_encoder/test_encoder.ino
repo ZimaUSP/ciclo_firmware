@@ -20,7 +20,7 @@ float actual_rpm;
 
 void setup() {     
   Serial.begin (9600);
-  encoder = new Encoder(A_pin,B_pin,0,Nominal_pulses,pitch_pulley,1);
+  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,pitch_pulley,Mode);
   encoder->init();
   last_t=millis();
   last_position=encoder->getPosition();
@@ -41,7 +41,8 @@ void loop() {
     actual_rpm=actual_vel*60/pitch_gear;
     last_t=current_t;
     last_position=current_position;
-    Serial.println(actual_rpm); 
+    
+    Serial.println(encoder->getPosition()); 
   }
   // PID_vel
   

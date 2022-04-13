@@ -58,6 +58,12 @@
 #define ki  0.001
 #define kd  0.01
 
+//Rele
+
+#define stand_by_active 10
+#define passive_active 9
+
+
 // Read vel
 
 #define sample_t 100

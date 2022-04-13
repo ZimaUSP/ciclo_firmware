@@ -40,10 +40,10 @@ void setup() {
   BTS= new H_bridge_controller( r_pin, l_pin);
   BTS->init();
 
-  passive_active_rele= new rele(9,false); // Este rele em especifico tem logica reversa
+  passive_active_rele= new rele(passive_active,true); // Este rele em especifico tem logica reversa
   passive_active_rele->init();
 
-  stand_by_active_rele= new rele(10,true);
+  stand_by_active_rele= new rele(stand_by_active,true);
   stand_by_active_rele->init();
 
   PID_vel = new PID(kp,ki,kd);
@@ -108,6 +108,8 @@ void passive(){
 
 void check_state(){
   read_rpm();
+  STATE=PASSIVE;
+  return;
   if (actual_rpm<goal_vel){
     STATE=PASSIVE;
     return;

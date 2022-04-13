@@ -41,6 +41,7 @@ float PID::computePID(float input,float setpoint) {
 
   // debug print
   //Serial.print(this->error); Serial.print(' '); Serial.print(this->k_i * this->i_error); Serial.print(' '); Serial.println(out); 
+
   
   return out;                                                 //have function return the PID output
 }

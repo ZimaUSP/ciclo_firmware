@@ -168,13 +168,15 @@ void check_state(){
       actual_vel=(delta_position/sample_t);//meter/s
       actual_rpm=actual_vel*60/pitch_gear;// RPM
       last_t=current_t;
-Serial.print("actual_vel ");
-  Serial.println(actual_vel);
+      Serial.print("actual_vel ");
+      Serial.println(actual_vel);
+
       //calculates number of cicles that has been passed
       current_cicles = int(current_position/perimeter_gear); // calculates number of rotations. it only returns int values, thefore if a full cicle has not been done it wont count fractions. It is usefull to "integrate" cicles in each mode of exercise
       delta_cicles = current_cicles-last_cicles; // calculates if a cicle has been done or not. This is the variable that will be incremented in each function mode
       last_cicles = current_cicles;
-            //debug print
+            
+      //debug print
       //Serial.println(actual_rpm); Serial.println(output); 
       
       // avoid overflowing variable pulses on encoder lib

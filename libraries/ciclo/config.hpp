@@ -28,8 +28,8 @@
 #define perimeter_gear  584.3 //in  milimeter
 #define Mode 1
 
-#define a_pin 2 // Green cable
-#define b_pin 3 // White cable
+#define a_pin 3 // White cable
+#define b_pin 2 // Green cable
 
 
 // BTS
@@ -39,17 +39,18 @@
 
 
 // PID
-#define kp  1
-#define ki  0.001
-#define kd  0.01
+#define kp  5
+#define ki  0.01
+#define kd  0
 
 //Rele
+#define stand_by_active 9
+#define passive_active 10
 
-#define stand_by_active 10
-#define passive_active 9
-
+//Potentiometer
+#define pot_pin A0
 
 // Read vel
 
-#define sample_t 100
+#define sample_t 38 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
 #endif 

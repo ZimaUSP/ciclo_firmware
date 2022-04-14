@@ -20,11 +20,7 @@ float actual_rpm;
 
 void setup() {     
   Serial.begin (9600);
-<<<<<<< HEAD
-  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,pitch_pulley,Mode);
-=======
-  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,pitch_pulley,1);
->>>>>>> 70804c159bcc2439825e20992c6b89bf2a82d66f
+  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,perimeter_pulley,1);
   encoder->init();
   last_t=millis();
   last_position=encoder->getPosition();

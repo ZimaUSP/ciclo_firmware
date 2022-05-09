@@ -18,13 +18,13 @@
 current_sensor::current_sensor(uint8_t pin,uint8_t type){
   this->pin=pin;
   this->type=type;
-  if(type==A05){
+  if(type==5){
     this->sensitivity= 0.185;
   }
-  else if(type==A20){
+  else if(type==20){
     this->sensitivity= 0.100;
   }
-  else if(type==A30){
+  else if(type==30){
     this->sensitivity= 072;
   }
   

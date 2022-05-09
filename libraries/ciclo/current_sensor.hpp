@@ -25,7 +25,7 @@ class current_sensor {
          * @brief Default constructor of a Timer base class
          * 
          */
-        current_sensor();
+        current_sensor(uint8_t pin,uint8_t type);
     
         /**
          * @brief return left to complet period (minutes part)

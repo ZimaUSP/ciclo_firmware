@@ -52,7 +52,7 @@
 #define pot_pin A0
 
 // Fade
-#define fade 10
+#define fade 50
 
 #define sample_t 38 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
 #endif 

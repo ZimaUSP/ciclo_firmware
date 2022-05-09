@@ -16,7 +16,8 @@
 // State
 #define STAND_BY 0
 #define ACTIVE 1
-#define PASSIVE 2
+#define FADE 2
+#define PASSIVE 3
 
 
 //  Encoder
@@ -50,7 +51,8 @@
 //Potentiometer
 #define pot_pin A0
 
-// Read vel
+// Fade
+#define fade 10
 
 #define sample_t 38 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
 #endif 

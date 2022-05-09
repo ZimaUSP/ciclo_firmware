@@ -82,6 +82,11 @@ void loop() {
           //Now the patient is the one who moves the motor within resistance
           active();
           return;
+        case FADE :         
+          check_state();
+          //The motor is activeted to help patients move.
+          fade_pwm();
+          return;
         case PASSIVE :         
           check_state();
           //The motor is activeted to help patients move.
@@ -111,6 +116,39 @@ void active(){
   return;
 }
 
+void fade_pwm(){
+  STATE=PASSIVE;
+  //integrate number of cicles on that state
+  passive_cicles +=delta_cicles;
+  delta_cicles=0;
+
+  // activate reles in the desired way
+  passive_active_rele->turn_on();
+  stand_by_active_rele->turn_on();
+
+ // map it to the range of the analog out:
+  output = PID_vel->computePID(actual_vel*100,goal_vel); // Don't know why but input is divided by 100 on Compute PID function
+ 
+  if (output < 0) {
+      if (output < -MAX_PWM) {
+        output = -MAX_PWM;
+      }
+      for(int i=0;i<output;i++){
+        BTS->Set_L(-i/10);
+        delay(fade);
+      }
+      return;
+    } else {
+      if (output > MAX_PWM) {
+        output = MAX_PWM;
+      }
+      for(int i=0;i<output;i++){
+        BTS->Set_R(i);
+        delay(fade);
+      }
+      return;
+    }
+}
 // Call passive on loop to apply PID control to vel
 void passive(){
   //integrate number of cicles on that state

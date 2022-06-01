@@ -18,6 +18,16 @@
 #define ACTIVE 1
 #define FADE 2
 #define PASSIVE 3
+#define MENU 4
+#define DONE 5
+#define RESET 6
+
+#define WEEK 0
+#define NORMAL 1
+#define STRONG 2
+
+//reset constant
+#define RESET_CMD asm ("jmp (0x0000)")
 
 
 //  Encoder
@@ -51,8 +61,16 @@
 //Potentiometer
 #define pot_pin A0
 
+//Button
+#define btn_pin 11
+
 // Fade
 #define fade 50
+
+// Parametros de NUMERO DE CICLOS DADOS NO PERIODO TESTE diagnostico da saude do paciente
+#define sample_ex 1
+#define LIMITE_DEBILIDADO 5
+#define LIMITE_SAUDAVEL 10
 
 #define sample_t 38 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
 #endif 

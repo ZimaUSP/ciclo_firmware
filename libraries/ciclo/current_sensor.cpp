@@ -22,20 +22,19 @@ current_sensor::current_sensor(uint8_t pin,uint8_t type){
     this->sensitivity= 0.185;
   }
   else if(type==20){
-    this->sensitivity= 0.100;
+    this->sensitivity=0.095;
   }
   else if(type==30){
-    this->sensitivity= 072;
+    this->sensitivity= 0.072;
   }
   
 }
 
 float current_sensor::get_current(){
-  long sum=0;
-
+  int sum=0; 
   for(int i=0; i<1000; i++){
     sum+=analogRead(this->pin);
-  }
 
-  return (float)(sum/1000-512)*(5.000)/(1023.000*this->sensitivity);
+  }
+  return (float)((sum/1000)-512)*(5.000)/(1023.000*0.095);
 }

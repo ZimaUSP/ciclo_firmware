@@ -15,16 +15,22 @@
 
 // State
 #define STAND_BY 0
-#define ACTIVE 1
+// #define ACTIVE_PLUS 1
+#define ACTIVE_PLUS 1
 #define FADE 2
 #define PASSIVE 3
-#define MENU 4
-#define DONE 5
-#define RESET 6
+#define MODE 4
+#define TIMER 5
+#define DONE 6
+#define RESET 7
 
 #define WEEK 0
 #define NORMAL 1
 #define STRONG 2
+
+// Mode
+#define MANUAL 0
+#define AUTO 1
 
 //reset constant
 #define RESET_CMD asm ("jmp (0x0000)")

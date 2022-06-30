@@ -267,13 +267,10 @@ void done(){
   BTS->Set_L(0);
   if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de reiniciar  e reseta as variaveis
     STATE=RESET;
-    int stand_by_cicles=0;
-    int passive_cicles=0;
-    int active_cicles=0;
   }
   return;
 }
-void reset(){
+void reset(){ // This function resets the arduino
   delay(2000);
   RESET_CMD; 
   return;
@@ -350,15 +347,14 @@ void printLCD(){
 }
 
 void check_state(){
+  //if exercise time exceded, it will end the ex
   if(clock->current_min()==0 && clock->current_sec()==0){
     STATE=DONE;
     return;
   }
+  // When manual is chosen at the menu
   if(modo==MANUAL){
     state_mode = float(map(analogRead(pot_pin), 0, 1023, 0, 2));
-    Serial.print(analogRead(pot_pin));
-    Serial.print(analogRead(" "));
-    Serial.println(state_mode);
     if(state_mode==FADE){
       if(LAST_STATE!=PASSIVE){
         STATE=FADE;
@@ -374,25 +370,25 @@ void check_state(){
     }else if (state_mode==(ACTIVE_PLUS)){
       STATE=ACTIVE_PLUS;
     }
-  }else if(modo==AUTO){
+    
+  }else if(modo==AUTO){ // When Auto is chosen at the menu
     odometry_calc();
+    // uses a "sample" to diagnose the heath state of the patiante
     if(duration-clock->current_min()<=sample_ex){
-    STATE=STAND_BY;
-    health_p+=delta_cicles;
-    delta_cicles=0;
-    Serial.println("health_p");
-    Serial.println(health_p);
-    if(health_p<LIMITE_DEBILIDADO){
-      HEALTH_STATE=WEEK;
-      return;
-    }else if(health_p<LIMITE_SAUDAVEL){
-      HEALTH_STATE=NORMAL;
-      return;
-    }else{
-      HEALTH_STATE=STRONG; 
-      return;
-    }
-    }else{
+      STATE=STAND_BY;
+      health_p+=delta_cicles;
+      delta_cicles=0;
+      if(health_p<LIMITE_DEBILIDADO){
+        HEALTH_STATE=WEEK;
+        return;
+      }else if(health_p<LIMITE_SAUDAVEL){
+        HEALTH_STATE=NORMAL;
+        return;
+      }else{
+        HEALTH_STATE=STRONG; 
+        return;
+      }
+    }else{ // Actual exercise starts here
       switch (HEALTH_STATE)
       {
       case WEEK:

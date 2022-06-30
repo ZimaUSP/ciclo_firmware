@@ -21,8 +21,10 @@
 #define PASSIVE 3
 #define MODE 4
 #define TIMER 5
-#define DONE 6
-#define RESET 7
+#define SET_VEL 6
+#define SET_DRAG 7
+#define DONE 8
+#define RESET 9
 
 #define WEEK 0
 #define NORMAL 1

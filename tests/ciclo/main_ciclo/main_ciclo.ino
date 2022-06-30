@@ -35,6 +35,7 @@ double last_position;
 double delta_position;
 
 float goal_vel=25;
+int drag_force;
 float actual_vel;
 float actual_rpm;
 
@@ -113,6 +114,16 @@ void loop() {
           LAST_STATE = TIMER; 
           //ask duration 
           timer();
+          return;
+        case SET_VEL :
+          LAST_STATE = SET_VEL; 
+          //ask duration 
+          set_velocity();
+          return;
+        case SET_DRAG :
+          LAST_STATE = SET_DRAG; 
+          //ask duration 
+          set_drag();
           return;
         case DONE :
           LAST_STATE = DONE; 
@@ -242,9 +253,8 @@ void passive(){
 }
 void mode(){
   if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
-    Serial.print(modo);
     STATE=TIMER;
-    delay(300);
+    delay(500);
     return;
   }
   modo=map(analogRead(pot_pin),0,1023,0,1);
@@ -254,12 +264,34 @@ void mode(){
 void timer(){
   
   if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
+    STATE=SET_VEL;
+    delay(500);
+    return;
+  }
+  duration=map(analogRead(pot_pin),0,1023,0,30);
+  
+  return;
+}
+void set_velocity(){
+  
+  if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
+    STATE=SET_DRAG;
+    delay(500);
+    return;
+  }
+  goal_vel=map(analogRead(pot_pin),0,1023,0,30);
+  
+  return;
+}
+void set_drag(){
+  
+  if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
     Serial.print("START");
     STATE=STAND_BY;
     clock->init(duration);
     return;
   }
-  duration=map(analogRead(pot_pin),0,1023,0,30);
+  drag_force=map(analogRead(pot_pin),0,1023,1,3);
   
   return;
 }
@@ -326,6 +358,20 @@ void printLCD(){
     lcd.print(" ");
     lcd.print(duration);
     lcd.print(":00");
+  }else if(STATE==SET_VEL){
+    lcd.print("  RPM desejado ");
+    lcd.setCursor(0,1);
+    lcd.print("               ");
+    lcd.setCursor(0,1);
+    lcd.print(" ");
+    lcd.print(goal_vel);
+  }else if(STATE==SET_DRAG){
+    lcd.print("Arrasto desejado");
+    lcd.setCursor(0,1);
+    lcd.print("               ");
+    lcd.setCursor(0,1);
+    lcd.print(" ");
+    lcd.print(drag_force);
   }else if(STATE==DONE){
     lcd.print(" -  |  0  |  + ");
     lcd.setCursor(0,1);

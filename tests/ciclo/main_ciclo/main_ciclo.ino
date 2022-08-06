@@ -2,9 +2,9 @@
 #include "config.hpp"
 
 //STATE
-char STATE = MENU; 
-char LAST_STATE = MENU ;
-
+char STATE = MODE; 
+char LAST_STATE = MODE ;
+int modo = AUTO;
 char HEALTH_STATE;
 
 // including libs
@@ -35,6 +35,7 @@ double last_position;
 double delta_position;
 
 float goal_vel=25;
+int drag_force;
 float actual_vel;
 float actual_rpm;
 
@@ -87,11 +88,11 @@ void loop() {
           // Niether passive nor active assistence is given now
           stand_by();
           return;
-        case ACTIVE :
-          LAST_STATE = ACTIVE;          
+        case ACTIVE_PLUS :
+          LAST_STATE = ACTIVE_PLUS;          
           check_state();
           //Now the patient is the one who moves the motor within resistance
-          active();
+          active_plus();
           return;
         case FADE :
           LAST_STATE = PASSIVE;
@@ -104,10 +105,25 @@ void loop() {
           //The motor is activeted to help patients move.
           passive();
           return;
-        case MENU :
-          LAST_STATE = MENU; 
+        case MODE :
+          LAST_STATE = MODE; 
+          //The motor is activeted to help patients move.
+          mode();
+          return;
+        case TIMER :
+          LAST_STATE = TIMER; 
           //ask duration 
-          menu();
+          timer();
+          return;
+        case SET_VEL :
+          LAST_STATE = SET_VEL; 
+          //ask duration 
+          set_velocity();
+          return;
+        case SET_DRAG :
+          LAST_STATE = SET_DRAG; 
+          //ask duration 
+          set_drag();
           return;
         case DONE :
           LAST_STATE = DONE; 
@@ -146,6 +162,31 @@ void active(){
   return;
 }
 
+void active_plus(){
+  //integrate number of cicles on that state
+  active_cicles +=delta_cicles;
+  delta_cicles=0;
+
+   // activate reles in the desired way
+  passive_active_rele->turn_on();
+  stand_by_active_rele->turn_on();
+
+  // map it to the range of the analog out:
+  output = PID_vel->computePID(actual_vel*100,0); // Don't know why but input is divided by 100 on Compute PID function
+ 
+  if (output < 0) {
+      if (output < -MAX_PWM) {
+        output = -MAX_PWM;
+      }
+      BTS->Set_L(output);
+      delay(fade);
+      return;
+    } else {
+      BTS->Set_R(0);
+      return;
+    }
+}
+
 void fade_pwm(){
   STATE=PASSIVE;
   //integrate number of cicles on that state
@@ -173,7 +214,7 @@ void fade_pwm(){
         output = MAX_PWM;
       }
       for(int i=0;i<output;i++){
-        BTS->Set_R(i);
+        BTS->Set_L(-i/10);
         delay(fade);
       }
       return;
@@ -200,7 +241,7 @@ void passive(){
       if (output < -MAX_PWM) {
         output = -MAX_PWM;
       }
-      BTS->Set_L(-output/10);
+      BTS->Set_L(0);
       return;
     } else {
       if (output > MAX_PWM) {
@@ -210,14 +251,47 @@ void passive(){
       return;
     }
 }
-void menu(){
+void mode(){
+  if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
+    STATE=TIMER;
+    delay(500);
+    return;
+  }
+  modo=map(analogRead(pot_pin),0,1023,0,1);
+
+  return;
+}
+void timer(){
+  
+  if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
+    STATE=SET_VEL;
+    delay(500);
+    return;
+  }
+  duration=map(analogRead(pot_pin),0,1023,0,30);
+  
+  return;
+}
+void set_velocity(){
+  
+  if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
+    STATE=SET_DRAG;
+    delay(500);
+    return;
+  }
+  goal_vel=map(analogRead(pot_pin),0,1023,0,30);
+  
+  return;
+}
+void set_drag(){
+  
   if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
     Serial.print("START");
     STATE=STAND_BY;
     clock->init(duration);
     return;
   }
-  duration=map(analogRead(pot_pin),0,1023,0,30);
+  drag_force=map(analogRead(pot_pin),0,1023,1,3);
   
   return;
 }
@@ -225,13 +299,10 @@ void done(){
   BTS->Set_L(0);
   if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de reiniciar  e reseta as variaveis
     STATE=RESET;
-    int stand_by_cicles=0;
-    int passive_cicles=0;
-    int active_cicles=0;
   }
   return;
 }
-void reset(){
+void reset(){ // This function resets the arduino
   delay(2000);
   RESET_CMD; 
   return;
@@ -249,7 +320,7 @@ void printLCD(){
     lcd.print(":");
     sprintf(time,"%02d",clock->current_sec());
     lcd.print(time);
-  }else if (STATE==ACTIVE){
+  }else if (STATE==ACTIVE_PLUS){
     lcd.print("Modo: Resistido");
     lcd.setCursor(0,1);
     lcd.print("               ");
@@ -269,7 +340,17 @@ void printLCD(){
     lcd.print(":");
     sprintf(time,"%02d",clock->current_sec());
     lcd.print(time);
-  }else if(STATE==MENU){
+  }else if(STATE==MODE){
+    lcd.print("Escolha o modo ");
+    lcd.setCursor(0,1);
+    lcd.print("               ");
+    lcd.setCursor(0,1);
+    if(modo==AUTO){
+      lcd.print("  Automatico   ");
+    }else if(modo==MANUAL){
+      lcd.print("    Manual    ");
+    }
+  }else if(STATE==TIMER){
     lcd.print("Duracao do Ex :");
     lcd.setCursor(0,1);
     lcd.print("               ");
@@ -277,6 +358,20 @@ void printLCD(){
     lcd.print(" ");
     lcd.print(duration);
     lcd.print(":00");
+  }else if(STATE==SET_VEL){
+    lcd.print("  RPM desejado ");
+    lcd.setCursor(0,1);
+    lcd.print("               ");
+    lcd.setCursor(0,1);
+    lcd.print(" ");
+    lcd.print(goal_vel);
+  }else if(STATE==SET_DRAG){
+    lcd.print("Arrasto desejado");
+    lcd.setCursor(0,1);
+    lcd.print("               ");
+    lcd.setCursor(0,1);
+    lcd.print(" ");
+    lcd.print(drag_force);
   }else if(STATE==DONE){
     lcd.print(" -  |  0  |  + ");
     lcd.setCursor(0,1);
@@ -298,54 +393,76 @@ void printLCD(){
 }
 
 void check_state(){
+  //if exercise time exceded, it will end the ex
   if(clock->current_min()==0 && clock->current_sec()==0){
     STATE=DONE;
     return;
   }
-  odometry_calc();
-  if(duration-clock->current_min()<=sample_ex){
-    STATE=STAND_BY;
-    health_p+=delta_cicles;
-    delta_cicles=0;
-    Serial.println("health_p");
-    Serial.println(health_p);
-    if(health_p<LIMITE_DEBILIDADO){
-      HEALTH_STATE=WEEK;
-      return;
-    }else if(health_p<LIMITE_SAUDAVEL){
-      HEALTH_STATE=NORMAL;
-      return;
-    }else{
-      HEALTH_STATE=STRONG; 
-      return;
-    }
-  }else{
-    switch (HEALTH_STATE)
-    {
-    case WEEK:
+  // When manual is chosen at the menu
+  if(modo==MANUAL){
+    state_mode = float(map(analogRead(pot_pin), 0, 1023, 0, 2));
+    if(state_mode==FADE){
       if(LAST_STATE!=PASSIVE){
         STATE=FADE;
         return;
       }
       STATE=PASSIVE;
       return;
-    case NORMAL:
-      if(actual_rpm<goal_vel){
+    } 
+    PID_vel->reset();
+
+    if(state_mode==(STAND_BY)){
+      STATE=STAND_BY;
+    }else if (state_mode==(ACTIVE_PLUS)){
+      STATE=ACTIVE_PLUS;
+    }
+    
+  }else if(modo==AUTO){ // When Auto is chosen at the menu
+    odometry_calc();
+    // uses a "sample" to diagnose the heath state of the patiante
+    if(duration-clock->current_min()<=sample_ex){
+      STATE=STAND_BY;
+      health_p+=delta_cicles;
+      delta_cicles=0;
+      if(health_p<LIMITE_DEBILIDADO){
+        HEALTH_STATE=WEEK;
+        return;
+      }else if(health_p<LIMITE_SAUDAVEL){
+        HEALTH_STATE=NORMAL;
+        return;
+      }else{
+        HEALTH_STATE=STRONG; 
+        return;
+      }
+    }else{ // Actual exercise starts here
+      switch (HEALTH_STATE)
+      {
+      case WEEK:
         if(LAST_STATE!=PASSIVE){
           STATE=FADE;
           return;
         }
         STATE=PASSIVE;
         return;
+      case NORMAL:
+        if(actual_rpm<goal_vel){
+          if(LAST_STATE!=PASSIVE){
+            STATE=FADE;
+            return;
+          }
+          STATE=PASSIVE;
+          return;
+        }
+        PID_vel->reset();
+        STATE=STAND_BY;
+        return;
+      case STRONG:
+        STATE=ACTIVE_PLUS;
+        return;
       }
-      PID_vel->reset();
-      STATE=STAND_BY;
-      return;
-    case STRONG:
-      STATE=ACTIVE;
-      return;
     }
   }
+  
   }
 
  // Reads the goal vel seted by the physiotherapist and calculates the actual vel

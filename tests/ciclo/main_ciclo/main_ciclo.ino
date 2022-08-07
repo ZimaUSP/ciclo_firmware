@@ -11,7 +11,6 @@ char HEALTH_STATE;
 #include "Encoder.hpp"
 #include "H_bridge_controller.hpp"
 #include "PID.hpp"
-#include "rele.hpp"
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include "Timer.hpp"
@@ -144,9 +143,6 @@ void stand_by(){
   stand_by_cicles+=delta_cicles;
   delta_cicles=0;
 
-  // activate reles in the desired way
-  passive_active_rele->turn_off();
-  stand_by_active_rele->turn_off();
   return;
 }
 
@@ -156,9 +152,6 @@ void active(){
   active_cicles +=delta_cicles;
   delta_cicles=0;
 
-  // activate reles in the desired way
-  passive_active_rele->turn_off();
-  stand_by_active_rele->turn_on();
   return;
 }
 
@@ -166,11 +159,6 @@ void active_plus(){
   //integrate number of cicles on that state
   active_cicles +=delta_cicles;
   delta_cicles=0;
-
-   // activate reles in the desired way
-  passive_active_rele->turn_on();
-  stand_by_active_rele->turn_on();
-
   // map it to the range of the analog out:
   output = PID_vel->computePID(actual_vel*100,0); // Don't know why but input is divided by 100 on Compute PID function
  
@@ -192,10 +180,6 @@ void fade_pwm(){
   //integrate number of cicles on that state
   passive_cicles +=delta_cicles;
   delta_cicles=0;
-
-  // activate reles in the desired way
-  passive_active_rele->turn_on();
-  stand_by_active_rele->turn_on();
 
  // map it to the range of the analog out:
   output = PID_vel->computePID(actual_vel*100,goal_vel)/2; // Don't know why but input is divided by 100 on Compute PID function
@@ -225,10 +209,6 @@ void passive(){
   //integrate number of cicles on that state
   passive_cicles +=delta_cicles;
   delta_cicles=0;
-
-  // activate reles in the desired way
-  passive_active_rele->turn_on();
-  stand_by_active_rele->turn_on();
 
  // map it to the range of the analog out:
   output = PID_vel->computePID(actual_vel*100,goal_vel); // Don't know why but input is divided by 100 on Compute PID function
@@ -304,7 +284,7 @@ void done(){
 }
 void reset(){ // This function resets the arduino
   delay(2000);
-  RESET_CMD; 
+  ESP.restart();
   return;
 }
 void printLCD(){

@@ -15,7 +15,6 @@
 
 // State
 #define STAND_BY 0
-// #define ACTIVE_PLUS 1
 #define ACTIVE_PLUS 1
 #define FADE 2
 #define PASSIVE 3
@@ -46,6 +45,9 @@
 #define pitch_gear 0.596 //PITCH GEAR IN METERS
 #define perimeter_gear  584.3 //in  milimeter
 #define Mode 1
+#define PWM_frequency_channel 40000
+#define PWM_resolution_channel 8
+
 
 #define a_pin 3 // White cable
 #define b_pin 2 // Green cable
@@ -55,7 +57,8 @@
 #define MAX_PWM 50
 #define r_pin 6 // L Bts
 #define l_pin 5 // R Bts
-
+#define R_channel 0
+#define L_channel 1 
 
 // PID
 #define kp  5
@@ -74,6 +77,10 @@
 
 // Fade
 #define fade 50
+
+// current sensor
+#define acs_pin 36
+#define acs_max_amp 20 
 
 // Parametros de NUMERO DE CICLOS DADOS NO PERIODO TESTE diagnostico da saude do paciente
 #define sample_ex 1

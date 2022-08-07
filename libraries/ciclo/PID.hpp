@@ -20,19 +20,20 @@ class PID {
 
         unsigned long current_time;
         unsigned long previus_time = 0;
-        long delta_time;
+        double delta_time;
 
         
-        long i_error =0;
-        float d_error;
+        double i_error;
+        double d_error;
 
-        float k_p;
-        float k_i;
-        float k_d;
+        double k_p;
+        double k_i;
+        double k_d;
 
-        float error;
-        float previus_error;
+        double error;
+        double previus_error;
 
+        int i_saturation;
     public:
         /**
          * @brief Default constructor of a PID base class
@@ -41,7 +42,7 @@ class PID {
          * @param k_i Integrative constant 
          * @param k_d Derivative constant 
          */
-        PID(float k_p,float k_i,float k_d);
+        PID(double k_p,double k_i,double k_d,int i_saturation);
 
         /**
          * @brief Computes PID value
@@ -49,7 +50,7 @@ class PID {
          * @param Input input value 
          * @param setpoint Set goal, the value that input should be
          */
-        float computePID(float input,float setpoint); 
+        double computePID(double input,float setpoint,float tolerance); 
 
         /**
          * @brief Reset PID values

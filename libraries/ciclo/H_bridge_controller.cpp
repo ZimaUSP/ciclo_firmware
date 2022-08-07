@@ -17,33 +17,39 @@
  * Class Methods Bodies Definitions
  *****************************************/
 
-H_bridge_controller::H_bridge_controller(int R_pin, int L_pin) {
+H_bridge_controller::H_bridge_controller(int R_pin, int L_pin, int PWM_frequency, int PWM_resolution, int R_channel, int L_channel) {
     this-> R_pin = R_pin;
     this-> L_pin = L_pin;
+    this-> PWM_frequency = PWM_frequency;
+    this-> PWM_resolution = PWM_resolution;
+    this-> R_channel = R_channel;
+    this-> L_channel = L_channel;
 
 }
 void H_bridge_controller::init(){
-  pinMode(this->R_pin, OUTPUT);
+  ledcAttachPin(R_pin, this->R_channel);
+  ledcSetup(this->R_channel, PWM_frequency, PWM_resolution);
 
-  pinMode(this->L_pin, OUTPUT);
+  ledcAttachPin(L_pin, this->L_channel);
+  ledcSetup(this->L_channel, PWM_frequency, PWM_resolution);
 }
 
 void H_bridge_controller::SetPWM_R(int PWM) {
-  analogWrite(this->R_pin, PWM);
+  ledcWrite(this->R_channel, PWM);
 }
 
 void H_bridge_controller::SetPWM_L(int PWM) {
-  analogWrite(this->L_pin, PWM);
+  ledcWrite(this->L_channel, PWM);
 }
 
 void H_bridge_controller::Set_R(int PWM) {
-  analogWrite(this->L_pin, 0);
-  analogWrite(this->R_pin, PWM);
+  ledcWrite(this->L_channel, 0);
+  ledcWrite(this->R_channel, PWM);
 }
 
 void H_bridge_controller::Set_L(int PWM) {
-  analogWrite(this->R_pin, 0);
-  analogWrite(this->L_pin, PWM);
+  ledcWrite(this->R_channel, 0);
+  ledcWrite(this->L_channel, PWM);
 }
 
 

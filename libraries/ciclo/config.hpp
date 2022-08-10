@@ -49,13 +49,13 @@
 #define PWM_resolution_channel 8
 
 
-#define a_pin 3 // White cable
-#define b_pin 2 // Green cable
+#define a_pin 25 // White cable
+#define b_pin 26 // Green cable
 
 
 // BTS
 #define MAX_PWM 50
-#define r_pin 6 // L Bts
+#define r_pin 18 // L Bts
 #define l_pin 5 // R Bts
 #define R_channel 0
 #define L_channel 1 
@@ -64,16 +64,17 @@
 #define kp  5
 #define ki  0.01
 #define kd  0
+#define i_saturation 1000
 
 //Rele
 #define stand_by_active 9
 #define passive_active 10
 
 //Potentiometer
-#define pot_pin A0
+#define pot_pin 35
 
 //Button
-#define btn_pin 11
+#define btn_pin 13
 
 // Fade
 #define fade 50
@@ -87,5 +88,5 @@
 #define LIMITE_DEBILIDADO 5
 #define LIMITE_SAUDAVEL 10
 
-#define sample_t 38 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
+#define sample_t 50 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
 #endif 

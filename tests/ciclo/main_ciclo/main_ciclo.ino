@@ -1,6 +1,3 @@
-// Header file which contain Pin, constanst, states and etc...
-#include "config.hpp"
-
 //STATE
 char STATE = MODE; 
 char LAST_STATE = MODE ;
@@ -15,10 +12,11 @@ char HEALTH_STATE;
 #include <LiquidCrystal_I2C.h>
 #include "Timer.hpp"
 
+// Header file which contain Pin, constanst, states and etc...
+#include "config.hpp"
+
 Encoder *encoder;
-H_bridge_controller *BTS;
-rele *passive_active_rele; // normaly open ->active normaly // normaly close passive
-rele *stand_by_active_rele; // normaly open-> stand_by // normaly close -> active
+H_bridge_controller *Motor;
 PID *PID_vel;
 LiquidCrystal_I2C lcd(0x27,16,2); // LCD lib
 Timer *clock;
@@ -55,17 +53,10 @@ void setup() {
   encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,perimeter_pulley,Mode);
   encoder->init();
 
-  BTS= new H_bridge_controller(r_pin, l_pin);
-  BTS->init();
+  Motor= new H_bridge_controller( r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
+  Motor->init();
 
-  passive_active_rele= new rele(passive_active,true); // Este rele em especifico tem logica reversa
-  passive_active_rele->init();
-
-  stand_by_active_rele= new rele(stand_by_active,true);
-  stand_by_active_rele->init();
-
-  PID_vel = new PID(kp,ki,kd);
-
+  PID_vel = new PID(kp,ki,kd,i_saturation);
 
   clock= new Timer(); 
   lcd.init();                      // initialize the lcd 
@@ -74,8 +65,7 @@ void setup() {
   pinMode(btn_pin,INPUT_PULLUP);
 
   last_position=encoder->getPosition();
-
-  
+ 
 }
    
 void loop() {
@@ -138,7 +128,7 @@ void loop() {
 }
 
 void stand_by(){
-  BTS->Set_L(0);
+  Motor->Set_L(0);
   //integrate number of cicles on that state
   stand_by_cicles+=delta_cicles;
   delta_cicles=0;
@@ -147,7 +137,7 @@ void stand_by(){
 }
 
 void active(){
-  BTS->Set_L(0);
+  Motor->Set_L(0);
   //integrate number of cicles on that state
   active_cicles +=delta_cicles;
   delta_cicles=0;
@@ -166,11 +156,11 @@ void active_plus(){
       if (output < -MAX_PWM) {
         output = -MAX_PWM;
       }
-      BTS->Set_L(output);
+      Motor->Set_L(output);
       delay(fade);
       return;
     } else {
-      BTS->Set_R(0);
+      Motor->Set_R(0);
       return;
     }
 }
@@ -189,7 +179,7 @@ void fade_pwm(){
         output = -MAX_PWM;
       }
       for(int i=0;i<output;i++){
-        BTS->Set_L(-i/10);
+        Motor->Set_L(-i/10);
         delay(fade);
       }
       return;
@@ -198,7 +188,7 @@ void fade_pwm(){
         output = MAX_PWM;
       }
       for(int i=0;i<output;i++){
-        BTS->Set_L(-i/10);
+        Motor->Set_L(-i/10);
         delay(fade);
       }
       return;
@@ -221,13 +211,13 @@ void passive(){
       if (output < -MAX_PWM) {
         output = -MAX_PWM;
       }
-      BTS->Set_L(0);
+      Motor->Set_L(0);
       return;
     } else {
       if (output > MAX_PWM) {
         output = MAX_PWM;
       }
-      BTS->Set_R(output);
+      Motor->Set_R(output);
       return;
     }
 }
@@ -237,7 +227,7 @@ void mode(){
     delay(500);
     return;
   }
-  modo=map(analogRead(pot_pin),0,1023,0,1);
+  modo=map(analogRead(pot_pin),0,4095,0,1);
 
   return;
 }
@@ -248,7 +238,7 @@ void timer(){
     delay(500);
     return;
   }
-  duration=map(analogRead(pot_pin),0,1023,0,30);
+  duration=map(analogRead(pot_pin),0,4095,0,30);
   
   return;
 }
@@ -259,7 +249,7 @@ void set_velocity(){
     delay(500);
     return;
   }
-  goal_vel=map(analogRead(pot_pin),0,1023,0,30);
+  goal_vel=map(analogRead(pot_pin),0,4095,0,30);
   
   return;
 }
@@ -271,12 +261,12 @@ void set_drag(){
     clock->init(duration);
     return;
   }
-  drag_force=map(analogRead(pot_pin),0,1023,1,3);
+  drag_force=map(analogRead(pot_pin),0,4095,1,3);
   
   return;
 }
 void done(){
-  BTS->Set_L(0);
+  Motor->Set_L(0);
   if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de reiniciar  e reseta as variaveis
     STATE=RESET;
   }
@@ -373,6 +363,7 @@ void printLCD(){
 }
 
 void check_state(){
+  odometry_calc();
   //if exercise time exceded, it will end the ex
   if(clock->current_min()==0 && clock->current_sec()==0){
     STATE=DONE;
@@ -380,7 +371,7 @@ void check_state(){
   }
   // When manual is chosen at the menu
   if(modo==MANUAL){
-    state_mode = float(map(analogRead(pot_pin), 0, 1023, 0, 2));
+    state_mode = float(map(analogRead(pot_pin), 0, 4095, 0, 2));
     if(state_mode==FADE){
       if(LAST_STATE!=PASSIVE){
         STATE=FADE;
@@ -398,7 +389,6 @@ void check_state(){
     }
     
   }else if(modo==AUTO){ // When Auto is chosen at the menu
-    odometry_calc();
     // uses a "sample" to diagnose the heath state of the patiante
     if(duration-clock->current_min()<=sample_ex){
       STATE=STAND_BY;

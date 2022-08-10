@@ -1,7 +1,8 @@
 #include "Encoder.hpp"
-#include "config.hpp"
 
 #include "H_bridge_controller.hpp"
+
+#include "config.hpp"
 Encoder *encoder;
 H_bridge_controller *Motor;
 
@@ -24,16 +25,18 @@ void setup() {
 
   Motor= new H_bridge_controller( r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
   Motor->init();
-  Motor->Set_L(0);
+  Motor->Set_L(80);
 
   last_t=millis();
   last_position=encoder->getPosition();
   }
    
 void loop() {
+  
+  Motor->Set_L(0);
   current_t=millis();
   delta_t = current_t-last_t;  
-  if(delta_t>10){
+  if(delta_t>500){
     current_position=encoder->getPosition();
     delta_position= current_position - last_position;
 

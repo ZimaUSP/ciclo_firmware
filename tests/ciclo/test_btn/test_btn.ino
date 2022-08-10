@@ -10,7 +10,7 @@ void setup() {
 }
 
 void loop() {
-  if(btn->getPress){
+  if(btn->getPress()){
     Serial.println("button pressed");
   }else{
     Serial.println("button not pressed");

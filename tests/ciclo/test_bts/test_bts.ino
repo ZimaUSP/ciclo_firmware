@@ -10,13 +10,10 @@ void setup() {
 }
 
 void loop() {
-  for(int i=0;i<1024;i++){
-      Motor->Set_R(i);
-      delay(10);
+  for(int i=0;i<255;i++){
+      Serial.println(i);
+      Motor->Set_L(i);
+      delay(100);
   }
 
-  for(int i=0; i<1024;i++){
-      Motor->Set_L(i);
-      delay(10);
-  }
 }

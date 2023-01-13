@@ -39,6 +39,10 @@
 
 //  Encoder
 
+#define a_pin 17 // White cable
+#define b_pin 16 // Green cable
+
+
 // Comum used
 #define Nominal_pulses 360
 #define perimeter_pulley 125.66 // in mm
@@ -49,13 +53,11 @@
 #define PWM_resolution_channel 8
 
 
-#define a_pin 25 // White cable
-#define b_pin 26 // Green cable
 
 
 // BTS
 #define MAX_PWM 50
-#define r_pin 18 // L Bts
+#define r_pin 23 // L Bts
 #define l_pin 5 // R Bts
 #define R_channel 0
 #define L_channel 1 
@@ -71,10 +73,10 @@
 #define passive_active 10
 
 //Potentiometer
-#define pot_pin 35
+#define pot_pin 15
 
 //Button
-#define btn_pin 13
+#define btn_pin 4 
 
 // Fade
 #define fade 50

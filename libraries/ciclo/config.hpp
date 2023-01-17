@@ -49,7 +49,7 @@
 #define pitch_gear 0.596 //PITCH GEAR IN METERS
 #define perimeter_gear  584.3 //in  milimeter
 #define Mode 1
-#define PWM_frequency_channel 40000
+#define PWM_frequency_channel 10000
 #define PWM_resolution_channel 8
 
 

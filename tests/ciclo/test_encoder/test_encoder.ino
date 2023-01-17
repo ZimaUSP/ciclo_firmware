@@ -1,9 +1,9 @@
 #include "Encoder.hpp"
 
 #include "H_bridge_controller.hpp"
-
 #include "config.hpp"
 Encoder *encoder;
+
 H_bridge_controller *Motor;
 
 unsigned long current_t;
@@ -17,10 +17,12 @@ float delta_position;
 float actual_vel;
 float actual_rpm;
 
-void setup() {     
-  Serial.begin (9600);
 
-  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,perimeter_pulley,Mode);
+
+void setup() {     
+  Serial.begin(9600);
+
+  encoder = new Encoder(17,16,0,360,125.66,1);
   encoder->init();
 
   Motor= new H_bridge_controller( r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
@@ -32,7 +34,7 @@ void setup() {
   }
    
 void loop() {
-  
+
   Motor->Set_L(0);
   current_t=millis();
   delta_t = current_t-last_t;  
@@ -46,6 +48,10 @@ void loop() {
     last_t=current_t;
     last_position=current_position;
     
+    Serial.println("rpm");
     Serial.println(actual_rpm); 
+    Serial.println("vel");
+    Serial.println(actual_vel); 
+
   }
   }

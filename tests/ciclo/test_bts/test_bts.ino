@@ -1,18 +1,18 @@
 
 #include "H_bridge_controller.hpp"
 #include "config.hpp"
-H_bridge_controller *Motor;
+H_bridge_controller *BTS;
 
 void setup() {
   Serial.begin(9600);
-  Motor= new H_bridge_controller( r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
-  Motor->init();
+  BTS = new H_bridge_controller(r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
+  BTS->init();
 }
 
 void loop() {
-  for(int i=0;i<255;i++){
+  for(int i=0;i<255*0.5;i++){
       Serial.println(i);
-      Motor->Set_L(i);
+      BTS->Set_L(i);
       delay(100);
   }
 

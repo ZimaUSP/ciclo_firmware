@@ -1,10 +1,10 @@
 #include "Encoder.hpp"
 
-#include "H_bridge_controller.hpp"
+//#include "H_bridge_controller.hpp"
 #include "config.hpp"
 Encoder *encoder;
 
-H_bridge_controller *Motor;
+//H_bridge_controller *Motor;
 
 unsigned long current_t;
 unsigned long last_t;
@@ -25,9 +25,9 @@ void setup() {
   encoder = new Encoder(17,16,0,360,125.66,1);
   encoder->init();
 
-  Motor= new H_bridge_controller( r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
-  Motor->init();
-  Motor->Set_L(80);
+  //Motor= new H_bridge_controller( r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
+  //Motor->init();
+  //Motor->Set_L(80);
 
   last_t=millis();
   last_position=encoder->getPosition();
@@ -35,9 +35,15 @@ void setup() {
    
 void loop() {
 
-  Motor->Set_L(0);
-  current_t=millis();
-  delta_t = current_t-last_t;  
+ // Motor->Set_L(0);
+  //current_t=millis();
+  //delta_t = current_t-last_t;  
+  Serial.print("pos: ");
+  Serial.println(encoder->getPosition()); 
+  Serial.print("pulses: ");
+  Serial.println(encoder->getPulses()); 
+  delay(5000);
+/*
   if(delta_t>500){
     current_position=encoder->getPosition();
     delta_position= current_position - last_position;
@@ -48,10 +54,13 @@ void loop() {
     last_t=current_t;
     last_position=current_position;
     
+   
+
+    
     Serial.println("rpm");
     Serial.println(actual_rpm); 
     Serial.println("vel");
     Serial.println(actual_vel); 
 
-  }
+  }*/
   }

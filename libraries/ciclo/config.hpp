@@ -58,7 +58,9 @@
 // BTS
 #define MAX_PWM 50
 #define r_pin 23 // L Bts
-#define l_pin 5 // R Bts
+#define l_pin 19 // R Bts
+#define r_is 18
+#define l_is 5
 #define R_channel 0
 #define L_channel 1 
 

@@ -10,10 +10,11 @@ void setup() {
 }
 
 void loop() {
-  for(int i=0;i<255*0.5;i++){
+  /*for(int i=0;i<255;i++){
       Serial.println(i);
       BTS->Set_L(i);
       delay(100);
   }
-
+*/
+BTS->Set_L(map(analogRead(pot_pin),0,4095,0,255));
 }

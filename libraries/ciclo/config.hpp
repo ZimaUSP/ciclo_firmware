@@ -44,28 +44,28 @@
 
 
 // Comum used
-#define Nominal_pulses 360
-#define perimeter_pulley 125.66 // in mm
-#define pitch_gear 0.596 //PITCH GEAR IN METERS
-#define perimeter_gear  584.3 //in  milimeter
+#define Nominal_pulses 360 // pulsos por volta no encoder
+#define perimeter_pulley 125.66 // raio da coroa do encoder in mm
+#define pitch_gear 0.596 //perimetro da coroa do pedal PITCH GEAR IN METERS
+#define perimeter_gear  584.3 // valor realculado impiricamente in  milimeter
 #define Mode 1
 #define PWM_frequency_channel 10000
 #define PWM_resolution_channel 8
+#define tolerance 5
 
 
 
 
 // BTS
-#define MAX_PWM 50
-#define r_pin 23 // L Bts
-#define l_pin 19 // R Bts
-#define r_is 18
-#define l_is 5
+#define MAX_PWM 255
+#define max_pwm_cte 0.7
+#define r_pin 23 
+#define l_pin 19 
 #define R_channel 0
 #define L_channel 1 
 
 // PID
-#define kp  5
+#define kp  10
 #define ki  0.01
 #define kd  0
 #define i_saturation 1000

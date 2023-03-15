@@ -25,8 +25,11 @@ PID::PID(double k_p,double k_i,double k_d,int i_saturation) {
 }
 
 double PID::computePID(double input,float setpoint,float tolerance) {
+  
+
   this->current_time= millis();                                              //get current time
   this->delta_time = (double)(this->current_time - this->previus_time);        //compute time elapsed from previous computation
+
 
   this->error = setpoint - input;                                      // determine error
   this->i_error +=  this->error *  this->delta_time;
@@ -46,7 +49,9 @@ double PID::computePID(double input,float setpoint,float tolerance) {
 
   this->previus_error = this->error;                                         //remember current error
   this->previus_time =  this->current_time;                                //remember current time
-
+  Serial.print(this->error);
+  Serial.print(" ");
+  Serial.println(out);
   return out;                                                 //have function return the PID output
 }
 

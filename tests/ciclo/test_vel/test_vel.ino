@@ -10,9 +10,11 @@ unsigned long current_t;
 unsigned long last_t;
 unsigned long delta_t;
 
-double current_position;
-double last_position;
-double delta_position;
+double current_pulses;
+double last_pulses;
+double delta_pulses;
+
+double delta_ciclos;
 
 int output;
 float goal_vel;
@@ -26,7 +28,7 @@ int count = 0;
 void setup() {     
   Serial.begin (9600);
 
-  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,perimeter_pulley,Mode);
+  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,125,Mode); // modificar lib do encoder e retirar posicao
   encoder->init();
 
   BTS = new H_bridge_controller(r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
@@ -36,46 +38,49 @@ void setup() {
   btn->init();
 
 
-  last_t=millis();
-  last_position=encoder->getPosition();
+  last_t=millis(); //t0
+  last_pulses=encoder->getPulses(); //p0
   }
    
 void loop() {
-    current_t=millis();
-    delta_t = current_t-last_t;
+    current_t=millis(); //t1
+    delta_t = current_t-last_t; // t1-t0
     while (btn->getPress()||analogRead(pot_pin)<100)
     {
       BTS->Set_L(0);
     }
     
-    if(delta_t>200){
-      current_position = encoder->getPosition();
-      delta_position = current_position - last_position;
-      actual_vel=(delta_position/delta_t);//()mm/ms -> meter/second
-      //actual_rpm=actual_vel*60/pitch_gear;//(dx/dt) RPM transform m/s -> m/min -> w=v/c
-      actual_rpm=actual_vel*60/0.095;
-      last_t = current_t;
-      last_position=current_position;
-      
-      count++;
-      if (current_position>10000 || current_position<-10000){ // zerar encoder para não dar overload
-        encoder->setPulses(0);
-        last_position=0;
-      }
-    }
-    
-    BTS->Set_L(MAX_PWM*0.5);
-    count++;
+    if(delta_t>sample_t){
+      current_pulses = encoder->getPulses(); //t1
+      delta_pulses = current_pulses - last_pulses;//t1-t0
+      Serial.print("delta pulses: ");
+      Serial.println(delta_pulses);
 
+      delta_ciclos = delta_pulses/pulses_per_rev;
+      Serial.print("delta ciclos: ");
+      Serial.println(delta_ciclos);
 
-   if (count>20) // printar depois de 20 ciclos só para nao printar a todo momento
-      {
-      Serial.println("\n"); 
-      Serial.print("vel: ");
-      Serial.println(actual_vel);
+      actual_rpm = delta_ciclos*60000/sample_t;
+
+      last_t=current_t;
+      last_pulses=current_pulses;
+
       Serial.print("rpm: ");
       Serial.println(actual_rpm);
-      Serial.println("\n"); 
-      count =0;
+
+      
+      if (current_pulses>10000 || current_pulses<-10000){ // zerar encoder para não 
+        encoder->setPulses(0);
+        last_pulses=0;
+
       }
+      
+    }
+    
+    BTS->Set_R(map(analogRead(pot_pin),0,4095,0,255));
+   
+
+      /*Serial.print("pwm: ");
+      Serial.println(map(analogRead(pot_pin),0,4095,0,255));*/
+      
 }

@@ -2,18 +2,22 @@
 #include "H_bridge_controller.hpp"
 #include "PID.hpp"
 #include "config.hpp"
+#include "Button.hpp"
 
 Encoder *encoder;
 H_bridge_controller *BTS;
+Button *btn;
 
 PID *PID_vel; 
 unsigned long current_t;
 unsigned long last_t;
 unsigned long delta_t;
 
-double current_position;
-double last_position;
-double delta_position;
+double current_pulses;
+double last_pulses;
+double delta_pulses;
+
+double delta_ciclos;
 
 int output;
 float goal_vel;
@@ -21,70 +25,74 @@ float goal_rpm;
 
 float actual_vel;
 float actual_rpm;
-int a,b,c,d,e;
 int count =0;
  
 void setup() {     
   Serial.begin (9600);
 
-  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,perimeter_pulley,Mode);
+  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,125,Mode);
   encoder->init();
 
   BTS = new H_bridge_controller(r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
   BTS->init();
 
   PID_vel = new PID(kp,ki,kd,i_saturation);
-
+ 
+  btn= new Button(btn_pin,3);
+ 
   last_t=millis();
-  last_position=encoder->getPosition();
+  last_pulses =encoder->getPulses();
   }
    
 void loop() {
     current_t=millis();
-    delta_t = current_t-last_t;
+    delta_t = current_t - last_t;
 
-    if(delta_t>2000){
-      current_position = encoder->getPosition();
-      delta_position = current_position - last_position;
-      actual_vel=(delta_position/2000);//meter/s
-      actual_rpm=actual_vel*60/pitch_gear;// RPM
+    while(analogRead(pot_pin)<100)
+    {
+      BTS->Set_L(0);
+    }
+    
+    if(delta_t>sample_t){
+      current_pulses = encoder->getPulses(); //t1
+      delta_pulses = current_pulses - last_pulses  ;//t1-t0
+
+      delta_ciclos = delta_pulses/pulses_per_rev;
+
+      actual_rpm = delta_ciclos*60000/sample_t;
+
       last_t=current_t;
-      last_position=current_position;
-
-      Serial.print("pos: ");
-      Serial.print(delta_position); 
-      Serial.print(",");
-      Serial.print("vel: ");
-      Serial.println(actual_vel);
+      last_pulses=current_pulses;
       
-      if (current_position>10000 || current_position<-10000){ // zerar encoder para não 
+      if (current_pulses>10000 || current_pulses<-10000){ // zerar encoder para não 
         encoder->setPulses(0);
-        last_position=0;
+        last_pulses=0;
+
       }
       
-    }
 
-    goal_rpm = -20; // rotações a cada 2000 milisegundos 
+    goal_rpm = 20; // rpm
 
     // PID_vel
 
     output = PID_vel->computePID(actual_rpm,goal_rpm,tolerance);
     
-    delay(5);
+    delay(1);
 
     // Setting direction of motion acording to output_x PID
     if (output < 0) {
         if (output < -MAX_PWM) {
           output = -MAX_PWM;
         }
-        BTS->Set_R(-output);
+        BTS->Set_L(-output);
         return;
       } else {
         if (output > MAX_PWM) {
           output = MAX_PWM;
         }
-        BTS->Set_L(output);
+        BTS->Set_R(output);
         return;
       }
 
   }
+}

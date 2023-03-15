@@ -16,5 +16,7 @@ void loop() {
       delay(100);
   }
 */
-BTS->Set_L(map(analogRead(pot_pin),0,4095,0,255));
+BTS->Set_R(map(analogRead(pot_pin),0,4095,0,255)); //Set_l = mov resistido , Set_R = mov assistido
+Serial.println(map(analogRead(pot_pin),0,4095,0,255));
+
 }

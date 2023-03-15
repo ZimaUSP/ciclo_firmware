@@ -10,7 +10,8 @@
  * @copyright MIT License
  */
 
-
+ // Para o modo assistido Usar pwm em R
+ // Para o modo resistido Usar pwm em L
 
 
 // State
@@ -39,15 +40,14 @@
 
 //  Encoder
 
-#define a_pin 17 // White cable
-#define b_pin 16 // Green cable
+#define a_pin 16 // Green cable
+#define b_pin 17 // White cable
 
 
 // Comum used
 #define Nominal_pulses 360 // pulsos por volta no encoder
-#define perimeter_pulley 125.66 // raio da coroa do encoder in mm
-#define pitch_gear 0.596 //perimetro da coroa do pedal PITCH GEAR IN METERS
-#define perimeter_gear  584.3 // valor realculado impiricamente in  milimeter
+#define pulses_per_rev 1650 // pulsos por volta do ciclo
+
 #define Mode 1
 #define PWM_frequency_channel 10000
 #define PWM_resolution_channel 8
@@ -65,10 +65,10 @@
 #define L_channel 1 
 
 // PID
-#define kp  10
-#define ki  0.01
+#define kp  2
+#define ki  0.007
 #define kd  0
-#define i_saturation 1000
+#define i_saturation 10000
 
 //Rele
 #define stand_by_active 9
@@ -92,5 +92,5 @@
 #define LIMITE_DEBILIDADO 5
 #define LIMITE_SAUDAVEL 10
 
-#define sample_t 50 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
+#define sample_t 10 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
 #endif 

@@ -21,7 +21,7 @@ double delta_ciclos;
 
 int output;
 float goal_vel;
-float goal_rpm;
+long goal_rpm;
 
 float actual_vel;
 float actual_rpm;
@@ -36,7 +36,7 @@ void setup() {
   BTS = new H_bridge_controller(r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
   BTS->init();
 
-  PID_vel = new PID(kp,ki,kd,i_saturation);
+  PID_vel = new PID(1.4,0.008,kd,i_saturation);
  
   btn= new Button(btn_pin,3);
  
@@ -71,8 +71,8 @@ void loop() {
       }
       
 
-    goal_rpm = 20; // rpm
-
+    goal_rpm = map(analogRead(pot_pin), 0, 4095,0,50); // rpm
+   Serial.println(goal_rpm);
     // PID_vel
 
     output = PID_vel->computePID(actual_rpm,goal_rpm,tolerance);

@@ -49,9 +49,6 @@ double PID::computePID(double input,float setpoint,float tolerance) {
 
   this->previus_error = this->error;                                         //remember current error
   this->previus_time =  this->current_time;                                //remember current time
-  Serial.print(this->error);
-  Serial.print(" ");
-  Serial.println(out);
   return out;                                                 //have function return the PID output
 }
 

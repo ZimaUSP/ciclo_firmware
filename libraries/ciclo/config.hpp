@@ -65,8 +65,8 @@
 #define L_channel 1 
 
 // PID
-#define kp  2
-#define ki  0.007
+#define kp  1.4
+#define ki  0.008
 #define kd  0
 #define i_saturation 10000
 

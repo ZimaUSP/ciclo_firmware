@@ -16,10 +16,9 @@
  * Class Methods Bodies Definitions
  *****************************************/
 
-Encoder::Encoder(int A_pin,int B_pin, byte which,int PulsesPerRev,int PitchPerRev,int mode):whichISR_(which) {
+Encoder::Encoder(int A_pin,int B_pin, byte which,int PulsesPerRev,int mode):whichISR_(which) {
     this-> A_pin = A_pin;
     this-> B_pin = B_pin;
-    this->PitchPerRev=PitchPerRev;
     this->mode=mode;
     if(mode==1){
       this->PulsesPerRev=PulsesPerRev;
@@ -106,10 +105,6 @@ void Encoder::init() {
 
 int Encoder::getPulses() {
  return this->pulses;
-}
-
-float Encoder::getPosition() {
- return this->pulses*this->PitchPerRev/this->PulsesPerRev;
 }
 
 void Encoder::setPulses(int num) {

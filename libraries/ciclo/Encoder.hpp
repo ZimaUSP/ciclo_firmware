@@ -20,7 +20,6 @@ class Encoder {
         int A_pin;
         int B_pin;
         int PulsesPerRev;
-        int PitchPerRev;
         int pulses=0;
         int mode;
         //nickgammon ideia
@@ -47,7 +46,7 @@ class Encoder {
          * @param A_pin A phase pin 
          * @param B_pin B phase pin 
          */
-        Encoder(int A_pin,int B_pin, const byte which,int PulsesPerRev,int PitchPerRev,int mode);
+        Encoder(int A_pin,int B_pin, const byte which,int PulsesPerRev,int mode);
 
         void init();
     

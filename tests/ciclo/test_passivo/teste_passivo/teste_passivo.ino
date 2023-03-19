@@ -30,7 +30,7 @@ int count =0;
 void setup() {     
   Serial.begin (9600);
 
-  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,125,Mode);
+  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,Mode);
   encoder->init();
 
   BTS = new H_bridge_controller(r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);

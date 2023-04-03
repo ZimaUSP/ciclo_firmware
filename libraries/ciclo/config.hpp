@@ -16,7 +16,7 @@
 
 // State
 #define STAND_BY 0
-#define ACTIVE_PLUS 1
+#define NORMAL 1
 #define FADE 2
 #define PASSIVE 3
 #define MODE 4
@@ -61,8 +61,7 @@
 #define max_pwm_cte 0.7
 #define r_pin 23 
 #define l_pin 19 
-#define R_channel 0
-#define L_channel 1 
+
 
 // PID
 #define kp  1.4

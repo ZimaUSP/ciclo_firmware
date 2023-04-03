@@ -4,11 +4,17 @@
 #include "config.hpp"
 #include "Button.hpp"
 
-Encoder *encoder;
-H_bridge_controller *BTS;
-Button *btn;
+// Constantes
+const int MAX_ENCODER_VALUE = 10000;
+const int MAX_PWM = 255;
 
-PID *PID_vel; 
+// Objetos
+Encoder* encoder;
+H_bridge_controller* motorController;
+Button* btn;
+PID* PID_vel;
+
+// Variáveis globais
 unsigned long current_t;
 unsigned long last_t;
 unsigned long delta_t;
@@ -16,83 +22,85 @@ unsigned long delta_t;
 double current_pulses;
 double last_pulses;
 double delta_pulses;
-
 double delta_ciclos;
 
 int output;
 float goal_vel;
 long goal_rpm;
-
 float actual_vel;
 float actual_rpm;
-int count =0;
- 
-void setup() {     
-  Serial.begin (9600);
+int count = 0;
 
-  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,Mode);
+// Funções
+float mapPotValueToRPM(int potValue);
+void resetEncoderIfExceedsLimit();
+void controlMotorSpeedWithPID();
+
+void setup() {
+  Serial.begin(9600);
+
+  // Inicialização dos objetos
+  encoder = new Encoder(a_pin, b_pin, 0, Nominal_pulses, Mode);
   encoder->init();
 
-  BTS = new H_bridge_controller(r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
-  BTS->init();
+  motorController = new H_bridge_controller(r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
+  motorController->init();
 
-  PID_vel = new PID(1.4,0.008,kd,i_saturation);
+  PID_vel = new PID(1.4, 0.008, kd, i_saturation);
  
-  btn= new Button(btn_pin,3);
- 
-  last_t=millis();
-  last_pulses =encoder->getPulses();
-  }
-   
+  btn = new Button(btn_pin, 3);
+
+  // Inicialização das variáveis
+  last_t = millis();
+  last_pulses = encoder->getPulses();
+}
+
 void loop() {
-    current_t=millis();
-    delta_t = current_t - last_t;
+  current_t = millis();
+  delta_t = current_t - last_t;
 
-    while(analogRead(pot_pin)<100)
-    {
-      BTS->Set_L(0);
-    }
+  // Parar o motor se o potenciômetro estiver abaixo do valor mínimo
+  while (analogRead(pot_pin) < 100) {
+    motorController->Set_L(0);
+  }
+
+  if (delta_t > sample_t) {
+    current_pulses = encoder->getPulses();
+    delta_pulses = current_pulses - last_pulses;
+    delta_ciclos = delta_pulses / pulses_per_rev;
+    actual_rpm = delta_ciclos * 60000 / sample_t;
+
+    resetEncoderIfExceedsLimit();
     
-    if(delta_t>sample_t){
-      current_pulses = encoder->getPulses(); //t1
-      delta_pulses = current_pulses - last_pulses  ;//t1-t0
+    goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
 
-      delta_ciclos = delta_pulses/pulses_per_rev;
+    controlMotorSpeedWithPID();
 
-      actual_rpm = delta_ciclos*60000/sample_t;
+    last_t = current_t;
+    last_pulses = current_pulses;
+  }
+}
 
-      last_t=current_t;
-      last_pulses=current_pulses;
-      
-      if (current_pulses>10000 || current_pulses<-10000){ // zerar encoder para não 
-        encoder->setPulses(0);
-        last_pulses=0;
+float mapPotValueToRPM(int potValue) {
+  return map(potValue, 0, 4095, 0, 50); // rpm
+}
 
-      }
-      
+void resetEncoderIfExceedsLimit() {
+  if (current_pulses > MAX_ENCODER_VALUE || current_pulses < -MAX_ENCODER_VALUE) {
+    Serial.println("Encoder reset");
+    encoder->setPulses(0);
+    last_pulses = 0;
+  }
+}
 
-    goal_rpm = map(analogRead(pot_pin), 0, 4095,0,50); // rpm
-   Serial.println(goal_rpm);
-    // PID_vel
+void controlMotorSpeedWithPID() {
+  output = PID_vel->computePID(actual_rpm, goal_rpm, tolerance);
 
-    output = PID_vel->computePID(actual_rpm,goal_rpm,tolerance);
-    
-    delay(1);
-
-    // Setting direction of motion acording to output_x PID
-    if (output < 0) {
-        if (output < -MAX_PWM) {
-          output = -MAX_PWM;
-        }
-        BTS->Set_L(-output);
-        return;
-      } else {
-        if (output > MAX_PWM) {
-          output = MAX_PWM;
-        }
-        BTS->Set_R(output);
-        return;
-      }
-
+  if (output < 0) {
+    output = max(output, -MAX_PWM);
+    motorController->Set_L(-output);
+  } else {
+    output = min(output, MAX_PWM);
+    motorController->Set_R(output);
   }
 }

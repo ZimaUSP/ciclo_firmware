@@ -36,26 +36,34 @@ void setup(){
 
   lcd.init();                      // initialize the lcd 
   last_t=millis();
-  STATE = STAND_BY;
-
-  
+  STATE = STAND_BY;  
  
 }
 
-void loop(){
-    if (STATE == STAND_BY )
-    {
-        while (!btn->getPress()){
-            pageSelec = map(analogRead(pot_pin),0,4095,0,2);
-            select_function();
-            lcd.noBacklight();
-        }
-        print_mode();
-
+void select_function(){
+    
+    if(pageSelec == 0){
+        lcd.print("Escolha o modo ");
+        lcd.setCursor(0,1);
+        lcd.print("Modo: Normal   ");
+        lcd.setCursor(0,0);
+        STATE = NORMAL;
     }
-    
-    
-}
+    else if(pageSelec == 1){
+        lcd.print("Escolha o modo ");
+        lcd.setCursor(0,1);
+        lcd.print("Modo: Passive   ");
+        lcd.setCursor(0,0);
+        STATE = PASSIVE;
+    }
+    else if(pageSelec == 2){
+        lcd.print("Escolha o modo ");
+        lcd.setCursor(0,1);
+        lcd.print("Modo: Fade   ");
+        lcd.setCursor(0,0);
+        STATE = FADE;
+    }
+  }
 
 void print_mode(){
     lcd.setCursor(0,0);
@@ -80,35 +88,21 @@ void print_mode(){
         lcd.print("Fade         ");
         lcd.setCursor(0,1);
     }
-    }
+}
 
-    
+void loop(){
+    if (STATE == STAND_BY )
+    {
+        while (!btn->getPress()){
+            pageSelec = map(analogRead(pot_pin),0,4095,0,2);
+            select_function();
+            lcd.noBacklight();
+        }
+        print_mode();
 
-void select_function(){
-    
-    if(pageSelec == 0){
-        lcd.print("Escolha o modo ");
-        lcd.setCursor(0,1);
-        lcd.print("Modo: Normal   ");
-        lcd.setCursor(0,0);
-        STATE = NORMAL;
-    }
-    else if(pageSelec == 1){
-        lcd.print("Escolha o modo ");
-        lcd.setCursor(0,1);
-        lcd.print("Modo: Passive   ");
-        lcd.setCursor(0,0);
-        STATE = PASSIVE;
-    }
-    else if(pageSelec == 2){
-        lcd.print("Escolha o modo ");
-        lcd.setCursor(0,1);
-        lcd.print("Modo: Fade   ");
-        lcd.setCursor(0,0);
+    }        
+}
 
-        STATE = FADE;
-    }
-  }
   /*
   while(!btn->getPress()){
     lcd.setCursor(0,2);

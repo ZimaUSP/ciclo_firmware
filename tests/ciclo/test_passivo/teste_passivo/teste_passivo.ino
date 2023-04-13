@@ -6,7 +6,6 @@
 
 // Constantes
 const int MAX_ENCODER_VALUE = 10000;
-const int MAX_PWM = 255;
 
 // Objetos
 Encoder* encoder;
@@ -48,7 +47,7 @@ void setup() {
 
   PID_vel = new PID(1.4, 0.008, kd, i_saturation);
  
-  btn = new Button(btn_pin, 3);
+  btn = new Button(btn_pin, 2);
 
   // Inicialização das variáveis
   last_t = millis();

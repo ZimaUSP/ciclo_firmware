@@ -47,13 +47,16 @@
 // Comum used
 #define Nominal_pulses 360 // pulsos por volta no encoder
 #define pulses_per_rev 1650 // pulsos por volta do ciclo
-
+#define MAX_ENCODER_VALUE 10000
 #define Mode 1
 #define PWM_frequency_channel 10000
 #define PWM_resolution_channel 8
 #define tolerance 5
 
+//Channel
 
+#define R_channel 1
+#define L_channel 2
 
 
 // BTS

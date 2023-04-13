@@ -4,7 +4,6 @@
 #include <LiquidCrystal_I2C.h>
 #include "Timer.hpp"
 #include "Button.hpp"
-#include "Timer.hpp"
 
 int pageSelec;
 int t_Duration;
@@ -21,11 +20,7 @@ Button *btn;
 
 Timer *LCD_timer;
 
-
- 
 // Program variable
-
-
 
 unsigned long current_t;
 unsigned long last_t;
@@ -35,11 +30,8 @@ unsigned long delta_t;
 void setup(){
   Serial.begin (9600);
 
-
-
   btn = new Button(btn_pin,2);
   btn->init();  
-
   lcd.init();                      // initialize the lcd 
   last_t=millis();
 
@@ -52,7 +44,8 @@ void setup(){
 }
 
 void loop(){
-    if (STATE == STAND_BY )
+    switch(STATE) {
+        case STAND_BY :
     {
         while (!btn->getPress()){
             pageSelec = map(analogRead(pot_pin),0,4095,0,2);
@@ -60,10 +53,11 @@ void loop(){
             lcd.noBacklight();
         }
         print_mode();
-        delay(500);
+        delay(1000);
         t_Duration = duration();
         lcd.clear();
         LCD_timer->init(t_Duration);
+    }
     }
     
     lcd.setCursor(0,0);
@@ -76,22 +70,24 @@ void loop(){
     
 }
 
+
 void print_mode(){
     lcd.setCursor(0,0);
+    switch(STATE) {    
+        case NORMAL:
     
-    if (STATE == NORMAL)
-    {
         lcd.print("Selecionado:  ");
         lcd.setCursor(0,1);
         lcd.print("Modo Normal   ");
         lcd.setCursor(0,1);
+        return;
 
-    }else if (STATE == PASSIVE)
-    {
+        case PASSIVE:
         lcd.print("Selecionado:  ");
         lcd.setCursor(0,1);
         lcd.print("Modo Passivo  ");
         lcd.setCursor(0,1);
+        return;
 
     }else if(STATE==FADE){
         lcd.print("Selecionado:  ");

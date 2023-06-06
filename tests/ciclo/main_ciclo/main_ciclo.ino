@@ -36,7 +36,7 @@ double last_pulses;
 double delta_pulses;
 double delta_ciclos;
 float actual_rpm;
-long goal_rpm;
+int goal_rpm;
 int output;
 char STATE = MODE;
 int pageSelec;
@@ -45,7 +45,7 @@ int pageSelec;
 //******FUNCTIONS******//
 
 // Get frequecy of pot (incluir na classe do potenciometro)
-float mapPotValueToRPM(int potValue) {
+int mapPotValueToRPM(int potValue) {
   return map(potValue, 0, 4095, 0, 50); // rpm
 }
 
@@ -85,13 +85,10 @@ void passivo() {
   if (delta_t > sample_t) {
     current_pulses = encoder->getPulses();
     delta_pulses = current_pulses - last_pulses;
-    delta_ciclos = delta_pulses / pulses_per_rev;
-    actual_rpm = delta_ciclos * 60000 / sample_t;
+    actual_rpm = delta_pulses *1.01;
+
 
     resetEncoderIfExceedsLimit();
-    
-    goal_rpm = goalRPM(); 
-
     controlMotorSpeedWithPID();
 
     last_t = current_t;
@@ -113,6 +110,7 @@ void selectFunction(){
         lcd.setCursor(0,1);
         lcd.print("Modo: Passive   ");
         lcd.setCursor(0,0);
+        Serial.println("selected passivo");
         STATE = PASSIVE;
     }
     else if(pageSelec == 2){
@@ -160,7 +158,7 @@ int duration(){
     lcd.print("              ");
     while (!btn->getPress())
     {
-        t_Duration = map(analogRead(pot_pin),0,4095,0,59);        
+        t_Duration = map(analogRead(pot_pin),0,4095,0,10);        
         lcd.setCursor(0,0); // MAX(15,1) linha, coluna
         lcd.print("Duration: ");
         sprintf(t,"%02d",t_Duration);
@@ -192,9 +190,17 @@ void printFrequency(){
 
 // Get frequency (Implementar como Vetor quando criar a Classe)
 int goalRPM(){
-    goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
+  Serial.println("enter goal rpm");
+  Serial.println(btn->getPress());
+  goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
+  printFrequency();
+  Serial.println(goal_rpm);
+    
     return goal_rpm;
 }
+
+
+
 
 //******MAIN******//
 
@@ -229,33 +235,41 @@ void setup() {
 
 void loop(){
 
-
-    switch (STATE)
-    {
+    Serial.println("loop");
+    switch (STATE){
     case PASSIVE:
-      while (LCD_timer->current_min() != 0 && LCD_timer->current_sec() != 0)
-      {
+      Serial.println("passivo");
+      while (LCD_timer->current_min() != 0 && LCD_timer->current_sec() != 0){
+        Serial.println('entrou while');
         passivo();
+        Serial.println('saiu passivo');
         printTime();
-        printFrequency();
+        Serial.println('saiu printtime');
         STATE = STAND_BY;
         motorController->Set_L(0);
+      
       }
       
-     
       return;
     
     case STAND_BY:
+      Serial.println("standby");
       while (!btn->getPress()){
-            pageSelec = map(analogRead(pot_pin),0,4095,0,2);
-            selectFunction();
-            lcd.noBacklight();
-        }
-        printMode();
-        delay(1000);
-        t_Duration = duration();
-        lcd.clear();
-        LCD_timer->init(t_Duration);
+          pageSelec = map(analogRead(pot_pin),0,4095,0,2);
+          selectFunction();
+          lcd.noBacklight();
+      }
+      printMode();
+      delay(1000);
+      while (!btn->getPress()) {
+        goalRPM();
+      }
+      delay(1000);
+      t_Duration = duration();
+      Serial.println("exit duration");
+      lcd.clear();
+      LCD_timer->init(t_Duration);
+        
       return;
     }
 

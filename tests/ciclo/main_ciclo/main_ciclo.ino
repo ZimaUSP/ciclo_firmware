@@ -192,14 +192,13 @@ void printFrequency(){
 // Get frequency (Implementar como Vetor quando criar a Classe)
 int goalRPM(){
   //Serial.println("enter goal rpm");
-  //Serial.println(btn->getPress());
-  while (!btn->getPress()) {
-    goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
-    printFrequency();
+  //Serial.println(btn->getPress());  
+  goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
+  printFrequency();
   //Serial.println(goal_rpm);
     
     return goal_rpm;
-}
+
 }
 
 // Verification 
@@ -274,7 +273,7 @@ void loop(){
     switch (STATE){
     case PASSIVE:
       Serial.println("passivo");
-      while (LCD_timer->current_min() != 0 && LCD_timer->current_sec() != 0){
+      while (LCD_timer->current_min() > 0 || LCD_timer->current_sec() > 0){
         Serial.println('entrou while');
         passivo();
         Serial.println('saiu passivo');
@@ -296,7 +295,9 @@ void loop(){
       }
       printMode();
       delay(1000);
-      goal_rpm = goalRPM(); 
+      while (!btn->getPress()) {
+        goal_rpm = goalRPM();
+      }     
       delay(1000);
       t_Duration = duration();
       Serial.println("exit duration");

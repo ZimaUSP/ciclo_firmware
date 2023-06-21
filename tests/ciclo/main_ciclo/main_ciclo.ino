@@ -37,6 +37,7 @@ double delta_pulses;
 double delta_ciclos;
 float actual_rpm;
 int goal_rpm;
+int verif;
 int output;
 char STATE = MODE;
 int pageSelec;
@@ -190,15 +191,49 @@ void printFrequency(){
 
 // Get frequency (Implementar como Vetor quando criar a Classe)
 int goalRPM(){
-  Serial.println("enter goal rpm");
-  Serial.println(btn->getPress());
-  goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
-  printFrequency();
-  Serial.println(goal_rpm);
+  //Serial.println("enter goal rpm");
+  //Serial.println(btn->getPress());
+  while (!btn->getPress()) {
+    goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
+    printFrequency();
+  //Serial.println(goal_rpm);
     
     return goal_rpm;
 }
+}
 
+// Verification 
+
+int verification(){
+    Serial.println("verification");
+    lcd.clear();
+    while (!btn->getPress()){
+      Serial.println("verificar");
+      verif = map(analogRead(pot_pin),0,4095,0,2);
+      lcd.setCursor(0,0);
+      lcd.print("Freq: ");
+      sprintf(t,"%02d",goal_rpm);
+      lcd.print(t);
+      lcd.print("|");
+      lcd.print("Time:");
+      sprintf(t,"%02d",t_Duration);
+      lcd.print(t);
+      lcd.setCursor(0,1);   
+      if (verif  < 1){       
+        lcd.print("Nao            ");
+        lcd.setCursor(0,1);
+        lcd.noBacklight();
+      }
+      else{ 
+        lcd.print("Sim            ");
+        lcd.setCursor(0,1);
+        lcd.noBacklight();
+      }
+    }
+    lcd.clear();
+    return verif;
+    
+}
 
 
 
@@ -261,16 +296,28 @@ void loop(){
       }
       printMode();
       delay(1000);
-      while (!btn->getPress()) {
-        goalRPM();
-      }
+      goal_rpm = goalRPM(); 
       delay(1000);
       t_Duration = duration();
       Serial.println("exit duration");
+      delay(1000);
       lcd.clear();
-      LCD_timer->init(t_Duration);
-        
-      return;
+      verif = verification();      
+      Serial.println(STATE);
+      switch(verif){
+      case 1:
+        Serial.println("verif 1");
+        STATE = PASSIVE;
+        LCD_timer->init(t_Duration);
+        return;
+        delay(1000);
+      case 0:
+        Serial.println("verif 0");
+        STATE = STAND_BY;
+        delay(1000);
+        return;
+
+      }
     }
 
     

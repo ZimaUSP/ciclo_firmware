@@ -72,6 +72,11 @@ void controlMotorSpeedWithPID() {
   }
 }
 
+// Turns it off and on to reset the program
+
+void reset(){
+  ESP.restart();
+}
 // Implemetation passive Mode (Criar Classe passivo para implementar esses controle e evitar de ter muita coisa na main)
 void passivo() {
   
@@ -111,7 +116,6 @@ void selectFunction(){
         lcd.setCursor(0,1);
         lcd.print("Modo: Passive   ");
         lcd.setCursor(0,0);
-        Serial.println("selected passivo");
         STATE = PASSIVE;
     }
     else if(pageSelec == 2){
@@ -193,13 +197,15 @@ void printFrequency(){
 int goalRPM(){
   //Serial.println("enter goal rpm");
   //Serial.println(btn->getPress());
-  while (!btn->getPress()) {
-    goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
-    printFrequency();
+  //Serial.println('ok_1');
+  //while (!btn->getPress()) {
+  goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
+  Serial.println('ok_2');
+  printFrequency();
   //Serial.println(goal_rpm);
     
     return goal_rpm;
-}
+
 }
 
 // Verification 
@@ -274,17 +280,22 @@ void loop(){
     switch (STATE){
     case PASSIVE:
       Serial.println("passivo");
-      while (LCD_timer->current_min() != 0 && LCD_timer->current_sec() != 0){
+      while (LCD_timer->current_min() != 0 | LCD_timer->current_sec() != 0){
         Serial.println('entrou while');
         passivo();
         Serial.println('saiu passivo');
         printTime();
         Serial.println('saiu printtime');
-        STATE = STAND_BY;
-        motorController->Set_L(0);
-      
       }
-      
+      motorController->Set_L(0);
+      STATE = STAND_BY;
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("FIM");
+      delay(2000);
+      reset();
+      Serial.println("nao resetou");
+    
       return;
     
     case STAND_BY:
@@ -296,7 +307,9 @@ void loop(){
       }
       printMode();
       delay(1000);
+      while (!btn->getPress()) {
       goal_rpm = goalRPM(); 
+      }
       delay(1000);
       t_Duration = duration();
       Serial.println("exit duration");

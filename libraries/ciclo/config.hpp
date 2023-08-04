@@ -82,6 +82,9 @@
 //Button
 #define btn_pin 4 
 
+//Enable
+#define enable_pin 33
+
 // Fade
 #define fade 50
 

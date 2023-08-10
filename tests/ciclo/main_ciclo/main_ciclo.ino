@@ -104,26 +104,19 @@ void passivo() {
 
 // Select funcition
 void selectFunction(){
-    if(pageSelec == 0){
+    if(pageSelec==0){
         lcd.print("Escolha o modo ");
         lcd.setCursor(0,1);
         lcd.print("Modo: Normal   ");
         lcd.setCursor(0,0);
         STATE = NORMAL;
     }
-    else if(pageSelec == 1){
+    else if(pageSelec== 1){
         lcd.print("Escolha o modo ");
         lcd.setCursor(0,1);
         lcd.print("Modo: Passive   ");
         lcd.setCursor(0,0);
         STATE = PASSIVE;
-    }
-    else if(pageSelec == 2){
-        lcd.print("Escolha o modo ");
-        lcd.setCursor(0,1);
-        lcd.print("Modo: Fade   ");
-        lcd.setCursor(0,0);
-        STATE = FADE;
     }
   }
 
@@ -201,6 +194,7 @@ int goalRPM(){
     goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
     printFrequency();
   //Serial.println(goal_rpm);
+  }
     
     return goal_rpm;
 
@@ -299,7 +293,7 @@ void loop(){
     case STAND_BY:
       Serial.println("standby");
       while (!btn->getPress()){
-          pageSelec = map(analogRead(pot_pin),0,4095,0,2);
+          pageSelec = map(analogRead(pot_pin),0,4095,0,1);
           selectFunction();
           lcd.noBacklight();
       }

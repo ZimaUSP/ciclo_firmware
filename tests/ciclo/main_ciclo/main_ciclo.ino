@@ -79,6 +79,7 @@ void reset(){
 }
 // Implemetation passive Mode (Criar Classe passivo para implementar esses controle e evitar de ter muita coisa na main)
 void passivo() {
+  Serial.println(t_Duration);
   LCD_timer->init(t_Duration);
   while (LCD_timer->current_min() != 0 && LCD_timer->current_sec() != 0){
     current_t = millis();
@@ -219,7 +220,7 @@ int verification(){
         lcd.setCursor(0,1);
         lcd.noBacklight();
       }
-      else{ 
+      if (verif >= 1){ 
         lcd.print("Sim            ");
         lcd.setCursor(0,1);
         lcd.noBacklight();
@@ -275,11 +276,11 @@ void loop(){
       verif = verification();   
       delay(500);   
       Serial.println(STATE);
-      if (verif == 1){
+      if (verif >= 1){
           Serial.println("sim");  
           delay(500);
       }
-      if (verif == 0){
+      if (verif < 1){
           Serial.println("nao");
           STATE = STAND_BY;
           delay(500);

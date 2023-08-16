@@ -41,6 +41,7 @@ int verif;
 int output;
 char STATE = MODE;
 double pageSelec;
+double revolutions;
 
 
 //******FUNCTIONS******//
@@ -79,9 +80,8 @@ void reset(){
 }
 // Implemetation passive Mode (Criar Classe passivo para implementar esses controle e evitar de ter muita coisa na main)
 void passivo() {
-  Serial.println(t_Duration);
-  LCD_timer->init(t_Duration);
-  while (LCD_timer->current_min() != 0 && LCD_timer->current_sec() != 0){
+  while ((LCD_timer->current_min() != 0) || (LCD_timer->current_min() == 0 && LCD_timer->current_sec() >= 0) ){
+    Serial.println('entrou');
     current_t = millis();
     delta_t = current_t - last_t;
 
@@ -101,6 +101,29 @@ void passivo() {
     printTime();
 }
 }
+
+// Implemetation normal Mode (Criar Classe normal para implementar esses controle e evitar de ter muita coisa na main)
+
+void normal(){
+  current_t=millis();
+  delta_t = current_t-last_t;  
+  //Serial.print("pulses: ");
+  //Serial.println(encoder->getPulses()); 
+
+  if (delta_t > sample_t) {
+    current_pulses = encoder->getPulses();
+    delta_pulses = current_pulses - last_pulses;
+    revolutions = delta_pulses/pulses_per_rev;
+    actual_rpm = revolutions*(60000/delta_t);
+    Serial.println(actual_rpm);
+    printFrequency_normal();
+
+    last_t = current_t;
+    last_pulses = current_pulses;
+
+    }
+}
+
 // Select funcition
 void selectFunction(){
     if(pageSelec < 1){
@@ -183,6 +206,14 @@ void printFrequency(){
   lcd.print("Frequency: ");
   sprintf(t,"%02d",goal_rpm);
   lcd.print(t);
+}
+
+void printFrequency_normal(){
+  lcd.setCursor(0,1);
+  lcd.print("Frequency: ");
+  sprintf(t,"%02d",actual_rpm);
+  lcd.print(t);
+  delay(100);
 }
 
 // Get frequency (Implementar como Vetor quando criar a Classe)
@@ -310,6 +341,12 @@ void loop(){
 
     case NORMAL:
       Serial.println("normal");
+      delay(100);
+      while (!btn->getPress()){
+        normal();
+      }
+      delay(500);
+      Serial.println("FIM");
       reset();
       return;  
     }

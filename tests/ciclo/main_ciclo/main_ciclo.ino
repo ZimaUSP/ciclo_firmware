@@ -40,7 +40,7 @@ int goal_rpm;
 int verif;
 int output;
 char STATE = MODE;
-int pageSelec;
+double pageSelec;
 
 
 //******FUNCTIONS******//
@@ -79,39 +79,37 @@ void reset(){
 }
 // Implemetation passive Mode (Criar Classe passivo para implementar esses controle e evitar de ter muita coisa na main)
 void passivo() {
-  
-  current_t = millis();
-  delta_t = current_t - last_t;
+  LCD_timer->init(t_Duration);
+  while (LCD_timer->current_min() != 0 && LCD_timer->current_sec() != 0){
+    current_t = millis();
+    delta_t = current_t - last_t;
 
-  // Parar o motor se o potenciômetro estiver abaixo do valor mínimo
-  while (analogRead(pot_pin) < 100) {
-    motorController->Set_L(0);
-  }
-
-  if (delta_t > sample_t) {
-    current_pulses = encoder->getPulses();
-    delta_pulses = current_pulses - last_pulses;
-    actual_rpm = delta_pulses *1.01;
+    if (delta_t > sample_t) {
+      current_pulses = encoder->getPulses();
+      delta_pulses = current_pulses - last_pulses;
+      actual_rpm = delta_pulses *1.01;
 
 
-    resetEncoderIfExceedsLimit();
-    controlMotorSpeedWithPID();
+      resetEncoderIfExceedsLimit();
+      controlMotorSpeedWithPID();
 
-    last_t = current_t;
-    last_pulses = current_pulses;
-  }
+      last_t = current_t;
+      last_pulses = current_pulses;
+
+    }
+    printTime();
 }
-
+}
 // Select funcition
 void selectFunction(){
-    if(pageSelec==0){
+    if(pageSelec < 1){
         lcd.print("Escolha o modo ");
         lcd.setCursor(0,1);
         lcd.print("Modo: Normal   ");
         lcd.setCursor(0,0);
         STATE = NORMAL;
     }
-    else if(pageSelec== 1){
+    else if(pageSelec >= 1){
         lcd.print("Escolha o modo ");
         lcd.setCursor(0,1);
         lcd.print("Modo: Passive   ");
@@ -206,7 +204,6 @@ int verification(){
     Serial.println("verification");
     lcd.clear();
     while (!btn->getPress()){
-      Serial.println("verificar");
       verif = map(analogRead(pot_pin),0,4095,0,2);
       lcd.setCursor(0,0);
       lcd.print("Freq: ");
@@ -268,59 +265,52 @@ void setup() {
 
 void loop(){
 
-    Serial.println("loop");
     switch (STATE){
     case PASSIVE:
-      Serial.println("passivo");
-      while (LCD_timer->current_min() != 0 && LCD_timer->current_sec() != 0){
-        Serial.println('entrou while');
-        passivo();
-        Serial.println('saiu passivo');
-        printTime();
-        Serial.println('saiu printtime');
+      goal_rpm = goalRPM(); 
+      delay(500);
+      t_Duration = duration();
+      delay(500);
+      lcd.clear();
+      verif = verification();   
+      delay(500);   
+      Serial.println(STATE);
+      if (verif == 1){
+          Serial.println("sim");  
+          delay(500);
       }
+      if (verif == 0){
+          Serial.println("nao");
+          STATE = STAND_BY;
+          delay(500);
+          return;     
+      }
+      Serial.println("passivo");
+      passivo();
       motorController->Set_L(0);
       STATE = STAND_BY;
       lcd.clear();
       lcd.setCursor(0,0);
       lcd.print("FIM");
       delay(2000);
-      reset();
-      Serial.println("nao resetou");
-    
+      reset();    
       return;
     
     case STAND_BY:
       Serial.println("standby");
       while (!btn->getPress()){
-          pageSelec = map(analogRead(pot_pin),0,4095,0,1);
+          pageSelec = map(analogRead(pot_pin),0,4095,0,2);
           selectFunction();
           lcd.noBacklight();
       }
       printMode();
-      delay(1000);
-      goal_rpm = goalRPM(); 
-      delay(1000);
-      t_Duration = duration();
-      Serial.println("exit duration");
-      delay(1000);
-      lcd.clear();
-      verif = verification();      
-      Serial.println(STATE);
-      switch(verif){
-      case 1:
-        Serial.println("verif 1");
-        STATE = PASSIVE;
-        LCD_timer->init(t_Duration);
-        return;
-        delay(1000);
-      case 0:
-        Serial.println("verif 0");
-        STATE = STAND_BY;
-        delay(1000);
-        return;
+      delay(500);
+      return;
 
-      }
+    case NORMAL:
+      Serial.println("normal");
+      reset();
+      return;  
     }
 
     

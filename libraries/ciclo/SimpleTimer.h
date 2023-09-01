@@ -1,5 +1,6 @@
 //
 // Created by kiryanenko on 05.10.19.s
+// reference https://github.com/kiryanenko/SimpleTimer/tree/master
 //
 
 #ifndef LED_LIGHTING_SIMPLETIMER_H

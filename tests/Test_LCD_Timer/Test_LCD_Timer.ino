@@ -4,6 +4,7 @@
 #include <LiquidCrystal_I2C.h>
 #include "Timer.hpp"
 #include "Button.hpp"
+#include <SimpleTimer.h>
 
 int pageSelec;
 int t_Duration;
@@ -18,7 +19,7 @@ LiquidCrystal_I2C lcd(0x27,16,2); // LCD lib
 
 Button *btn;
 
-Timer *LCD_timer;
+SimpleTimer LCD_timer;
 
 // Program variable
 
@@ -34,19 +35,13 @@ void setup(){
   btn->init();  
   lcd.init();                      // initialize the lcd 
   last_t=millis();
-
-  LCD_timer= new Timer();
-
   STATE = STAND_BY;
-
-  
- 
 }
 
 void loop(){
     switch(STATE) {
         case STAND_BY :
-    {
+        {
         while (!btn->getPress()){
             pageSelec = map(analogRead(pot_pin),0,4095,0,2);
             select_function();
@@ -56,16 +51,23 @@ void loop(){
         delay(1000);
         t_Duration = duration();
         lcd.clear();
-        LCD_timer->init(t_Duration);
-    }
+        LCD_timer.setInterval(t_Duration*60000);
+        LCD_timer.reset();
+        }
     }
     
     lcd.setCursor(0,0);
     lcd.print("Duration: ");
-    sprintf(t,"%02d",LCD_timer->current_min());
+    Serial.print("minutos: ");
+    Serial.println(LCD_timer.getMinutes());
+    sprintf(t,"%02d",LCD_timer.getMinutes());
     lcd.print(t);
     lcd.print(":");
-    sprintf(t,"%02d",LCD_timer->current_sec());
+    Serial.print("segundos: ");
+
+    Serial.println(LCD_timer.getSeconds());
+
+    sprintf(t,"%02d",LCD_timer.getSeconds());
     lcd.print(t);
     
 }
@@ -89,11 +91,12 @@ void print_mode(){
         lcd.setCursor(0,1);
         return;
 
-    }else if(STATE==FADE){
+        case FADE: 
         lcd.print("Selecionado:  ");
         lcd.setCursor(0,1);
         lcd.print("Modo Fade     ");
         lcd.setCursor(0,1);
+        return;
     }
     }
 
@@ -102,7 +105,7 @@ void select_function(){
     if(pageSelec == 0){
         lcd.print("Escolha o modo ");
         lcd.setCursor(0,1);
-        lcd.print("Modo: Normal   ");
+        lcd.print("Modo: Normal   ");   
         lcd.setCursor(0,0);
         STATE = NORMAL;
     }
@@ -128,15 +131,13 @@ void select_function(){
     
     lcd.setCursor(0,0);
     lcd.print("              ");
-    while (!btn->getPress())
-    {
+    while (!btn->getPress()){
         t_Duration = map(analogRead(pot_pin),0,4095,0,59);        
         lcd.setCursor(0,0); // MAX(15,1) linha, coluna
         lcd.print("Duration: ");
         sprintf(t,"%02d",t_Duration);
         lcd.print(t);
-        lcd.print(":00  ");
-       
+        lcd.print(":00  ");  
     }
      return t_Duration;
     

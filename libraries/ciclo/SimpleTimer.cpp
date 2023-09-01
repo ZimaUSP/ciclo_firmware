@@ -32,7 +32,7 @@ double SimpleTimer::getRestTime(){
 
 int SimpleTimer::getSeconds(){
     int t = getRestTime()*0.001;
-    int sec = t%60  ;
+    int sec = t%60;
     return (sec);
 
 }

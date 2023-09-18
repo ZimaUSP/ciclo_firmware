@@ -39,13 +39,11 @@ void setup(){
 }
 
 void loop(){
-    switch(STATE) {
-        case STAND_BY :
-        {
+    while (LCD_timer.isReady()){
+        lcd.clear();
         while (!btn->getPress()){
             pageSelec = map(analogRead(pot_pin),0,4095,0,2);
             select_function();
-            lcd.noBacklight();
         }
         print_mode();
         delay(1000);
@@ -53,20 +51,16 @@ void loop(){
         lcd.clear();
         LCD_timer.setInterval(t_Duration*60000);
         LCD_timer.reset();
-        }
+        
     }
     
     lcd.setCursor(0,0);
     lcd.print("Duration: ");
-    Serial.print("minutos: ");
-    Serial.println(LCD_timer.getMinutes());
+  
     sprintf(t,"%02d",LCD_timer.getMinutes());
     lcd.print(t);
     lcd.print(":");
-    Serial.print("segundos: ");
-
-    Serial.println(LCD_timer.getSeconds());
-
+   
     sprintf(t,"%02d",LCD_timer.getSeconds());
     lcd.print(t);
     

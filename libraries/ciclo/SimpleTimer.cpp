@@ -9,7 +9,7 @@ SimpleTimer::SimpleTimer(uint64_t interval) : _interval(interval) {
 }
 
 bool SimpleTimer::isReady() {
-    return _start + _interval <= millis();
+    return _start + _interval <= millis(); // true se o tempo já terminou
 }
 
 void SimpleTimer::setInterval(uint64_t interval) {

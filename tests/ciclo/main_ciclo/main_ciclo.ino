@@ -5,14 +5,15 @@
 #include "Button.hpp"
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
-#include "Timer.hpp"
+#include <SimpleTimer.h>
 
 
 
 //******CONSTRUCTOR******// 
 
 LiquidCrystal_I2C lcd(0x27,16,2); // LCD lib
-Timer *LCD_timer;
+SimpleTimer lcd_timer;
+SimpleTimer rpmTime;
 
 
 //******OBJECTS******// 
@@ -80,12 +81,15 @@ void reset(){
 }
 // Implemetation passive Mode (Criar Classe passivo para implementar esses controle e evitar de ter muita coisa na main)
 void passivo() {
-  while ((LCD_timer->current_min() != 0) || (LCD_timer->current_min() == 0 && LCD_timer->current_sec() >= 0) ){
+  Serial.println('entrou');
+  lcd_timer.reset();
+  rpmTime.reset();
+  while (!lcd_timer.isReady()){ //tempo nao acaba
     Serial.println('entrou');
-    current_t = millis();
-    delta_t = current_t - last_t;
+    
+    
 
-    if (delta_t > sample_t) {
+    if (rpmTime.getTimePassed() > sample_t) {
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
       actual_rpm = delta_pulses *1.01;
@@ -94,9 +98,8 @@ void passivo() {
       resetEncoderIfExceedsLimit();
       controlMotorSpeedWithPID();
 
-      last_t = current_t;
+      rpmTime.reset();
       last_pulses = current_pulses;
-
     }
     printTime();
 }
@@ -105,23 +108,24 @@ void passivo() {
 // Implemetation normal Mode (Criar Classe normal para implementar esses controle e evitar de ter muita coisa na main)
 
 void normal(){
-  current_t=millis();
-  delta_t = current_t-last_t;  
-  //Serial.print("pulses: ");
-  //Serial.println(encoder->getPulses()); 
-
-  if (delta_t > sample_t) {
-    current_pulses = encoder->getPulses();
-    delta_pulses = current_pulses - last_pulses;
-    revolutions = delta_pulses/pulses_per_rev;
-    actual_rpm = revolutions*(60000/delta_t);
-    Serial.println(actual_rpm);
-    printFrequency_normal();
-
-    last_t = current_t;
-    last_pulses = current_pulses;
-
+  lcd_timer.reset();
+  rpmTime.reset();
+  while (!lcd_timer.isReady()){ //tempo nao acaba
+    
+    if (rpmTime.getTimePassed() > 400) {
+      current_pulses = encoder->getPulses();
+      delta_pulses = current_pulses - last_pulses;
+      actual_rpm = delta_pulses/400;
+      resetEncoderIfExceedsLimit();
+      rpmTime.reset();
+      last_pulses = current_pulses;
     }
+    lcd.setCursor(0,1);
+    lcd.print("Frequency: ");
+    sprintf(t,"%02d",actual_rpm);
+    lcd.print(t);
+    printTime();
+}
 }
 
 // Select funcition
@@ -194,10 +198,10 @@ int duration(){
 void printTime(){
    lcd.setCursor(0,0);
     lcd.print("Duration: ");
-    sprintf(t,"%02d",LCD_timer->current_min());
+    sprintf(t,"%02d",lcd_timer.getMinutes());
     lcd.print(t);
     lcd.print(":");
-    sprintf(t,"%02d",LCD_timer->current_sec());
+    sprintf(t,"%02d",lcd_timer.getSeconds());
     lcd.print(t);
 }
 
@@ -208,13 +212,6 @@ void printFrequency(){
   lcd.print(t);
 }
 
-void printFrequency_normal(){
-  lcd.setCursor(0,1);
-  lcd.print("Frequency: ");
-  sprintf(t,"%02d",actual_rpm);
-  lcd.print(t);
-  delay(100);
-}
 
 // Get frequency (Implementar como Vetor quando criar a Classe)
 int goalRPM(){
@@ -289,7 +286,6 @@ void setup() {
   lcd.init();                      // initialize the lcd 
   last_t=millis();
 
-  LCD_timer= new Timer();
 
   STATE = STAND_BY;
 
@@ -301,7 +297,7 @@ void loop(){
     case PASSIVE:
       goal_rpm = goalRPM(); 
       delay(500);
-      t_Duration = duration();
+      lcd_timer.setInterval(duration()*60000);
       delay(500);
       lcd.clear();
       verif = verification();   
@@ -342,9 +338,13 @@ void loop(){
     case NORMAL:
       Serial.println("normal");
       delay(100);
-      while (!btn->getPress()){
-        normal();
-      }
+      motorController->Set_L(0);
+      lcd_timer.setInterval(duration()*60000);
+      delay(500);
+      lcd.clear();
+      
+      normal();
+      
       delay(500);
       Serial.println("FIM");
       reset();

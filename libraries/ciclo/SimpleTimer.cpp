@@ -40,7 +40,9 @@ int SimpleTimer::getSeconds(){
 int SimpleTimer::getMinutes(){
     double t = getRestTime()*0.001;
     return (int(t/60));
-
-
-    
 }
+
+int SimpleTimer::getInterval(){
+    return _interval;
+}
+

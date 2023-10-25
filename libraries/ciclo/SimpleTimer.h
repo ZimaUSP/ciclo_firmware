@@ -30,7 +30,8 @@ public:
     double getRestTime();
     int getSeconds();
     int getMinutes();
-
+    int getInterval();
+    
 };
 
 

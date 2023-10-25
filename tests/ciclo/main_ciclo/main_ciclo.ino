@@ -3,20 +3,20 @@
 #include "PID.hpp"
 #include "config.hpp"
 #include "Button.hpp"
-#include <Wire.h> 
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <SimpleTimer.h>
 
 
 
-//******CONSTRUCTOR******// 
+//******CONSTRUCTOR******//
 
-LiquidCrystal_I2C lcd(0x27,16,2); // LCD lib
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // LCD lib
 SimpleTimer lcd_timer;
 SimpleTimer rpmTime;
 
 
-//******OBJECTS******// 
+//******OBJECTS******//
 Encoder* encoder;
 H_bridge_controller* motorController;
 Button* btn;
@@ -49,13 +49,12 @@ double revolutions;
 
 // Get frequecy of pot (incluir na classe do potenciometro)
 int mapPotValueToRPM(int potValue) {
-  return map(potValue, 0, 4095, 0, 50); // rpm
+  return map(potValue, 0, 4095, 0, 50);  // rpm
 }
 
 // Control to evit Overflow
 void resetEncoderIfExceedsLimit() {
   if (current_pulses > MAX_ENCODER_VALUE || current_pulses < -MAX_ENCODER_VALUE) {
-    Serial.println("Encoder reset");
     encoder->setPulses(0);
     last_pulses = 0;
   }
@@ -76,23 +75,25 @@ void controlMotorSpeedWithPID() {
 
 // Turns it off and on to reset the program
 
-void reset(){
+void reset() {
   ESP.restart();
 }
 // Implemetation passive Mode (Criar Classe passivo para implementar esses controle e evitar de ter muita coisa na main)
 void passivo() {
-  Serial.println('entrou');
   lcd_timer.reset();
   rpmTime.reset();
-  while (!lcd_timer.isReady()){ //tempo nao acaba
-    Serial.println('entrou');
-    
-    
+  while (!lcd_timer.isReady()) {  //tempo nao acaba
+
+
 
     if (rpmTime.getTimePassed() > sample_t) {
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
-      actual_rpm = delta_pulses *1.01;
+      actual_rpm = delta_pulses * 1.01;
+
+      Serial.print(actual_rpm);
+      Serial.print(", ");
+      Serial.println(lcd_timer.getTimePassed());
 
 
       resetEncoderIfExceedsLimit();
@@ -102,161 +103,150 @@ void passivo() {
       last_pulses = current_pulses;
     }
     printTime();
-}
+  }
 }
 
 // Implemetation normal Mode (Criar Classe normal para implementar esses controle e evitar de ter muita coisa na main)
 
-void normal(){
+void normal() {
   lcd_timer.reset();
   rpmTime.reset();
-  while (!lcd_timer.isReady()){ //tempo nao acaba
-    
+  while (!lcd_timer.isReady()) {  //tempo nao acaba
+
     if (rpmTime.getTimePassed() > 400) {
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
-      actual_rpm = delta_pulses/400;
+      actual_rpm = delta_pulses / 400;
       resetEncoderIfExceedsLimit();
       rpmTime.reset();
       last_pulses = current_pulses;
     }
-    lcd.setCursor(0,1);
+    lcd.setCursor(0, 1);
     lcd.print("Frequency: ");
-    sprintf(t,"%02d",actual_rpm);
+    sprintf(t, "%02d", actual_rpm);
     lcd.print(t);
     printTime();
-}
+  }
 }
 
 // Select funcition
-void selectFunction(){
-    if(pageSelec < 1){
-        lcd.print("Escolha o modo ");
-        lcd.setCursor(0,1);
-        lcd.print("Modo: Normal   ");
-        lcd.setCursor(0,0);
-        STATE = NORMAL;
-    }
-    else if(pageSelec >= 1){
-        lcd.print("Escolha o modo ");
-        lcd.setCursor(0,1);
-        lcd.print("Modo: Passive   ");
-        lcd.setCursor(0,0);
-        STATE = PASSIVE;
-    }
+void selectFunction() {
+  if (pageSelec < 1) {
+    lcd.print("Escolha o modo ");
+    lcd.setCursor(0, 1);
+    lcd.print("Modo: Normal   ");
+    lcd.setCursor(0, 0);
+    STATE = NORMAL;
+  } else if (pageSelec >= 1) {
+    lcd.print("Escolha o modo ");
+    lcd.setCursor(0, 1);
+    lcd.print("Modo: Passive   ");
+    lcd.setCursor(0, 0);
+    STATE = PASSIVE;
   }
+}
 
 // Print in LCD the MODE select
-void printMode(){
-    lcd.setCursor(0,0);
-    switch (STATE)
-    {
+void printMode() {
+  lcd.setCursor(0, 0);
+  switch (STATE) {
     case NORMAL:
-        lcd.print("Selecionado:  ");
-        lcd.setCursor(0,1);
-        lcd.print("Modo Normal   ");
-        lcd.setCursor(0,1);
-      return;
-    
-    case PASSIVE:
-        lcd.print("Selecionado:  ");
-        lcd.setCursor(0,1);
-        lcd.print("Modo Passivo  ");
-        lcd.setCursor(0,1);
-      return;
-    case FADE:
-        lcd.print("Selecionado:  ");
-        lcd.setCursor(0,1);
-        lcd.print("Modo Fade     ");
-        lcd.setCursor(0,1);
+      lcd.print("Selecionado:  ");
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Normal   ");
+      lcd.setCursor(0, 1);
       return;
 
-    }
-    }
+    case PASSIVE:
+      lcd.print("Selecionado:  ");
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Passivo  ");
+      lcd.setCursor(0, 1);
+      return;
+    case FADE:
+      lcd.print("Selecionado:  ");
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Fade     ");
+      lcd.setCursor(0, 1);
+      return;
+  }
+}
 
 
 // Select Duration
-int duration(){
-    int t_Duration;
-    lcd.setCursor(0,0);
-    lcd.print("              ");
-    while (!btn->getPress())
-    {
-        t_Duration = map(analogRead(pot_pin),0,4095,0,10);        
-        lcd.setCursor(0,0); // MAX(15,1) linha, coluna
-        lcd.print("Duration: ");
-        sprintf(t,"%02d",t_Duration);
-        lcd.print(t);
-        lcd.print(":00  ");
-    }
-     return t_Duration;    
-     
-  }
-
-// Print stopwatch in LCD 
-
-void printTime(){
-   lcd.setCursor(0,0);
+int duration() {
+  int t_Duration;
+  lcd.setCursor(0, 0);
+  lcd.print("              ");
+  while (!btn->getPress()) {
+    t_Duration = map(analogRead(pot_pin), 0, 4095, 0, 10);
+    lcd.setCursor(0, 0);  // MAX(15,1) linha, coluna
     lcd.print("Duration: ");
-    sprintf(t,"%02d",lcd_timer.getMinutes());
+    sprintf(t, "%02d", t_Duration);
     lcd.print(t);
-    lcd.print(":");
-    sprintf(t,"%02d",lcd_timer.getSeconds());
-    lcd.print(t);
+    lcd.print(":00  ");
+  }
+  return t_Duration;
 }
 
-void printFrequency(){
-  lcd.setCursor(0,1);
+// Print stopwatch in LCD
+
+void printTime() {
+  lcd.setCursor(0, 0);
+  lcd.print("Duration: ");
+  sprintf(t, "%02d", lcd_timer.getMinutes());
+  lcd.print(t);
+  lcd.print(":");
+  sprintf(t, "%02d", lcd_timer.getSeconds());
+  lcd.print(t);
+}
+
+void printFrequency() {
+  lcd.setCursor(0, 1);
   lcd.print("Frequency: ");
-  sprintf(t,"%02d",goal_rpm);
+  sprintf(t, "%02d", goal_rpm);
   lcd.print(t);
 }
 
 
 // Get frequency (Implementar como Vetor quando criar a Classe)
-int goalRPM(){
-  //Serial.println("enter goal rpm");
-  //Serial.println(btn->getPress());
+int goalRPM() {
   while (!btn->getPress()) {
     goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
     printFrequency();
-  //Serial.println(goal_rpm);
   }
-    
-    return goal_rpm;
 
+  return goal_rpm;
 }
 
-// Verification 
+// Verification
 
-int verification(){
-    Serial.println("verification");
-    lcd.clear();
-    while (!btn->getPress()){
-      verif = map(analogRead(pot_pin),0,4095,0,2);
-      lcd.setCursor(0,0);
-      lcd.print("Freq: ");
-      sprintf(t,"%02d",goal_rpm);
-      lcd.print(t);
-      lcd.print("|");
-      lcd.print("Time:");
-      sprintf(t,"%02d",t_Duration);
-      lcd.print(t);
-      lcd.setCursor(0,1);   
-      if (verif  < 1){       
-        lcd.print("Nao            ");
-        lcd.setCursor(0,1);
-        lcd.noBacklight();
-      }
-      if (verif >= 1){ 
-        lcd.print("Sim            ");
-        lcd.setCursor(0,1);
-        lcd.noBacklight();
-      }
+int verification() {
+  lcd.clear();
+  while (!btn->getPress()) {
+    verif = map(analogRead(pot_pin), 0, 4095, 0, 2);
+    lcd.setCursor(0, 0);
+    lcd.print("Freq: ");
+    sprintf(t, "%02d", goal_rpm);
+    lcd.print(t);
+    lcd.print("|");
+    lcd.print("Time:");
+    sprintf(t, "%02d", lcd_timer.getInterval() / 60000);
+    lcd.print(t);
+    lcd.setCursor(0, 1);
+    if (verif < 1) {
+      lcd.print("Nao            ");
+      lcd.setCursor(0, 1);
+      lcd.noBacklight();
     }
-    lcd.clear();
-    return verif;
-    
+    if (verif >= 1) {
+      lcd.print("Sim            ");
+      lcd.setCursor(0, 1);
+      lcd.noBacklight();
+    }
+  }
+  lcd.clear();
+  return verif;
 }
 
 
@@ -280,76 +270,66 @@ void setup() {
   last_t = millis();
   last_pulses = encoder->getPulses();
 
-  btn = new Button(btn_pin,2);
-  btn->init();  
+  btn = new Button(btn_pin, 2);
+  btn->init();
 
-  lcd.init();                      // initialize the lcd 
-  last_t=millis();
+  lcd.init();  // initialize the lcd
+  last_t = millis();
 
 
   STATE = STAND_BY;
-
 }
 
-void loop(){
+void loop() {
 
-    switch (STATE){
+  switch (STATE) {
     case PASSIVE:
-      goal_rpm = goalRPM(); 
+      goal_rpm = goalRPM();
       delay(500);
-      lcd_timer.setInterval(duration()*60000);
+      lcd_timer.setInterval(duration() * 60000);
       delay(500);
       lcd.clear();
-      verif = verification();   
-      delay(500);   
-      Serial.println(STATE);
-      if (verif >= 1){
-          Serial.println("sim");  
-          delay(500);
+      verif = verification();
+      delay(500);
+      if (verif >= 1) {
+        delay(500);
       }
-      if (verif < 1){
-          Serial.println("nao");
-          STATE = STAND_BY;
-          delay(500);
-          return;     
+      if (verif < 1) {
+        STATE = STAND_BY;
+        delay(500);
+        return;
       }
-      Serial.println("passivo");
       passivo();
       motorController->Set_L(0);
       STATE = STAND_BY;
       lcd.clear();
-      lcd.setCursor(0,0);
+      lcd.setCursor(0, 0);
       lcd.print("FIM");
       delay(2000);
-      reset();    
+      reset();
       return;
-    
+
     case STAND_BY:
-      Serial.println("standby");
-      while (!btn->getPress()){
-          pageSelec = map(analogRead(pot_pin),0,4095,0,2);
-          selectFunction();
-          lcd.noBacklight();
+      while (!btn->getPress()) {
+        pageSelec = map(analogRead(pot_pin), 0, 4095, 0, 2);
+        selectFunction();
+        lcd.noBacklight();
       }
       printMode();
       delay(500);
       return;
 
     case NORMAL:
-      Serial.println("normal");
       delay(100);
       motorController->Set_L(0);
-      lcd_timer.setInterval(duration()*60000);
+      lcd_timer.setInterval(duration() * 60000);
       delay(500);
       lcd.clear();
-      
-      normal();
-      
-      delay(500);
-      Serial.println("FIM");
-      reset();
-      return;  
-    }
 
-    
+      normal();
+
+      delay(500);
+      reset();
+      return;
+  }
 }

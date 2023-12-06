@@ -9,6 +9,7 @@
 int pageSelec;
 int t_Duration;
 char t[2];
+bool joystick_check;
 
 // State modes  
 char STATE = MODE;
@@ -42,8 +43,30 @@ void loop(){
     while (LCD_timer.isReady()){
         lcd.clear();
         while (!btn->getPress()){
-            pageSelec = map(analogRead(pot_pin),0,4095,0,2);
-            select_function();
+            if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+            {
+                joystick_check=true;
+            }
+            if (analogRead(pot_pin) == 0 && joystick_check)
+            {
+                if(pageSelec !=0 ){
+                    pageSelec--;
+                    joystick_check = false;
+                }
+
+            }
+            else if (analogRead(pot_pin) == 4095 && joystick_check)
+            {
+                if(pageSelec != 2){
+                    pageSelec++;
+                    joystick_check = false;
+                }
+            }
+        
+        select_function();
+        lcd.noBacklight();
+        Serial.println(analogRead(pot_pin));
+        Serial.println(joystick_check);
         }
         print_mode();
         delay(1000);
@@ -115,7 +138,6 @@ void select_function(){
         lcd.setCursor(0,1);
         lcd.print("Modo: Fade   ");
         lcd.setCursor(0,0);
-
         STATE = FADE;
     }
   }
@@ -123,21 +145,37 @@ void select_function(){
   int duration(){
     int t_Duration;
     
+    t_Duration=0;
     lcd.setCursor(0,0);
     lcd.print("              ");
     while (!btn->getPress()){
-        t_Duration = map(analogRead(pot_pin),0,4095,0,59);        
+         if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+            {
+                joystick_check=true;
+            }
+            if (analogRead(pot_pin) == 0 && joystick_check)
+            {
+                if(t_Duration !=0 ){
+                    t_Duration--;
+                    joystick_check = false;
+                }
+            }
+            else if (analogRead(pot_pin) == 4095 && joystick_check)
+            {
+                if(t_Duration != 10){
+                    t_Duration++;
+                    joystick_check = false;
+                }
+            }        
         lcd.setCursor(0,0); // MAX(15,1) linha, coluna
         lcd.print("Duration: ");
         sprintf(t,"%02d",t_Duration);
         lcd.print(t);
         lcd.print(":00  ");  
     }
-     return t_Duration;
-    
+    return t_Duration;
 
-    
-     
+
   }
   /*
   sprintf(t,"%02d",clock->current_min());

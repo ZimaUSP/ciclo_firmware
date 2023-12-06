@@ -43,6 +43,7 @@ int output;
 char STATE = MODE;
 double pageSelec;
 double revolutions;
+bool joystick_check;
 
 
 //******FUNCTIONS******//
@@ -131,19 +132,20 @@ void normal() {
 
 // Select funcition
 void selectFunction() {
-  if (pageSelec < 1) {
+  if (pageSelec ==0 ) {
     lcd.print("Escolha o modo ");
     lcd.setCursor(0, 1);
     lcd.print("Modo: Normal   ");
     lcd.setCursor(0, 0);
     STATE = NORMAL;
-  } else if (pageSelec >= 1) {
+  } else if (pageSelec == 1) {
     lcd.print("Escolha o modo ");
     lcd.setCursor(0, 1);
     lcd.print("Modo: Passive   ");
     lcd.setCursor(0, 0);
     STATE = PASSIVE;
   }
+  
 }
 
 // Print in LCD the MODE select
@@ -178,8 +180,25 @@ int duration() {
   int t_Duration;
   lcd.setCursor(0, 0);
   lcd.print("              ");
-  while (!btn->getPress()) {
-    t_Duration = map(analogRead(pot_pin), 0, 4095, 0, 10);
+  while (!btn->getPress()){
+         if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+            {
+                joystick_check=true;
+            }
+            if (analogRead(pot_pin) == 0 && joystick_check)
+            {
+                if(t_Duration !=0 ){
+                    t_Duration--;
+                    joystick_check = false;
+                }
+            }
+            else if (analogRead(pot_pin) == 4095 && joystick_check)
+            {
+                if(t_Duration != 10){
+                    t_Duration++;
+                    joystick_check = false;
+                }
+            }   
     lcd.setCursor(0, 0);  // MAX(15,1) linha, coluna
     lcd.print("Duration: ");
     sprintf(t, "%02d", t_Duration);
@@ -211,20 +230,45 @@ void printFrequency() {
 
 // Get frequency (Implementar como Vetor quando criar a Classe)
 int goalRPM() {
-  while (!btn->getPress()) {
-    goal_rpm = mapPotValueToRPM(analogRead(pot_pin));
-    printFrequency();
-  }
 
+   while (!btn->getPress()){
+         if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+            {
+                joystick_check=true;
+            }
+            if (analogRead(pot_pin) == 0 && joystick_check)
+            {
+                if(goal_rpm !=0 ){
+                    goal_rpm--;
+                    joystick_check = false;
+                }
+            }
+            else if (analogRead(pot_pin) == 4095 && joystick_check)
+            {
+                if(goal_rpm != 50){
+                    goal_rpm++;
+                    joystick_check = false;
+                }
+            }   
+    printFrequency();
+   }
   return goal_rpm;
 }
+
 
 // Verification
 
 int verification() {
   lcd.clear();
   while (!btn->getPress()) {
-    verif = map(analogRead(pot_pin), 0, 4095, 0, 2);
+    if (analogRead(pot_pin)==0)
+    {
+      verif = 0;
+    }
+    if (analogRead(pot_pin)==4095)
+    {
+      verif = 1;
+    }
     lcd.setCursor(0, 0);
     lcd.print("Freq: ");
     sprintf(t, "%02d", goal_rpm);
@@ -234,12 +278,12 @@ int verification() {
     sprintf(t, "%02d", lcd_timer.getInterval() / 60000);
     lcd.print(t);
     lcd.setCursor(0, 1);
-    if (verif < 1) {
+    if (verif == 0) {
       lcd.print("Nao            ");
       lcd.setCursor(0, 1);
       lcd.noBacklight();
     }
-    if (verif >= 1) {
+    if (verif == 1) {
       lcd.print("Sim            ");
       lcd.setCursor(0, 1);
       lcd.noBacklight();
@@ -310,8 +354,28 @@ void loop() {
       return;
 
     case STAND_BY:
-      while (!btn->getPress()) {
-        pageSelec = map(analogRead(pot_pin), 0, 4095, 0, 2);
+       while (!btn->getPress()){
+          if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+          {
+            joystick_check=true;
+          }
+          
+        if (analogRead(pot_pin) == 0 && joystick_check)
+        {
+            if(pageSelec !=0 ){
+                pageSelec--;
+                joystick_check = false;
+            }
+
+        }
+        else if (analogRead(pot_pin) == 4095 && joystick_check)
+        {
+            if(pageSelec != 1){
+                pageSelec++;
+                joystick_check = false;
+            }
+        }
+        
         selectFunction();
         lcd.noBacklight();
       }

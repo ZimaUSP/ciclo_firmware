@@ -5,7 +5,7 @@
 #include "Timer.hpp"
 #include "Button.hpp"
 
-int pageSelec;
+int pageSelec = 0;
 
 // State modes  
 char STATE = MODE;
@@ -24,6 +24,8 @@ Button *btn;
 unsigned long current_t;
 unsigned long last_t;
 unsigned long delta_t;
+bool joystick_check;
+unsigned int joystick_state;
 
 
 void setup(){
@@ -94,9 +96,34 @@ void loop(){
     if (STATE == STAND_BY )
     {
         while (!btn->getPress()){
-            pageSelec = map(analogRead(pot_pin),0,4095,0,2);
-            select_function();
-            lcd.noBacklight();
+          if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+          {
+            joystick_check=true;
+          }
+          
+          
+        if (analogRead(pot_pin) == 0 && joystick_check)
+        {
+            if(pageSelec !=0 ){
+                pageSelec--;
+                joystick_check = false;
+            }
+
+        }
+        else if (analogRead(pot_pin) == 4095 && joystick_check)
+        {
+            if(pageSelec != 3){
+                pageSelec++;
+                joystick_check = false;
+            }
+        }
+        
+        select_function();
+        lcd.noBacklight();
+        Serial.println(analogRead(pot_pin));
+        Serial.println(joystick_check);
+        
+            
         }
         print_mode();
 

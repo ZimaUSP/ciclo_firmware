@@ -15,18 +15,18 @@ void setup() {
     delay(10);
   }
   offset = offset/10000;
-  
-  
-
+  acs=0;
 }
+
 void loop() {
   pot = analogRead(pot_pin);
-  pwm = map(pot,0,4095,0,255);
-  acs = map(analogRead(acs_pin),0,4095,0,330);
+  pwm = map(pot,0,4095,0,200); //50 100 130 160 190
+  Motor->Set_R(pwm);
+  
   //Serial.print("cru:");
   //Serial.println(acs);
-  acs = -0.0443*acs*acs*acs/1000000+0.1494*acs*acs/10000+0.9748*acs/100+0.0674-0.07;   //valor lido em V de 0 até 3.3 calibrado
-  Motor->Set_R(pwm);
+  //acs = -0.0443*acs*acs*acs/1000000+0.1494*acs*acs/10000+0.9748*acs/100+0.0674-0.07;   //valor lido em V de 0 até 3.3 calibrado
+  
   //Serial.print("Voltagem:");
   //Serial.println((acs/100));
   //Serial.print("corrente:");
@@ -37,16 +37,26 @@ void loop() {
   //Serial.print("calibrado:");
   //Serial.println(acs);
 
-  for(int i=0; i<1000;i++){
-    acs = map(analogRead(acs_pin),0,4095,0,330);
-    avg_acs += -0.0443*acs*acs*acs/1000000+0.1494*acs*acs/10000+0.9748*acs/100+0.0674-0.07;
+  for(int i=0; i<10000;i++){
+      acs += map(analogRead(acs_pin),2000,2500,0,330);   
+     
   }
-  avg_acs = avg_acs/1000;
-  //Serial.println(avg_acs);
-  Serial.print("corrente:");
-  Serial.println(14.6*(avg_acs)-24); 
   
-  delay(10);
+  Serial.print("Voltagem saida sensor: ");
+  Serial.println((acs/10000)); 
+  Serial.print("bits: ");
+  Serial.println(analogRead(acs_pin));
+  Serial.print("PWM: ");
+  Serial.println(pwm);
+  acs =0;/*
+  Serial.print("Voltagem saida sensor: ");
+  Serial.println((analogRead(acs_pin)); 
+  Serial.print("PWM: ");
+  Serial.println(pwm);*/
+  
+  //Serial.println(avg_acs);
+  
+  
 }
 
  

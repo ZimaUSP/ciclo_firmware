@@ -2,6 +2,7 @@
 #include "config.hpp"
 H_bridge_controller *Motor;
 double acs,med,avg_acs;
+bool joystick_check;
 
 int offset, pot, pwm,sum,i;
 
@@ -16,11 +17,29 @@ void setup() {
   }
   offset = offset/10000;
   acs=0;
+  pwm = 0;
 }
 
 void loop() {
-  pot = analogRead(pot_pin);
-  pwm = map(pot,0,4095,0,200); //50 100 130 160 190
+  Serial.println(pwm);
+  //pot = analogRead(pot_pin);
+  //pwm = map(pot,0,4095,0,200); //50 100 130 160 190
+
+      if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+        {
+          joystick_check=true;
+        }
+        
+      if (analogRead(pot_pin) == 0 && joystick_check && pwm >= 5)
+      {
+          pwm = pwm - 5;
+          Serial.println(pwm);
+      }
+      else if (analogRead(pot_pin) == 4095 && joystick_check && pwm <= 200)
+      {
+          pwm = pwm + 5;
+          Serial.println(pwm);
+      }
   Motor->Set_R(pwm);
   
   //Serial.print("cru:");
@@ -38,16 +57,15 @@ void loop() {
   //Serial.println(acs);
 
   for(int i=0; i<10000;i++){
-      acs += map(analogRead(acs_pin),2000,2500,0,330);   
+      acs += map(analogRead(acs_pin),0,4095,0,330);   
      
   }
-  
-  Serial.print("Voltagem saida sensor: ");
-  Serial.println((acs/10000)); 
-  Serial.print("bits: ");
-  Serial.println(analogRead(acs_pin));
-  Serial.print("PWM: ");
-  Serial.println(pwm);
+  Serial.print("(");
+  Serial.print((acs/10000)); 
+  Serial.print(",");
+  Serial.print(pwm);
+  Serial.println(")");
+
   acs =0;/*
   Serial.print("Voltagem saida sensor: ");
   Serial.println((analogRead(acs_pin)); 

@@ -1,501 +1,399 @@
-// Header file which contain Pin, constanst, states and etc...
-#include "config.hpp"
-
-//STATE
-char STATE = MODE; 
-char LAST_STATE = MODE ;
-int modo = AUTO;
-char HEALTH_STATE;
-
-// including libs
 #include "Encoder.hpp"
 #include "H_bridge_controller.hpp"
 #include "PID.hpp"
-#include "rele.hpp"
-#include <Wire.h> 
+#include "config.hpp"
+#include "Button.hpp"
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-#include "Timer.hpp"
-
-Encoder *encoder;
-H_bridge_controller *BTS;
-rele *passive_active_rele; // normaly open ->active normaly // normaly close passive
-rele *stand_by_active_rele; // normaly open-> stand_by // normaly close -> active
-PID *PID_vel;
-LiquidCrystal_I2C lcd(0x27,16,2); // LCD lib
-Timer *clock;
-int output;
+#include <SimpleTimer.h>
 
 
+
+//******CONSTRUCTOR******//
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // LCD lib
+SimpleTimer lcd_timer;
+SimpleTimer rpmTime;
+
+
+//******OBJECTS******//
+Encoder* encoder;
+H_bridge_controller* motorController;
+Button* btn;
+PID* PID_vel;
+
+//******GLOBAL VARIABELS******//
+
+// Time
 unsigned long current_t;
 unsigned long last_t;
 unsigned long delta_t;
+int t_Duration;
+char t[2];
 
-double current_position;
-double last_position;
-double delta_position;
-
-float goal_vel=25;
-int drag_force;
-float actual_vel;
+// Control
+double current_pulses;
+double last_pulses;
+double delta_pulses;
+double delta_ciclos;
 float actual_rpm;
+int goal_rpm;
+int verif;
+int output;
+char STATE = MODE;
+double pageSelec;
+double revolutions;
+bool joystick_check;
 
-int current_cicles;
-int last_cicles=0;
-int delta_cicles;
-int stand_by_cicles;
-int passive_cicles;
-int active_cicles;
-int duration;
-int state_mode;
-int health_p;
-char time[2];
-char cicles[4];
-void setup() {     
-  Serial.begin (9600);
 
-  encoder = new Encoder(a_pin,b_pin,0,Nominal_pulses,perimeter_pulley,Mode);
+//******FUNCTIONS******//
+
+// Get frequecy of pot (incluir na classe do potenciometro)
+int mapPotValueToRPM(int potValue) {
+  return map(potValue, 0, 4095, 0, 50);  // rpm
+}
+
+// Control to evit Overflow
+void resetEncoderIfExceedsLimit() {
+  if (current_pulses > MAX_ENCODER_VALUE || current_pulses < -MAX_ENCODER_VALUE) {
+    encoder->setPulses(0);
+    last_pulses = 0;
+  }
+}
+
+// PID control
+void controlMotorSpeedWithPID() {
+  output = PID_vel->computePID(actual_rpm, goal_rpm, tolerance);
+
+  if (output < 0) {
+    output = max(output, -MAX_PWM);
+    motorController->Set_L(-output);
+  } else {
+    output = min(output, MAX_PWM);
+    motorController->Set_R(output);
+  }
+}
+
+// Turns it off and on to reset the program
+
+void reset() {
+  ESP.restart();
+}
+// Implemetation passive Mode (Criar Classe passivo para implementar esses controle e evitar de ter muita coisa na main)
+void passivo() {
+  lcd_timer.reset();
+  rpmTime.reset();
+  while (!lcd_timer.isReady()) {  //tempo nao acaba
+
+
+
+    if (rpmTime.getTimePassed() > sample_t) {
+      current_pulses = encoder->getPulses();
+      delta_pulses = current_pulses - last_pulses;
+      actual_rpm = delta_pulses * 1.01;
+
+      Serial.print(actual_rpm);
+      Serial.print(", ");
+      Serial.println(lcd_timer.getTimePassed());
+
+
+      resetEncoderIfExceedsLimit();
+      controlMotorSpeedWithPID();
+
+      rpmTime.reset();
+      last_pulses = current_pulses;
+    }
+    printTime();
+  }
+}
+
+// Implemetation normal Mode (Criar Classe normal para implementar esses controle e evitar de ter muita coisa na main)
+
+void normal() {
+  lcd_timer.reset();
+  rpmTime.reset();
+  while (!lcd_timer.isReady()) {  //tempo nao acaba
+
+    if (rpmTime.getTimePassed() > 400) {
+      current_pulses = encoder->getPulses();
+      delta_pulses = current_pulses - last_pulses;
+      actual_rpm = delta_pulses / 400;
+      resetEncoderIfExceedsLimit();
+      rpmTime.reset();
+      last_pulses = current_pulses;
+    }
+    lcd.setCursor(0, 1);
+    lcd.print("Frequency: ");
+    sprintf(t, "%02d", actual_rpm);
+    lcd.print(t);
+    printTime();
+  }
+}
+
+// Select funcition
+void selectFunction() {
+  if (pageSelec ==0 ) {
+    lcd.print("Escolha o modo ");
+    lcd.setCursor(0, 1);
+    lcd.print("Modo: Normal   ");
+    lcd.setCursor(0, 0);
+    STATE = NORMAL;
+  } else if (pageSelec == 1) {
+    lcd.print("Escolha o modo ");
+    lcd.setCursor(0, 1);
+    lcd.print("Modo: Passive   ");
+    lcd.setCursor(0, 0);
+    STATE = PASSIVE;
+  }
+  
+}
+
+// Print in LCD the MODE select
+void printMode() {
+  lcd.setCursor(0, 0);
+  switch (STATE) {
+    case NORMAL:
+      lcd.print("Selecionado:  ");
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Normal   ");
+      lcd.setCursor(0, 1);
+      return;
+
+    case PASSIVE:
+      lcd.print("Selecionado:  ");
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Passivo  ");
+      lcd.setCursor(0, 1);
+      return;
+    case FADE:
+      lcd.print("Selecionado:  ");
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Fade     ");
+      lcd.setCursor(0, 1);
+      return;
+  }
+}
+
+
+// Select Duration
+int duration() {
+  int t_Duration;
+  lcd.setCursor(0, 0);
+  lcd.print("              ");
+  while (!btn->getPress()){
+         if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+            {
+                joystick_check=true;
+            }
+            if (analogRead(pot_pin) == 0 && joystick_check)
+            {
+                if(t_Duration !=0 ){
+                    t_Duration--;
+                    joystick_check = false;
+                }
+            }
+            else if (analogRead(pot_pin) == 4095 && joystick_check)
+            {
+                if(t_Duration != 10){
+                    t_Duration++;
+                    joystick_check = false;
+                }
+            }   
+    lcd.setCursor(0, 0);  // MAX(15,1) linha, coluna
+    lcd.print("Duration: ");
+    sprintf(t, "%02d", t_Duration);
+    lcd.print(t);
+    lcd.print(":00  ");
+  }
+  return t_Duration;
+}
+
+// Print stopwatch in LCD
+
+void printTime() {
+  lcd.setCursor(0, 0);
+  lcd.print("Duration: ");
+  sprintf(t, "%02d", lcd_timer.getMinutes());
+  lcd.print(t);
+  lcd.print(":");
+  sprintf(t, "%02d", lcd_timer.getSeconds());
+  lcd.print(t);
+}
+
+void printFrequency() {
+  lcd.setCursor(0, 1);
+  lcd.print("Frequency: ");
+  sprintf(t, "%02d", goal_rpm);
+  lcd.print(t);
+}
+
+
+// Get frequency (Implementar como Vetor quando criar a Classe)
+int goalRPM() {
+
+   while (!btn->getPress()){
+         if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+            {
+                joystick_check=true;
+            }
+            if (analogRead(pot_pin) == 0 && joystick_check)
+            {
+                if(goal_rpm !=0 ){
+                    goal_rpm--;
+                    joystick_check = false;
+                }
+            }
+            else if (analogRead(pot_pin) == 4095 && joystick_check)
+            {
+                if(goal_rpm != 50){
+                    goal_rpm++;
+                    joystick_check = false;
+                }
+            }   
+    printFrequency();
+   }
+  return goal_rpm;
+}
+
+
+// Verification
+
+int verification() {
+  lcd.clear();
+  while (!btn->getPress()) {
+    if (analogRead(pot_pin)==0)
+    {
+      verif = 0;
+    }
+    if (analogRead(pot_pin)==4095)
+    {
+      verif = 1;
+    }
+    lcd.setCursor(0, 0);
+    lcd.print("Freq: ");
+    sprintf(t, "%02d", goal_rpm);
+    lcd.print(t);
+    lcd.print("|");
+    lcd.print("Time:");
+    sprintf(t, "%02d", lcd_timer.getInterval() / 60000);
+    lcd.print(t);
+    lcd.setCursor(0, 1);
+    if (verif == 0) {
+      lcd.print("Nao            ");
+      lcd.setCursor(0, 1);
+      lcd.noBacklight();
+    }
+    if (verif == 1) {
+      lcd.print("Sim            ");
+      lcd.setCursor(0, 1);
+      lcd.noBacklight();
+    }
+  }
+  lcd.clear();
+  return verif;
+}
+
+
+
+//******MAIN******//
+
+void setup() {
+  Serial.begin(9600);
+
+  // Inicialização dos objetos
+  encoder = new Encoder(a_pin, b_pin, 0, Nominal_pulses, Mode);
   encoder->init();
 
-  BTS= new H_bridge_controller(r_pin, l_pin);
-  BTS->init();
+  motorController = new H_bridge_controller(r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
+  motorController->init();
 
-  passive_active_rele= new rele(passive_active,true); // Este rele em especifico tem logica reversa
-  passive_active_rele->init();
-
-  stand_by_active_rele= new rele(stand_by_active,true);
-  stand_by_active_rele->init();
-
-  PID_vel = new PID(kp,ki,kd);
+  PID_vel = new PID(1.4, 0.008, kd, i_saturation);
 
 
-  clock= new Timer(); 
-  lcd.init();                      // initialize the lcd 
-  last_t=millis();
-  
-  pinMode(btn_pin,INPUT_PULLUP);
+  // Inicialização das variáveis
+  last_t = millis();
+  last_pulses = encoder->getPulses();
 
-  last_position=encoder->getPosition();
+  btn = new Button(btn_pin, 2);
+  btn->init();
 
-  
+  lcd.init();  // initialize the lcd
+  last_t = millis();
+
+
+  STATE = STAND_BY;
 }
-   
+
 void loop() {
-    printLCD();
-    switch(STATE) {
-        case STAND_BY :
-          LAST_STATE = STAND_BY;    
-          check_state();
-          // Niether passive nor active assistence is given now
-          stand_by();
-          return;
-        case ACTIVE_PLUS :
-          LAST_STATE = ACTIVE_PLUS;          
-          check_state();
-          //Now the patient is the one who moves the motor within resistance
-          active_plus();
-          return;
-        case FADE :
-          LAST_STATE = PASSIVE;
-          //The motor is activeted GRADUALLY to help patients move.
-          fade_pwm();
-          return;
-        case PASSIVE :
-          LAST_STATE = PASSIVE;         
-          check_state();
-          //The motor is activeted to help patients move.
-          passive();
-          return;
-        case MODE :
-          LAST_STATE = MODE; 
-          //The motor is activeted to help patients move.
-          mode();
-          return;
-        case TIMER :
-          LAST_STATE = TIMER; 
-          //ask duration 
-          timer();
-          return;
-        case SET_VEL :
-          LAST_STATE = SET_VEL; 
-          //ask duration 
-          set_velocity();
-          return;
-        case SET_DRAG :
-          LAST_STATE = SET_DRAG; 
-          //ask duration 
-          set_drag();
-          return;
-        case DONE :
-          LAST_STATE = DONE; 
-          //show results
-          done();
-          return;
-        case RESET :
-          LAST_STATE = RESET; 
-          //reset machine
-          reset();
-          return;
-    }  
-}
 
-void stand_by(){
-  BTS->Set_L(0);
-  //integrate number of cicles on that state
-  stand_by_cicles+=delta_cicles;
-  delta_cicles=0;
-
-  // activate reles in the desired way
-  passive_active_rele->turn_off();
-  stand_by_active_rele->turn_off();
-  return;
-}
-
-void active(){
-  BTS->Set_L(0);
-  //integrate number of cicles on that state
-  active_cicles +=delta_cicles;
-  delta_cicles=0;
-
-  // activate reles in the desired way
-  passive_active_rele->turn_off();
-  stand_by_active_rele->turn_on();
-  return;
-}
-
-void active_plus(){
-  //integrate number of cicles on that state
-  active_cicles +=delta_cicles;
-  delta_cicles=0;
-
-   // activate reles in the desired way
-  passive_active_rele->turn_on();
-  stand_by_active_rele->turn_on();
-
-  // map it to the range of the analog out:
-  output = PID_vel->computePID(actual_vel*100,0); // Don't know why but input is divided by 100 on Compute PID function
- 
-  if (output < 0) {
-      if (output < -MAX_PWM) {
-        output = -MAX_PWM;
+  switch (STATE) {
+    case PASSIVE:
+      goal_rpm = goalRPM();
+      delay(500);
+      lcd_timer.setInterval(duration() * 60000);
+      delay(500);
+      lcd.clear();
+      verif = verification();
+      delay(500);
+      if (verif >= 1) {
+        delay(500);
       }
-      BTS->Set_L(output);
-      delay(fade);
-      return;
-    } else {
-      BTS->Set_R(0);
-      return;
-    }
-}
-
-void fade_pwm(){
-  STATE=PASSIVE;
-  //integrate number of cicles on that state
-  passive_cicles +=delta_cicles;
-  delta_cicles=0;
-
-  // activate reles in the desired way
-  passive_active_rele->turn_on();
-  stand_by_active_rele->turn_on();
-
- // map it to the range of the analog out:
-  output = PID_vel->computePID(actual_vel*100,goal_vel)/2; // Don't know why but input is divided by 100 on Compute PID function
- 
-  if (output < 0) {
-      if (output < -MAX_PWM) {
-        output = -MAX_PWM;
-      }
-      for(int i=0;i<output;i++){
-        BTS->Set_L(-i/10);
-        delay(fade);
-      }
-      return;
-    } else {
-      if (output > MAX_PWM) {
-        output = MAX_PWM;
-      }
-      for(int i=0;i<output;i++){
-        BTS->Set_L(-i/10);
-        delay(fade);
-      }
-      return;
-    }
-}
-// Call passive on loop to apply PID control to vel
-void passive(){
-  //integrate number of cicles on that state
-  passive_cicles +=delta_cicles;
-  delta_cicles=0;
-
-  // activate reles in the desired way
-  passive_active_rele->turn_on();
-  stand_by_active_rele->turn_on();
-
- // map it to the range of the analog out:
-  output = PID_vel->computePID(actual_vel*100,goal_vel); // Don't know why but input is divided by 100 on Compute PID function
-  
-  //debug print
-  //Serial.print(actual_rpm);Serial.print(" ");Serial.println(goal_vel);
-  //delay(5);
-  // Setting direction of motion acording to output_x PID
-  if (output < 0) {
-      if (output < -MAX_PWM) {
-        output = -MAX_PWM;
-      }
-      BTS->Set_L(0);
-      return;
-    } else {
-      if (output > MAX_PWM) {
-        output = MAX_PWM;
-      }
-      BTS->Set_R(output);
-      return;
-    }
-}
-void mode(){
-  if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
-    STATE=TIMER;
-    delay(500);
-    return;
-  }
-  modo=map(analogRead(pot_pin),0,1023,0,1);
-
-  return;
-}
-void timer(){
-  
-  if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
-    STATE=SET_VEL;
-    delay(500);
-    return;
-  }
-  duration=map(analogRead(pot_pin),0,1023,0,30);
-  
-  return;
-}
-void set_velocity(){
-  
-  if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
-    STATE=SET_DRAG;
-    delay(500);
-    return;
-  }
-  goal_vel=map(analogRead(pot_pin),0,1023,0,30);
-  
-  return;
-}
-void set_drag(){
-  
-  if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de start enquanto isso vai printando a duração do ex
-    Serial.print("START");
-    STATE=STAND_BY;
-    clock->init(duration);
-    return;
-  }
-  drag_force=map(analogRead(pot_pin),0,1023,1,3);
-  
-  return;
-}
-void done(){
-  BTS->Set_L(0);
-  if(digitalRead(btn_pin)==LOW){ // verifica se apertou botão de reiniciar  e reseta as variaveis
-    STATE=RESET;
-  }
-  return;
-}
-void reset(){ // This function resets the arduino
-  delay(2000);
-  RESET_CMD; 
-  return;
-}
-void printLCD(){
-  lcd.backlight();
-  lcd.setCursor(0,0);
-  if (STATE==STAND_BY){
-    lcd.print("Modo: Normal   ");
-    lcd.setCursor(0,1);
-    lcd.print("               ");
-    lcd.setCursor(0,1);
-    sprintf(time,"%02d",clock->current_min());
-    lcd.print(time);
-    lcd.print(":");
-    sprintf(time,"%02d",clock->current_sec());
-    lcd.print(time);
-  }else if (STATE==ACTIVE_PLUS){
-    lcd.print("Modo: Resistido");
-    lcd.setCursor(0,1);
-    lcd.print("               ");
-    lcd.setCursor(0,1);
-    sprintf(time,"%02d",clock->current_min());
-    lcd.print(time);
-    lcd.print(":");
-    sprintf(time,"%02d",clock->current_sec());
-    lcd.print(time);
-  }else if (STATE==PASSIVE|| STATE==FADE){
-    lcd.print("Modo: Assistido");
-    lcd.setCursor(0,1);
-    lcd.print("               ");
-    lcd.setCursor(0,1);
-    sprintf(time,"%02d",clock->current_min());
-    lcd.print(time);
-    lcd.print(":");
-    sprintf(time,"%02d",clock->current_sec());
-    lcd.print(time);
-  }else if(STATE==MODE){
-    lcd.print("Escolha o modo ");
-    lcd.setCursor(0,1);
-    lcd.print("               ");
-    lcd.setCursor(0,1);
-    if(modo==AUTO){
-      lcd.print("  Automatico   ");
-    }else if(modo==MANUAL){
-      lcd.print("    Manual    ");
-    }
-  }else if(STATE==TIMER){
-    lcd.print("Duracao do Ex :");
-    lcd.setCursor(0,1);
-    lcd.print("               ");
-    lcd.setCursor(0,1);
-    lcd.print(" ");
-    lcd.print(duration);
-    lcd.print(":00");
-  }else if(STATE==SET_VEL){
-    lcd.print("  RPM desejado ");
-    lcd.setCursor(0,1);
-    lcd.print("               ");
-    lcd.setCursor(0,1);
-    lcd.print(" ");
-    lcd.print(goal_vel);
-  }else if(STATE==SET_DRAG){
-    lcd.print("Arrasto desejado");
-    lcd.setCursor(0,1);
-    lcd.print("               ");
-    lcd.setCursor(0,1);
-    lcd.print(" ");
-    lcd.print(drag_force);
-  }else if(STATE==DONE){
-    lcd.print(" -  |  0  |  + ");
-    lcd.setCursor(0,1);
-    sprintf(cicles,"%04d",passive_cicles);
-    lcd.print(cicles);
-    lcd.print(" ");
-    sprintf(cicles,"%04d",stand_by_cicles);
-    lcd.print(cicles);
-    lcd.print(" ");
-    sprintf(cicles,"%04d",active_cicles);
-    lcd.print(cicles);
-  }
-  else if(STATE==RESET){
-    lcd.print("Reiniciando... ");
-    lcd.setCursor(0,1);
-    lcd.print("               ");
-    
-  }
-}
-
-void check_state(){
-  //if exercise time exceded, it will end the ex
-  if(clock->current_min()==0 && clock->current_sec()==0){
-    STATE=DONE;
-    return;
-  }
-  // When manual is chosen at the menu
-  if(modo==MANUAL){
-    state_mode = float(map(analogRead(pot_pin), 0, 1023, 0, 2));
-    if(state_mode==FADE){
-      if(LAST_STATE!=PASSIVE){
-        STATE=FADE;
+      if (verif < 1) {
+        STATE = STAND_BY;
+        delay(500);
         return;
       }
-      STATE=PASSIVE;
+      passivo();
+      motorController->Set_L(0);
+      STATE = STAND_BY;
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("FIM");
+      delay(2000);
+      reset();
       return;
-    } 
-    PID_vel->reset();
 
-    if(state_mode==(STAND_BY)){
-      STATE=STAND_BY;
-    }else if (state_mode==(ACTIVE_PLUS)){
-      STATE=ACTIVE_PLUS;
-    }
-    
-  }else if(modo==AUTO){ // When Auto is chosen at the menu
-    odometry_calc();
-    // uses a "sample" to diagnose the heath state of the patiante
-    if(duration-clock->current_min()<=sample_ex){
-      STATE=STAND_BY;
-      health_p+=delta_cicles;
-      delta_cicles=0;
-      if(health_p<LIMITE_DEBILIDADO){
-        HEALTH_STATE=WEEK;
-        return;
-      }else if(health_p<LIMITE_SAUDAVEL){
-        HEALTH_STATE=NORMAL;
-        return;
-      }else{
-        HEALTH_STATE=STRONG; 
-        return;
-      }
-    }else{ // Actual exercise starts here
-      switch (HEALTH_STATE)
-      {
-      case WEEK:
-        if(LAST_STATE!=PASSIVE){
-          STATE=FADE;
-          return;
-        }
-        STATE=PASSIVE;
-        return;
-      case NORMAL:
-        if(actual_rpm<goal_vel){
-          if(LAST_STATE!=PASSIVE){
-            STATE=FADE;
-            return;
+    case STAND_BY:
+       while (!btn->getPress()){
+          if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+          {
+            joystick_check=true;
           }
-          STATE=PASSIVE;
-          return;
+          
+        if (analogRead(pot_pin) == 0 && joystick_check)
+        {
+            if(pageSelec !=0 ){
+                pageSelec--;
+                joystick_check = false;
+            }
+
         }
-        PID_vel->reset();
-        STATE=STAND_BY;
-        return;
-      case STRONG:
-        STATE=ACTIVE_PLUS;
-        return;
+        else if (analogRead(pot_pin) == 4095 && joystick_check)
+        {
+            if(pageSelec != 1){
+                pageSelec++;
+                joystick_check = false;
+            }
+        }
+        
+        selectFunction();
+        lcd.noBacklight();
       }
-    }
-  }
-  
-  }
+      printMode();
+      delay(500);
+      return;
 
- // Reads the goal vel seted by the physiotherapist and calculates the actual vel
-void odometry_calc(){
-    current_t=millis();
-    delta_t = current_t-last_t;
-    
-    //debug print
-    //Serial.println(delta_t);
-    if(delta_t>sample_t){
-      
-      // Calculates postion variables
-      current_position=encoder->getPosition();
-      delta_position= current_position - last_position;
-      last_position=current_position;
-      
-      //Calculates RPM using linear vel and pitch radius
-      actual_vel=(delta_position/sample_t);//meter/s
-      actual_rpm=actual_vel*60/pitch_gear;// RPM
-      last_t=current_t;
+    case NORMAL:
+      delay(100);
+      motorController->Set_L(0);
+      lcd_timer.setInterval(duration() * 60000);
+      delay(500);
+      lcd.clear();
 
-      //calculates number of cicles that has been passed
-      current_cicles = int(current_position/perimeter_gear); // calculates number of rotations. it only returns int values, thefore if a full cicle has not been done it wont count fractions. It is usefull to "integrate" cicles in each mode of exercise
-      delta_cicles = current_cicles-last_cicles; // calculates if a cicle has been done or not. This is the variable that will be incremented in each function mode
-      last_cicles = current_cicles;
-      Serial.println("delta_cicles");
-      Serial.println(delta_cicles);
-      // avoid overflowing variable pulses on encoder lib
-      if (current_position>10000 || current_position<-10000){
-        encoder->setPulses(0);
-        last_position=0;
-        last_cicles=0;
-      }
-    }
-    return;
+      normal();
+
+      delay(500);
+      reset();
+      return;
+  }
 }

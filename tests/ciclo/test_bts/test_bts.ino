@@ -5,18 +5,13 @@ H_bridge_controller *BTS;
 
 void setup() {
   Serial.begin(9600);
-  BTS= new H_bridge_controller( R_pin, L_pin);
+  BTS = new H_bridge_controller(r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, 0, 1);
   BTS->init();
 }
 
 void loop() {
-  for(int i=0;i<MAX_PWM;i++){
-      BTS->Set_R(i);
-      delay(10);
-  }
+  
+BTS->Set_R(map(analogRead(pot_pin),0,4095,0,255)); //Set_l = mov resistido , Set_R = mov assistido
+Serial.println(map(analogRead(pot_pin),0,4095,0,255));
 
-  for(int i=0; i<MAX_PWM;i++){
-      BTS->Set_L(i);
-      delay(10);
-  }
 }

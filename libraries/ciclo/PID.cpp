@@ -17,36 +17,38 @@
  * Class Methods Bodies Definitions
  *****************************************/
 
-PID::PID(float k_p,float k_i,float k_d) {
+PID::PID(double k_p,double k_i,double k_d,int i_saturation) {
     this->k_p = k_p;
     this->k_i = k_i;
     this->k_d = k_d; 
+    this->i_saturation = i_saturation;
 }
 
-float PID::computePID(float input,float setpoint) {
-  this->current_time= millis();                                              //get current time
-  this->delta_time = (long)(this->current_time - this->previus_time);        //compute time elapsed from previous computation
-
-  this->error = setpoint - input;   // determine error
-  this->i_error += (this->error*this->delta_time);   
-  if(this->i_error>255){
-    this->i_error=255;
-  }  
-  if(this->i_error<-255){
-    this->i_error=-255;
-  }                         // compute integral
-  this->d_error = (this->error - this->previus_error)*1000 / this->delta_time;             // compute derivative
+double PID::computePID(double input,float setpoint,float tolerance) {
   
-  float out = this->k_p * this->error + this->k_i * this->i_error + this->k_d * this->d_error;  //PID output
+
+  this->current_time= millis();                                              //get current time
+  this->delta_time = (double)(this->current_time - this->previus_time);        //compute time elapsed from previous computation
+
+
+  this->error = setpoint - input;                                      // determine error
+  this->i_error +=  this->error *  this->delta_time;
+  if(this->i_error > this->i_saturation){
+    this->i_error = this->i_saturation;
+
+    }else if(this->i_error < -this->i_saturation){
+      this->i_error=  -this->i_saturation;
+
+    }
+  
+                             // compute integral
+  
+  this->d_error = (this->error - this->previus_error) / this->delta_time;             // compute derivative
+
+  double out = this->k_p * this->error + this->k_i * this->i_error + this->k_d * this->d_error;  //PID output
 
   this->previus_error = this->error;                                         //remember current error
   this->previus_time =  this->current_time;                                //remember current time
-
-  // debug print
-  //Serial.print(this->error); Serial.print(' '); Serial.print(this->k_i * this->i_error); Serial.print(' '); Serial.println(out); 
-  //Serial.print(setpoint); Serial.print(' '); Serial.print(input);Serial.print(' '); Serial.println(setpoint -input);
-
-  
   return out;                                                 //have function return the PID output
 }
 

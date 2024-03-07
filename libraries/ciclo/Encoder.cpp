@@ -16,20 +16,16 @@
  * Class Methods Bodies Definitions
  *****************************************/
 
-Encoder::Encoder(int A_pin,int B_pin, byte which,int PulsesPerRev,float PitchPerRev,int mode):whichISR_(which) {
+Encoder::Encoder(int A_pin,int B_pin, byte which,int PulsesPerRev,int mode):whichISR_(which) {
     this-> A_pin = A_pin;
     this-> B_pin = B_pin;
-    this->PitchPerRev=PitchPerRev;
     this->mode=mode;
     if(mode==1){
       this->PulsesPerRev=PulsesPerRev;
-      this->k=0.347;
     }else if(mode==2){
       this->PulsesPerRev=2*PulsesPerRev;
-      this->k=0.173;
     }else if(mode==4){
       this->PulsesPerRev=4*PulsesPerRev;
-      this->k=0.086;
     }
     
     pinMode(this->A_pin,INPUT_PULLUP);
@@ -69,12 +65,12 @@ void Encoder::init() {
   switch (whichISR_) {
       case 0: 
         if(this->mode==1){
-          attachInterrupt (digitalPinToInterrupt(this-> A_pin), isr0A, RISING); 
+          attachInterrupt (this-> A_pin, isr0A, RISING); 
         }else if(this->mode==2){
-          attachInterrupt (digitalPinToInterrupt(this-> A_pin), isr0A, CHANGE); 
+          attachInterrupt (this-> A_pin, isr0A, CHANGE); 
         }else if(this->mode==4){
-          attachInterrupt (digitalPinToInterrupt(this-> A_pin), isr0A, CHANGE); 
-          attachInterrupt (digitalPinToInterrupt(this-> B_pin), isr0B, CHANGE); 
+          attachInterrupt (this-> A_pin, isr0A, CHANGE); 
+          attachInterrupt (this-> B_pin, isr0B, CHANGE); 
         }
         
         instance0_ = this;
@@ -82,12 +78,12 @@ void Encoder::init() {
 
       case 1: 
         if(this->mode==1){
-          attachInterrupt (digitalPinToInterrupt(this-> A_pin), isr1A, RISING); 
+          attachInterrupt (this-> A_pin, isr1A, RISING); 
         }else if(this->mode==2){
-          attachInterrupt (digitalPinToInterrupt(this-> A_pin), isr1A, CHANGE); 
+          attachInterrupt (this-> A_pin, isr1A, CHANGE); 
         }else if(this->mode==4){
-          attachInterrupt (digitalPinToInterrupt(this-> A_pin), isr1A, CHANGE); 
-          attachInterrupt (digitalPinToInterrupt(this-> B_pin), isr1B, CHANGE); 
+          attachInterrupt (this-> A_pin, isr1A, CHANGE); 
+          attachInterrupt (this-> B_pin, isr1B, CHANGE); 
         }
         
         instance1_ = this;
@@ -95,12 +91,12 @@ void Encoder::init() {
 
       case 2:
         if(this->mode==1){
-          attachInterrupt (digitalPinToInterrupt(this-> A_pin), isr2A, RISING); 
+          attachInterrupt (this-> A_pin, isr2A, RISING); 
         }else if(this->mode==2){
-          attachInterrupt (digitalPinToInterrupt(this-> A_pin), isr1A, CHANGE); 
+          attachInterrupt (this-> A_pin, isr1A, CHANGE); 
         }else if(this->mode==4){
-          attachInterrupt (digitalPinToInterrupt(this-> A_pin), isr2A, CHANGE); 
-          attachInterrupt (digitalPinToInterrupt(this-> B_pin), isr2B, CHANGE); 
+          attachInterrupt (this-> A_pin, isr2A, CHANGE); 
+          attachInterrupt (this-> B_pin, isr2B, CHANGE); 
         }
         instance2_ = this;
         break;
@@ -109,11 +105,6 @@ void Encoder::init() {
 
 int Encoder::getPulses() {
  return this->pulses;
-}
-
-float Encoder::getPosition() {
- 
- return this->pulses*this->k;
 }
 
 void Encoder::setPulses(int num) {

@@ -66,8 +66,7 @@ void loop() {
   if (delta_t > sample_t) {
     current_pulses = encoder->getPulses();
     delta_pulses = current_pulses - last_pulses;
-    delta_ciclos = delta_pulses / pulses_per_rev;
-    actual_rpm = delta_ciclos * 60000 / sample_t;
+    actual_rpm = delta_pulses *1.01;
 
     resetEncoderIfExceedsLimit();
     

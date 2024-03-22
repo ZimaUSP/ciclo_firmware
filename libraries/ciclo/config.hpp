@@ -62,7 +62,7 @@
 // BTS
 #define MAX_PWM 255
 #define max_pwm_cte 0.7
-#define r_pin 23 
+#define r_pin 33 //23 
 #define l_pin 19 
 
 

@@ -4,8 +4,6 @@
 #include "config.hpp"
 #include "Button.hpp"
 
-// Constantes
-const int MAX_ENCODER_VALUE = 10000;
 
 // Objetos
 Encoder* encoder;

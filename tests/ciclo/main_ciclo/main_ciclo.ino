@@ -395,5 +395,14 @@ void loop() {
       delay(500);
       reset();
       return;
+
+    case RESISTIVO:
+      
+  
+  
   }
+
+
+
+
 }

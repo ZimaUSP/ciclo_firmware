@@ -15,9 +15,10 @@
 /*****************************************
  * Class Methods Bodies Definitions
  *****************************************/
-current_sensor::current_sensor(uint8_t pin,uint8_t type){
+current_sensor::current_sensor(uint8_t pin, uint8_t offset, uint8_t type){
   this->pin=pin;
   this->type=type;
+  this->offset=offset;
   if(type==5){
     this->sensitivity= 0.185;
   }
@@ -27,14 +28,17 @@ current_sensor::current_sensor(uint8_t pin,uint8_t type){
   else if(type==30){
     this->sensitivity= 0.072;
   }
-  
-}
+}  
+
 
 float current_sensor::get_current(){
   int sum=0; 
-  for(int i=0; i<1000; i++){
+  for(int i=0; i<100; i++){
     sum+=analogRead(this->pin);
-
+    delay(10);
   }
-  return (float)((sum/1000)-512)*(5.000)/(1023.000*0.095);
+  Serial.print("Média:");
+  Serial.print(sum/100);
+  return (float)((sum/100)-1850)*(1.39)/(122);
 }
+

@@ -19,13 +19,14 @@ class current_sensor {
     private:
         uint8_t pin;
         uint8_t type;
+        uint8_t offset;
         float sensitivity;
     public:
         /**
          * @brief Default constructor of a Timer base class
          * 
          */
-        current_sensor(uint8_t pin,uint8_t type);
+        current_sensor(uint8_t pin, uint8_t offset , uint8_t type);
     
         /**
          * @brief return left to complet period (minutes part)

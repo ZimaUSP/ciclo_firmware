@@ -3,10 +3,10 @@
 #include "config.hpp"
  
 H_bridge_controller *Motor;
-#define CURRENT_CAL 18.40 //VALOR DE CALIBRAÇÃO (DEVE SER AJUSTADO EM PARALELO COM UM MULTÍMETRO MEDINDO A CORRENTE DA CARGA)
+#define CURRENT_CAL 9 //VALOR DE CALIBRAÇÃO (DEVE SER AJUSTADO EM PARALELO COM UM MULTÍMETRO MEDINDO A CORRENTE DA CARGA)
 const int pinoSensor = acs_pin; //PINO ANALÓGICO EM QUE O SENSOR ESTÁ CONECTADO
 float ruido = 0.08; //RUÍDO PRODUZIDO NA SAÍDA DO SENSOR (DEVE SER AJUSTADO COM A CARGA DESLIGADA APÓS CARREGAMENTO DO CÓDIGO NO ARDUINO)
-int pwm = 30;
+int pwm = 100;
 bool joystick_check;
 
 EnergyMonitor emon1; //CRIA UMA INSTÂNCIA
@@ -40,7 +40,7 @@ void loop(){
           Serial.println(pwm);
       }
       /*/
-  Motor->Set_R(pwm);
+  Motor->Set_L(pwm);
 
   emon1.calcVI(17,100); //FUNÇÃO DE CÁLCULO (17 SEMICICLOS / TEMPO LIMITE PARA FAZER A MEDIÇÃO)
   double currentDraw = emon1.Irms; //VARIÁVEL RECEBE O VALOR DE CORRENTE RMS OBTIDO

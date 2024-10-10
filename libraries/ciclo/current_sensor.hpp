@@ -32,6 +32,7 @@ class current_sensor {
          * @brief return left to complet period (minutes part)
          */
         float get_current();
+        float get_torque(float acs);
 
 };
 

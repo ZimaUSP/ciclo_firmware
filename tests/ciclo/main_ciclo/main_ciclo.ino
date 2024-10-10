@@ -107,6 +107,11 @@ void passivo() {
   }
 }
 
+void resistivo(){
+  //Iniciar uma lista vazia 
+  //|Definir uma duração  
+}
+
 // Implemetation normal Mode (Criar Classe normal para implementar esses controle e evitar de ter muita coisa na main)
 
 void normal() {

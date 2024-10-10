@@ -39,6 +39,10 @@ float current_sensor::get_current(){
   }
   Serial.print("Média:");
   Serial.print(sum/100);
-  return (float)((sum/100)-1850)*(1.39)/(122);
+  return (float)((sum/100)-1850)*(1.39)/(122)-0.20000;
 }
 
+
+float current_sensor::get_torque(float acs){
+  return (float)(0.4*acs-0.2);
+}

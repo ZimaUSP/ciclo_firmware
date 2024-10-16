@@ -23,17 +23,24 @@ class current_sensor {
         float sensitivity;
     public:
         /**
-         * @brief Default constructor of a Timer base class
-         * 
+         * @brief Constructor for the current sensor class
          */
-        current_sensor(uint8_t pin, uint8_t offset , uint8_t type);
-    
+        current_sensor(uint8_t pin, uint8_t offset, uint8_t type);
+
         /**
-         * @brief return left to complet period (minutes part)
+         * @brief Initializes the current sensor
+         */
+        void init();
+
+        /**
+         * @brief Reads and returns the current
          */
         float get_current();
-        float get_torque(float acs);
 
+        /**
+         * @brief Calculates and returns the torque based on the current
+         */
+        float get_torque(float acs);
 };
 
 #endif  // __current_sensor_HPP__

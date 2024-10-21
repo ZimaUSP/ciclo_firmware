@@ -49,8 +49,8 @@ float current_sensor::get_current() {
         sum += analogRead(this->pin);
         delay(10);
     }
-    Serial.print("Média:");
-    Serial.print(sum / 100);
+    //Serial.print("Média:");
+    //Serial.print(sum / 100);
     return (float)((sum / 100) - 1850) * (1.39) / (122) - 0.20000;
 }
 

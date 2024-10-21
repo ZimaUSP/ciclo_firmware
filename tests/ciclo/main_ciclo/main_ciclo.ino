@@ -3,6 +3,7 @@
 #include "PID.hpp"
 #include "config.hpp"
 #include "Button.hpp"
+#include "Joystick.hpp"
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <SimpleTimer.h>
@@ -21,6 +22,7 @@ Encoder* encoder;
 H_bridge_controller* motorController;
 Button* btn;
 PID* PID_vel;
+Joystick* joy;
 
 //******GLOBAL VARIABELS******//
 
@@ -186,18 +188,21 @@ int duration() {
   lcd.setCursor(0, 0);
   lcd.print("              ");
   while (!btn->getPress()){
-         if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+         //if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+         if (!joy->right() && !joy->left())
             {
                 joystick_check=true;
             }
-            if (analogRead(pot_pin) == 0 && joystick_check)
+            //if (analogRead(pot_pin) == 0 && joystick_check)
+            if (joy->left() && joystick_check)
             {
                 if(t_Duration !=0 ){
                     t_Duration--;
                     joystick_check = false;
                 }
             }
-            else if (analogRead(pot_pin) == 4095 && joystick_check)
+            //else if (analogRead(pot_pin) == 4095 && joystick_check)
+            else if (joy->right() && joystick_check)
             {
                 if(t_Duration != 10){
                     t_Duration++;
@@ -237,18 +242,21 @@ void printFrequency() {
 int goalRPM() {
 
    while (!btn->getPress()){
-         if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+         //if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+         if (!joy->right() && !joy->left())
             {
                 joystick_check=true;
             }
-            if (analogRead(pot_pin) == 0 && joystick_check)
+            //if (analogRead(pot_pin) == 0 && joystick_check)
+            if (joy->left() && joystick_check)
             {
                 if(goal_rpm !=0 ){
                     goal_rpm--;
                     joystick_check = false;
                 }
             }
-            else if (analogRead(pot_pin) == 4095 && joystick_check)
+            //else if (analogRead(pot_pin) == 4095 && joystick_check)
+            else if (joy->right() && joystick_check)
             {
                 if(goal_rpm != 50){
                     goal_rpm++;
@@ -266,11 +274,13 @@ int goalRPM() {
 int verification() {
   lcd.clear();
   while (!btn->getPress()) {
-    if (analogRead(pot_pin)==0)
+    //if (analogRead(pot_pin)==0)
+    if (joy->left())
     {
       verif = 0;
     }
-    if (analogRead(pot_pin)==4095)
+    //if (analogRead(pot_pin)==4095)
+    if (joy->right())
     {
       verif = 1;
     }
@@ -325,6 +335,7 @@ void setup() {
   lcd.init();  // initialize the lcd
   last_t = millis();
 
+  joy = new Joystick(pot_pin);
 
   STATE = STAND_BY;
 }
@@ -360,12 +371,14 @@ void loop() {
 
     case STAND_BY:
        while (!btn->getPress()){
-          if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+          //if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
+          if (!joy->right() && !joy->left())
           {
             joystick_check=true;
           }
           
-        if (analogRead(pot_pin) == 0 && joystick_check)
+        //if (analogRead(pot_pin) == 0 && joystick_check)
+        if (joy->left() && joystick_check)
         {
             if(pageSelec !=0 ){
                 pageSelec--;
@@ -373,7 +386,8 @@ void loop() {
             }
 
         }
-        else if (analogRead(pot_pin) == 4095 && joystick_check)
+        //else if (analogRead(pot_pin) == 4095 && joystick_check)
+        else if (joy->right() && joystick_check)
         {
             if(pageSelec != 1){
                 pageSelec++;

@@ -86,7 +86,7 @@ void resetEncoderIfExceedsLimit() {
   if (current_pulses > MAX_ENCODER_VALUE || current_pulses < -MAX_ENCODER_VALUE) {
     Serial.println("Encoder reset");
     encoder->setPulses(0);
-    last_pulses = 0;rpmTime
+    last_pulses = 0;
   }
 }
 

@@ -159,7 +159,7 @@ void selectFunction() {
 void printMode() {
   lcd.setCursor(0, 0);
   switch (STATE) {
-    case NORMAL:enzimasUSP
+    case NORMAL:
       lcd.print("Selecionado:  ");
       lcd.setCursor(0, 1);
       lcd.print("Modo Normal   ");
@@ -203,7 +203,7 @@ int duration() {
             }
             //else if (analogRead(pot_pin) == 4095 && joystick_check)
             else if (joy->right() && joystick_check)
-            {enzimasUSPenzimasUSP
+            {
                 if(t_Duration != 10){
                     t_Duration++;
                     joystick_check = false;

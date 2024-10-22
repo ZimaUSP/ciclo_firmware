@@ -15,22 +15,36 @@
 /*****************************************
  * Class Methods Bodies Definitions
  *****************************************/
-Joystick::Joystick(int pin) {
-  this->pin=pin;
+Joystick::Joystick(int pin, uint32_t adc_register, uint32_t wifi_register) {
+  this->pin = pin;
+  this->adc_register = adc_register;
+  this->wifi_register = wifi_register;
 }
 
 int Joystick::get_power() {
-    return analogRead(this->pin);
+  WRITE_PERI_REG(SENS_SAR_READ_CTRL2_REG, this->adc_register); // Wifi with ADC2 on ESP32 workaround.
+  SET_PERI_REG_MASK(SENS_SAR_READ_CTRL2_REG, SENS_SAR2_DATA_INV);// Wifi with ADC2 on ESP32 workaround.
+
+  int value = analogRead(this->pin);
+  
+  WRITE_PERI_REG(SENS_SAR_READ_CTRL2_REG, this->wifi_register); // Wifi with ADC2 on ESP32 workaround.
+  return value;
 }
 
 bool Joystick::left() {
-    if (analogRead(this->pin) >= 0 && analogRead(this->pin) <= 100)
+    if (get_power() >= 0 && get_power() <= 1000)
         return true;
     return false;
 }
 
 bool Joystick::right() {
-    if (analogRead(this->pin) >= 3995 && analogRead(this->pin) <= 4095)
+    if (get_power() >= 2000 && get_power() <= 4095)
+        return true;
+    return false;
+}
+
+bool Joystick::middle() {
+    if (get_power() > 1000 && get_power() < 2000)
         return true;
     return false;
 }

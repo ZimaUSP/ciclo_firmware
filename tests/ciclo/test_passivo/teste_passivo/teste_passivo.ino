@@ -5,7 +5,6 @@
 #include "Button.hpp"
 
 // Constantes
-const int MAX_ENCODER_VALUE = 10000;
 
 // Objetos
 Encoder* encoder;
@@ -87,13 +86,14 @@ void resetEncoderIfExceedsLimit() {
   if (current_pulses > MAX_ENCODER_VALUE || current_pulses < -MAX_ENCODER_VALUE) {
     Serial.println("Encoder reset");
     encoder->setPulses(0);
-    last_pulses = 0;
+    last_pulses = 0;rpmTime
   }
 }
 
 void controlMotorSpeedWithPID() {
   output = PID_vel->computePID(actual_rpm, goal_rpm, tolerance);
-
+  Serial.print("output: ");
+  Serial.println(output);
   if (output < 0) {
     output = max(output, -MAX_PWM);
     motorController->Set_L(-output);

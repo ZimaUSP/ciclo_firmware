@@ -8,16 +8,26 @@
 #include <numeric>    // Para std::accumulate
 #include "Button.hpp"
 #include <WiFi.h>                // Biblioteca para o ESP32
-#include <WiFiManager.h>         // Biblioteca WiFiManager para gerenciamento de Wi-Fi
+//#include <WiFiManager.h>         // Biblioteca WiFiManager para gerenciamento de Wi-Fi
 
-WiFiServer server(80);  
+#include <WiFiClient.h>
+#include <WebServer.h>
 
-bool wifiOn = false; 
+#include "soc/sens_reg.h" // needed for manipulating ADC2 control register
+#include "Joystick.hpp"
+Joystick *joystick;
+
+uint32_t adc_register;
+uint32_t wifi_register;
+
+WebServer server(80);  
+
+//bool wifiOn = false; 
 
 #define MAX_SAMPLES 1000
 
-const char* ssid = "iPhone";     // Substitua pelo nome da sua rede Wi-Fi
-const char* password = "kess@123"; // Substitua pela senha da rede
+const char* ssid = "sem wifi";     // Substitua pelo nome da sua rede Wi-Fi
+const char* password = "12345678"; // Substitua pela senha da rede
 
 H_bridge_controller *Motor;
 current_sensor *cur;
@@ -28,6 +38,7 @@ double lista_torque[MAX_SAMPLES];
 int tempo[MAX_SAMPLES];
 Button* btn;
 
+
 double t0, torque, torque_max, torque_min, torque_med;
 float acs;
 bool joystick_check;
@@ -36,6 +47,26 @@ int offset, pot, sum, i, contador,pwm_motor;
 double  t_Duration = 0.5;
 int verif = 1;
 
+bool done = false;
+
+void handleRoot() {
+  server.send(200, "text/html", "<html><head><title>ESPSERVER</title></head><body><h1>hello from esp32!</h1></body></html>");
+}
+
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+}
 
 
 void inicializaComponentes() {
@@ -48,8 +79,10 @@ void inicializaComponentes() {
     btn->init();
     cur = new current_sensor(acs_pin, 1850, 20);
     cur->init();
+	  joystick = new Joystick(pot_pin, adc_register, wifi_register);
 }
 
+/*
 void gerenciarWiFi(bool ligar) {
     if (ligar && !wifiOn) {
         conectarWiFi();
@@ -59,8 +92,13 @@ void gerenciarWiFi(bool ligar) {
         Serial.println("Wi-Fi desligado.");
     }
 }
+*/
 
 void executarLogica() {
+
+    //if (done)
+    //  return;
+    Serial.println("executar lógica");
     pwm_motor = def_pwm_motor();
     delay(500);
     lcd_timer.setInterval(duration() * 60000);
@@ -74,13 +112,39 @@ void executarLogica() {
 
     resistivo();
     print_torque_results();
-    delay(1000);
+    delay(500);
+    Serial.println("logica executada");
+    //done = true;
 }
 
 void conectarWiFi() {
     Serial.println("Conectando ao Wi-Fi...");
+	  adc_register = READ_PERI_REG(SENS_SAR_READ_CTRL2_REG); // Wifi with ADC2 on ESP32 workaround.
+	  WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
+	  wifi_register = READ_PERI_REG(SENS_SAR_READ_CTRL2_REG);
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+    }
+    Serial.println("");
+    Serial.print("Connected to ");
+    Serial.println(ssid);
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
 
+    server.on("/", handleRoot);
+
+    server.on("/inline", []() {
+      server.send(200, "text/plain", "this works as well");
+    });
+
+    server.onNotFound(handleNotFound);
+
+    server.begin();
+    Serial.println("HTTP server started");
+
+    /*
     unsigned long startTime = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - startTime < 30000) {
         delay(500);
@@ -90,14 +154,15 @@ void conectarWiFi() {
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("\nConectado! IP: " + WiFi.localIP().toString());
         server.begin(); // Inicia o servidor
-        wifiOn = true;
+        //wifiOn = true;
     } else {
         Serial.println("\nFalha ao conectar. Reiniciando...");
         ESP.restart(); // Reinicia o ESP caso falhe
     }
+    */
 }
 
-
+/*
 // Função para atender clientes do servidor
 void atenderClientes() {
     Serial.println("Aguardando cliente...");
@@ -124,7 +189,8 @@ void atenderClientes() {
         Serial.println("Cliente desconectado.");
     }
 }
-
+*/
+/*
 // Função para enviar a página HTML
 void enviarPagina(WiFiClient &client) {
     client.println("HTTP/1.1 200 OK");
@@ -141,34 +207,41 @@ void enviarPagina(WiFiClient &client) {
 
     client.println("</table></body></html>");
 }
+*/
 
 int duration() {
   lcd.setCursor(0, 0);
   lcd.print("              ");
   while (!btn->getPress()){
-         if (analogRead(pot_pin) >= 1000 && analogRead(pot_pin) <= 3000)
-            {
-                joystick_check=true;
-            }
-            if (analogRead(pot_pin) <1000 && joystick_check)
-            {
-                if(t_Duration !=0 ){
-                    t_Duration--;
-                    joystick_check = false;
-                }
-            }
-            else if (analogRead(pot_pin) > 3000 && joystick_check)
-            {
-                if(t_Duration != 10){
-                    t_Duration++;
-                    joystick_check = false;
-                }
-            }   
+    server.handleClient();
+    //Serial.println(joystick->get_power());
+    if (joystick->middle())
+      {
+          joystick_check=true;
+      }
+      if (joystick->left() && joystick_check)
+      {
+          Serial.println("left");
+          if(t_Duration !=0 ){
+              t_Duration--;
+              joystick_check = false;
+          }
+      }
+      else if (joystick->right() && joystick_check)
+      {
+          Serial.print("right - duration:");
+          Serial.println(t_Duration);
+          if(t_Duration != 10){
+              t_Duration++;
+              joystick_check = false;
+          }
+      }   
     lcd.setCursor(0, 0);  // MAX(15,1) linha, coluna
-    lcd.print("Duration: ");
-    sprintf(t, "%02d", t_Duration);
+    lcd.print("Duration i: ");
+    sprintf(t, "%f", t_Duration);
     lcd.print(t);
     lcd.print(":00  ");
+    delay(2);
   }
   return t_Duration;
 }
@@ -192,15 +265,16 @@ int def_pwm_motor() {
     lcd.print("              ");
     
     while (!btn->getPress()) { 
-        if (analogRead(pot_pin) >=1000 && analogRead(pot_pin) <= 3000) {
+        server.handleClient();
+        if (joystick->middle()) {
             joystick_check = true;
         }
-        if (analogRead(pot_pin) <1000 && joystick_check) {
+        if (joystick->left() && joystick_check) {
             if (pwm_motor >= 10) {
                 pwm_motor -= 10;
                 joystick_check = false;
             }
-        } else if (analogRead(pot_pin) > 3000  && joystick_check) {
+        } else if (joystick->right()  && joystick_check) {
             if (pwm_motor < 100) {
                 pwm_motor += 10;
                 joystick_check = false;
@@ -215,9 +289,11 @@ int def_pwm_motor() {
     return pwm_motor;
 }
 
+
 int verification() {
   lcd.clear();
   while (!btn->getPress()) {
+      server.handleClient();
     // if (analogRead(pot_pin)==0)
     // {
     //   verif = 0;
@@ -263,6 +339,7 @@ void resistivo() {
     Motor->Set_L(pwm_motor);
 
     while (!lcd_timer.isReady() ) {
+      server.handleClient(); 
         if (torque_Time.getTimePassed() > sample_t * 50) {
             if (contador < MAX_SAMPLES) {
                 //Serial.println("ok");
@@ -310,6 +387,7 @@ void resistivo() {
     Motor->Set_L(0);
 }
 
+
 void print_torque_results() {
     lcd.clear();
     delay(10);
@@ -325,6 +403,7 @@ void print_torque_results() {
     sprintf(t, "%.2f", torque_med);
     lcd.print(t);
     while (!btn->getPress()) {
+        server.handleClient();
         delay(10);  // Evitar loop sem pausa
     }
     lcd.clear();
@@ -348,15 +427,19 @@ void setup() {
 }
 
 void loop() {
-    // Executa a lógica principal com o Wi-Fi desligado
     executarLogica();
+
+    server.handleClient();
+    // Executa a lógica principal com o Wi-Fi desligado
+
 
     // Liga o Wi-Fi para servir a página da web
     //gerenciarWiFi(true);
 
     // Verifica e atende a clientes conectados ao servidor
-    atenderClientes();
+    //atenderClientes();
 
     // Desliga o Wi-Fi após atender a página da web
     //gerenciarWiFi(false);
+    delay(2);
 }

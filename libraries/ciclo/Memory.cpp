@@ -16,18 +16,34 @@
 /*****************************************
  * Class Methods Bodies Definitions
  *****************************************/
-Preferences pref;
-pref.begin("Memoria", false); //namespace
 
-Memory::Memory(const char* name) {
-    this->name = name;
+
+Memory::Memory(const char* name_spc) {
+    this->name_spc = name_spc;
+    Preferences pref;
 }
 
-void Memory::write(int* dataStore) {
-    pref.putBytes(this->name, (byte*)(&dataStore), sizeof(dataStore));
+void Memory::write(uint16_t* dataStore, const char* key) {
+    Preferences pref;
+    pref.begin(this->name_spc);
+    pref.putBytes(this->key, (byte*)(&dataStore), sizeof(dataStore));
 }
 
-void Memory::read(int* dataRetrieve) {
-    pref.getBytes(this->name, &dataRetrieve, sizeof(dataRetrieve));
+void Memory::read(uint16_t* dataRetrieve, const char* key) {
+    Preferences pref;
+    pref.begin(this->name_spc);
+    pref.getBytes(this->key, &dataRetrieve, sizeof(dataRetrieve));
+}
+
+void Memory::write(double* dataStore, const char* key) {
+    Preferences pref;
+    pref.begin(this->name_spc);
+    pref.putBytes(this->key, (byte*)(&dataStore), sizeof(dataStore));
+}
+
+void Memory::read(double* dataRetrieve, const char* key) {
+    Preferences pref;
+    pref.begin(this->name_spc);
+    pref.getBytes(this->key, &dataRetrieve, sizeof(dataRetrieve));
 }
 

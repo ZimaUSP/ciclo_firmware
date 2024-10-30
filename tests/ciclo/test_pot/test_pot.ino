@@ -9,7 +9,7 @@ void setup() {
   Serial.begin(9600); 
 }
 void loop() {
-  SET_PERI_REG_MASK(SENS_SAR_READ_CTRL2_REG, SENS_SAR2_DATA_INV);
+  //SET_PERI_REG_MASK(SENS_SAR_READ_CTRL2_REG, SENS_SAR2_DATA_INV);
   //We have to do the 2 previous instructions BEFORE EVERY analogRead() calling!
   value = analogRead(PIN);
   Serial.println(value);

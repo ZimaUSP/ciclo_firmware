@@ -62,7 +62,7 @@
 // BTS
 #define MAX_PWM 255
 #define max_pwm_cte 0.7
-#define r_pin 33 //23 
+#define r_pin 23 
 #define l_pin 19 
 
 
@@ -77,7 +77,7 @@
 #define passive_active 10
 
 //Potentiometer
-#define pot_pin 15
+#define pot_pin 34 // 15 - changed manually
 
 //Button
 #define btn_pin 4 

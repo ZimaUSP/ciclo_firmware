@@ -15,7 +15,9 @@
 
 #include "soc/sens_reg.h" // needed for manipulating ADC2 control register
 #include "Joystick.hpp"
+#include "CSV.hpp"
 Joystick *joystick;
+CSV *csv;
 
 uint32_t adc_register;
 uint32_t wifi_register;
@@ -26,8 +28,8 @@ WebServer server(80);
 
 #define MAX_SAMPLES 1000
 
-const char* ssid = "sem wifi";     // Substitua pelo nome da sua rede Wi-Fi
-const char* password = "12345678"; // Substitua pela senha da rede
+const char* ssid = "Zima";     // Substitua pelo nome da sua rede Wi-Fi
+const char* password = "enzimasUSP"; // Substitua pela senha da rede
 
 H_bridge_controller *Motor;
 current_sensor *cur;
@@ -41,7 +43,7 @@ Button* btn;
 
 double t0, torque, torque_max, torque_min, torque_med;
 float acs;
-bool joystick_check;
+bool joystick_check = false;
 char t[10];  // Aumentado o tamanho do buffer de sprintf
 int offset, pot, sum, i, contador,pwm_motor;
 double  t_Duration = 0.5;
@@ -80,6 +82,7 @@ void inicializaComponentes() {
     cur = new current_sensor(acs_pin, 1850, 20);
     cur->init();
 	  joystick = new Joystick(pot_pin, adc_register, wifi_register);
+    csv = new CSV();
 }
 
 /*
@@ -113,6 +116,7 @@ void executarLogica() {
     resistivo();
     print_torque_results();
     delay(500);
+    website_data();
     Serial.println("logica executada");
     //done = true;
 }
@@ -140,9 +144,6 @@ void conectarWiFi() {
     });
 
     server.onNotFound(handleNotFound);
-
-    server.begin();
-    Serial.println("HTTP server started");
 
     /*
     unsigned long startTime = millis();
@@ -265,16 +266,21 @@ int def_pwm_motor() {
     lcd.print("              ");
     
     while (!btn->getPress()) { 
+        Serial.println(joystick->get_power());
+        //Serial.println("Botão não apertado");
         server.handleClient();
         if (joystick->middle()) {
+            Serial.println("Middle");
             joystick_check = true;
         }
         if (joystick->left() && joystick_check) {
+            Serial.println("Left");
             if (pwm_motor >= 10) {
                 pwm_motor -= 10;
                 joystick_check = false;
             }
         } else if (joystick->right()  && joystick_check) {
+            Serial.println("Right");
             if (pwm_motor < 100) {
                 pwm_motor += 10;
                 joystick_check = false;
@@ -385,6 +391,19 @@ void resistivo() {
 
     delay(100);
     Motor->Set_L(0);
+}
+
+void website_data(){
+    Serial.print("IP local: ");
+    Serial.println(WiFi.localIP());
+
+    server.on("/dados", []() {
+    String data = csv->to_csv("Torque", lista_torque, "Tempo", tempo, MAX_SAMPLES);
+    server.send(200, "text/csv", data); // Envia a página HTML ao navegador
+  });
+    server.begin();
+    Serial.println("HTTP server started");
+
 }
 
 

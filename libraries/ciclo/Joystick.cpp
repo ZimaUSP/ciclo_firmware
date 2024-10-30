@@ -38,13 +38,13 @@ bool Joystick::left() {
 }
 
 bool Joystick::right() {
-    if (get_power() >= 2000 && get_power() <= 4095)
+    if (get_power() >= 3000 && get_power() <= 4095)
         return true;
     return false;
 }
 
 bool Joystick::middle() {
-    if (get_power() > 1000 && get_power() < 2000)
+    if (get_power() > 1000 && get_power() < 3000)
         return true;
     return false;
 }

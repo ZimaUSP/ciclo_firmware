@@ -19,18 +19,17 @@
 class Memory {
     private:
         const char* name_spc;
-        Preferences pref;
 
     public:
         Memory(const char* name_spc);
 
-        void write(uint16_t* dataStore, const char* key);
+        void write(int* dataStore, const char* key, int size);
 
-        void read(uint16_t* dataRetrieve, const char* key);
+        void read(int* dataRetrieve, const char* key, int size);
 
-        void write(double* dataStore, const char* key);
+        void write(double* dataStore, const char* key, int size);
 
-        void read(double* dataRetrieve, const char* key);
+        void read(double* dataRetrieve, const char* key, int size);
 };
 
 #endif  // __MEMORY_HPP__

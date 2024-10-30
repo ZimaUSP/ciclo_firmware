@@ -20,30 +20,33 @@
 
 Memory::Memory(const char* name_spc) {
     this->name_spc = name_spc;
-    Preferences pref;
 }
 
-void Memory::write(uint16_t* dataStore, const char* key) {
+void Memory::write(int* dataStore, const char* key, int size) {
     Preferences pref;
-    pref.begin(this->name_spc);
-    pref.putBytes(key, (byte*)(&dataStore), sizeof(dataStore));
+    pref.begin(this->name_spc, false);
+    pref.putBytes(key, (byte*)dataStore, sizeof(int)*size);
+    pref.end(); 
 }
 
-void Memory::read(uint16_t* dataRetrieve, const char* key) {
+void Memory::read(int* dataRetrieve, const char* key, int size) {
     Preferences pref;
-    pref.begin(this->name_spc);
-    pref.getBytes(key, &dataRetrieve, sizeof(dataRetrieve));
+    pref.begin(this->name_spc, false);
+    pref.getBytes(key, dataRetrieve, sizeof(int)*size);
+    pref.end();
 }
 
-void Memory::write(double* dataStore, const char* key) {
+void Memory::write(double* dataStore, const char* key, int size) {
     Preferences pref;
-    pref.begin(this->name_spc);
-    pref.putBytes(key, (byte*)(&dataStore), sizeof(dataStore));
+    pref.begin(this->name_spc, false);
+    pref.putBytes(key, (byte*)(dataStore), sizeof(double)*size);
+    pref.end();
 }
 
-void Memory::read(double* dataRetrieve, const char* key) {
+void Memory::read(double* dataRetrieve, const char* key, int size) {
     Preferences pref;
-    pref.begin(this->name_spc);
-    pref.getBytes(key, &dataRetrieve, sizeof(dataRetrieve));
+    pref.begin(this->name_spc, false);
+    pref.getBytes(key, dataRetrieve, sizeof(double)*size);
+    pref.end();
 }
 

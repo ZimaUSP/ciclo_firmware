@@ -26,24 +26,24 @@ Memory::Memory(const char* name_spc) {
 void Memory::write(uint16_t* dataStore, const char* key) {
     Preferences pref;
     pref.begin(this->name_spc);
-    pref.putBytes(this->key, (byte*)(&dataStore), sizeof(dataStore));
+    pref.putBytes(key, (byte*)(&dataStore), sizeof(dataStore));
 }
 
 void Memory::read(uint16_t* dataRetrieve, const char* key) {
     Preferences pref;
     pref.begin(this->name_spc);
-    pref.getBytes(this->key, &dataRetrieve, sizeof(dataRetrieve));
+    pref.getBytes(key, &dataRetrieve, sizeof(dataRetrieve));
 }
 
 void Memory::write(double* dataStore, const char* key) {
     Preferences pref;
     pref.begin(this->name_spc);
-    pref.putBytes(this->key, (byte*)(&dataStore), sizeof(dataStore));
+    pref.putBytes(key, (byte*)(&dataStore), sizeof(dataStore));
 }
 
 void Memory::read(double* dataRetrieve, const char* key) {
     Preferences pref;
     pref.begin(this->name_spc);
-    pref.getBytes(this->key, &dataRetrieve, sizeof(dataRetrieve));
+    pref.getBytes(key, &dataRetrieve, sizeof(dataRetrieve));
 }
 

@@ -22,7 +22,7 @@ class Memory {
         Preferences pref;
 
     public:
-        Memory(const char* namespace);
+        Memory(const char* name_spc);
 
         void write(uint16_t* dataStore, const char* key);
 

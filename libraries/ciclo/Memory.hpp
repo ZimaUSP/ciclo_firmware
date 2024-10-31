@@ -19,9 +19,9 @@
 class Memory {
     private:
         const char* name_spc;
-
+        int old, next, size;
     public:
-        Memory(const char* name_spc);
+        Memory(const char* name_spc, int size);
 
         void write(int* dataStore, const char* key, int size);
 
@@ -30,6 +30,13 @@ class Memory {
         void write(double* dataStore, const char* key, int size);
 
         void read(double* dataRetrieve, const char* key, int size);
+
+        void remove_old();
+
+        void push_resistivo(int* tempo, double* lista_torque, int size);
+
+        void get_resistivo(int n, int* tempo, double* lista_torque, int size);
+
 };
 
 #endif  // __MEMORY_HPP__

@@ -29,6 +29,7 @@ WebServer server(80);
 //bool wifiOn = false; 
 
 #define MAX_SAMPLES 5
+#define N_SESSIONS 8
 
 const char* ssid = "Zima";     // Substitua pelo nome da sua rede Wi-Fi
 const char* password = "enzimasUSP"; // Substitua pela senha da rede
@@ -83,7 +84,8 @@ void inicializaComponentes() {
     cur->init();
 	  joystick = new Joystick(pot_pin, adc_register, wifi_register);
     csv = new CSV();
-    database = new Memory("resistivo");
+    
+    database = new Memory("resistivo", N_SESSIONS);
 }
 
 /*
@@ -369,8 +371,8 @@ void resistivo() {
         }
         printTime();
     }
-    database->write(lista_torque, "SavedTorque", MAX_SAMPLES);
-    database->write(tempo, "SavedTime", MAX_SAMPLES);
+
+    database->push(tempo, lista_torque, MAX_SAMPLES);
     delay(500);
     if (contador > 0) {  // Evitar divisão por zero
         torque_max = lista_torque[0];
@@ -403,12 +405,13 @@ void website_data(){
     Serial.println(WiFi.localIP());
 
     server.on("/dados", []() {
-      double data_torque [MAX_SAMPLES];
-      int data_tempo [MAX_SAMPLES];
-      database->read(data_torque, "SavedTorque", MAX_SAMPLES);
-      database->read(data_tempo, "SavedTime", MAX_SAMPLES);
-      String data = csv->to_csv("Torque", data_torque, "Tempo", data_tempo, MAX_SAMPLES);
-      server.send(200, "text/csv", data); // Envia a página HTML ao navegador
+      for(int i=0; i<N_SESSIONS, i++) {
+        double data_torque [MAX_SAMPLES];
+        int data_tempo [MAX_SAMPLES];
+        database->get(i, data_tempo, data_torque, MAX_SAMPLES);
+        //String data = csv->to_csv("Torque", data_torque, "Tempo", data_tempo, MAX_SAMPLES); //necessario mudar para armazenar cada numero de sessao diferente
+        //server.send(200, "text/csv", data); // Envia a página HTML ao navegador
+      }
   });
     server.begin();
     Serial.println("HTTP server started");

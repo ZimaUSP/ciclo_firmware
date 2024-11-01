@@ -6,6 +6,7 @@ double dados_torque [20];
 int dados_tempo [20];
 
 int size = 5;
+int sessions = 8;
 const char* name_spc = "resistivo";
 const char* key_torque = "SavedTorque";
 const char* key_time = "SavedTime";
@@ -29,18 +30,18 @@ int tempo_write0[5] = {0, 1, 2, 3, 4};
 void setup() {
   Serial.begin(9600);
 
-  saved = new Memory(name_spc, size);//a string aqui eh o namespace
+  saved = new Memory(name_spc, sessions);//a string aqui eh o namespace
 
   //saved->read(dados_torque, key_torque, size);
   //saved->read(dados_tempo, key_time, size);
   
   //saved->write(torque_write, key_torque, size);
   //saved->write(tempo_write, key_time, size);
-    saved->push_resistivo (tempo_write0, torque_write0, size);
-    saved->push_resistivo (tempo_write1, torque_write1, size);
-    saved->push_resistivo (tempo_write2, torque_write2, size);
-    saved->push_resistivo (tempo_write3, torque_write3, size);
-    saved->push_resistivo (tempo_write4, torque_write4, size);
+    saved->push (tempo_write0, torque_write0, size);
+    saved->push (tempo_write1, torque_write1, size);
+    saved->push (tempo_write2, torque_write2, size);
+    saved->push (tempo_write3, torque_write3, size);
+    saved->push (tempo_write4, torque_write4, size);
 }
 
 void loop() {
@@ -52,7 +53,7 @@ void loop() {
       pega_tempo[i] = 1;
       pega_torque[i] = 1;
     }
-    saved->get_resistivo(i, pega_tempo, pega_torque, size);
+    saved->get(i, pega_tempo, pega_torque, size);
     Serial.println();
     Serial.print("Dados na memoria do torque: ");
     Serial.print(i);
@@ -72,7 +73,7 @@ void loop() {
     }
   }
   delay(10000);
-  saved->push_resistivo(tempo_push, torque_push, size);
+  saved->push(tempo_push, torque_push, size);
 
 
 }

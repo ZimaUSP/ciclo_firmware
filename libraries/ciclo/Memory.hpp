@@ -33,9 +33,9 @@ class Memory {
 
         void remove_old();
 
-        void push(int* tempo, double* lista_torque, int size);
+        void push(int* tempo, double* lista_values, int size);
 
-        void get(int n, int* tempo, double* lista_torque, int size);
+        void get(int n, int* tempo, double* lista_values, int size);
 
 };
 

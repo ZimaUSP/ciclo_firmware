@@ -19,7 +19,7 @@
 class Memory {
     private:
         const char* name_spc;
-        int old, next, size;
+        int old, next, sessions;
     public:
         Memory(const char* name_spc, int size);
 
@@ -33,9 +33,9 @@ class Memory {
 
         void remove_old();
 
-        void push_resistivo(int* tempo, double* lista_torque, int size);
+        void push(int* tempo, double* lista_torque, int size);
 
-        void get_resistivo(int n, int* tempo, double* lista_torque, int size);
+        void get(int n, int* tempo, double* lista_torque, int size);
 
 };
 

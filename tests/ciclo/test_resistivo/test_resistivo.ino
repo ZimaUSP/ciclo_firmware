@@ -372,7 +372,7 @@ void resistivo() {
         printTime();
     }
 
-    database->push(tempo, lista_torque, MAX_SAMPLES);
+    database->push_resistivo(tempo, lista_torque, MAX_SAMPLES);
     delay(500);
     if (contador > 0) {  // Evitar divisão por zero
         torque_max = lista_torque[0];
@@ -408,7 +408,7 @@ void website_data(){
       for(int i=0; i<N_SESSIONS, i++) {
         double data_torque [MAX_SAMPLES];
         int data_tempo [MAX_SAMPLES];
-        database->get(i, data_tempo, data_torque, MAX_SAMPLES);
+        database->get_resistivo(i, data_tempo, data_torque, MAX_SAMPLES);
         //String data = csv->to_csv("Torque", data_torque, "Tempo", data_tempo, MAX_SAMPLES); //necessario mudar para armazenar cada numero de sessao diferente
         //server.send(200, "text/csv", data); // Envia a página HTML ao navegador
       }

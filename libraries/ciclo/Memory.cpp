@@ -45,6 +45,31 @@ Memory::Memory(const char* name_spc, int sessions) {
     pref.end();
 }
 
+void Memory::change_namespace(const char *new_name_spc) {
+    if(this->name_spc == new_name_spc)  return;
+    Preferences pref;
+    this->name_spc = new_name_spc;
+    pref.begin(this->name_spc, false);
+    if(pref.isKey("old")) {
+        this->old = pref.getInt("old", 0);
+    }
+    else {
+        this->old = 0;
+        pref.putInt("old", 0);
+    }
+    if(pref.isKey("next")) {
+        this->next = pref.getInt("next", 0);
+    }
+    else {
+        this->next = this->old;
+        pref.putInt("next", this->next);
+    }
+    while( this->next > this->old + this->sessions ) {//if there is conflict between new number of sessions and old one
+        remove_old();
+    }
+    pref.end();
+}
+
 void Memory::write(int* dataStore, const char* key, int size) {
     Preferences pref;
     pref.begin(this->name_spc, false);
@@ -77,14 +102,8 @@ void Memory::remove_old() {
     Preferences pref;
     pref.begin(this->name_spc, false);
     std::string str = std::to_string(this->old);
-    if(this->name_spc == "resistivo") {
-        pref.remove((str+"_torque").c_str());
-        pref.remove((str+"_tempo").c_str());
-    }
-    else if(this->name_spc == "normal" || this->name_spc == "passivo") {
-        pref.remove((str+"_frequencia").c_str());
-        pref.remove((str+"_tempo").c_str());
-    }
+    pref.remove((str+"_values").c_str());
+    pref.remove((str+"_tempo").c_str());
     this->old = this->old+1;
     pref.putInt("old", this->old);
     pref.end();
@@ -94,14 +113,8 @@ void Memory::push(int* tempo, double* lista_values, int size) {
     Preferences pref;
     pref.begin(this->name_spc, false);
     std::string str = std::to_string(this->next);
-    if(this->name_spc == "resistivo") {
-        write(tempo, (str+"_tempo").c_str(), size);
-        write(lista_values, (str+"_torque").c_str(), size);
-    }
-    else if(this->name_spc == "normal" || this->name_spc == "passivo") {
-        write(tempo, (str+"_tempo").c_str(), size);
-        write(lista_values, (str+"_frequencia").c_str(), size);
-    }
+    write(tempo, (str+"_tempo").c_str(), size);
+    write(lista_values, (str+"_values").c_str(), size);
     this->next = this->next+1;
     pref.putInt("next", this->next);
     while(this->old < this->next - this->sessions) {
@@ -111,12 +124,36 @@ void Memory::push(int* tempo, double* lista_values, int size) {
 
 void Memory::get(int n, int* tempo, double* lista_values, int size) {
     std::string str = std::to_string(n+this->old);
-    if(this->name_spc == "resistivo") {
-        read(lista_values, (str+"_torque").c_str(), size);
-        read(tempo, (str+"_tempo").c_str(), size);
-    }
-    else if(this->name_spc == "normal" || this->name_spc == "passivo") {
-        read(lista_values, (str+"_frequencia").c_str(), size);
-        read(tempo, (str+"_tempo").c_str(), size);
-    }
+    read(lista_values, (str+"_values").c_str(), size);
+    read(tempo, (str+"_tempo").c_str(), size);
+}
+
+void Memory::push_resistivo(int* tempo, double* lista_values, int size) {
+    change_namespace("resistivo");
+    push(tempo, lista_values, size);
+}
+
+void Memory::push_normal(int* tempo, double* lista_values, int size) {
+    change_namespace("normal");
+    push(tempo, lista_values, size);
+}
+
+void Memory::push_passivo(int* tempo, double* lista_values, int size) {
+    change_namespace("passivo");
+    push(tempo, lista_values, size);
+}
+
+void Memory::get_resistivo(int n, int* tempo, double* lista_values, int size) {
+    change_namespace("resistivo");
+    get(n, tempo, lista_values, size);
+}
+        
+void Memory::get_normal(int n, int* tempo, double* lista_values, int size) {
+    change_namespace("normal");
+    get(n, tempo, lista_values, size);
+}
+        
+void Memory::get_passivo(int n, int* tempo, double* lista_values, int size) {
+    change_namespace("passivo");
+    get(n, tempo, lista_values, size);
 }

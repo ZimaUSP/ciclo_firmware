@@ -46,7 +46,7 @@ Memory::Memory(const char* name_spc, int sessions) {
 }
 
 void Memory::change_namespace(const char *new_name_spc) {
-    if(this->name_spc == new_name_spc)  return;
+    if(std::string(this->name_spc) == std::string(new_name_spc))  return;
     Preferences pref;
     this->name_spc = new_name_spc;
     pref.begin(this->name_spc, false);

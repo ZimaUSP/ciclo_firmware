@@ -16,35 +16,51 @@ Memory *saved;
 void handleAPI() {
   // send response to request
   // server.send(int STATUS, string CONTENT-TYPE, string DATA_TO_SEND);
+
+  String path = server.uri(); //pega a path
+
+  String string_id = server.arg("id"); //pega id da session em string
+
   Serial.print("URL: ");
-  Serial.println(server.arg("id"));
+  Serial.println(string_id);
+  
+  int id = string_id.toInt(); //transforma o id string para int 
+
   int size = 5;
   double dados_torque[size];
   int dados_tempo[size];
 
-  saved->get_resistivo(1, dados_tempo, dados_torque, size);
-
-  JsonDocument doc;
-
-  JsonArray tempo = doc["tempo"].to<JsonArray>();
-
-  for(int i=0; i<size; i++){
-    tempo.add(dados_tempo[i]);
+  if(path == "/api/resistivo/sessions"){ // requisição dos dados do modo resistivo
+    saved->get_resistivo(id, dados_tempo, dados_torque, size);
+  }
+  else if(path == "/api/passivo/sessions"){ // requisição dos dados do modo passivo
+    saved->get_passivo(id, dados_tempo, dados_torque, size);
+  }
+  else if(path == "/api/normal/sessions"){ // requisição dos dados do modo normal
+    saved->get_normal(id, dados_tempo, dados_torque, size);
   }
 
-  JsonArray torque = doc["torque"].to<JsonArray>();
+  JsonDocument doc; //cria objeto json
+
+  JsonArray tempo = doc["tempo"].to<JsonArray>(); //cria o objeto tempo no documento json
 
   for(int i=0; i<size; i++){
-    torque.add(dados_torque[i]);
+    tempo.add(dados_tempo[i]); //add os valores colhidos para o objeto tempo
+  }
+
+  JsonArray torque = doc["torque"].to<JsonArray>(); //cria o objeto torque no documento json
+
+  for(int i=0; i<size; i++){
+    torque.add(dados_torque[i]); //add os valores colhidos para o objeto torque
   }
 
   String output;
 
   doc.shrinkToFit();  // optional
 
-  serializeJson(doc, output);
+  serializeJson(doc, output); //serializa o objeto (formata ele para string)
 
-  server.send(200, "text/json", output);
+  server.send(200, "text/json", output); //envia output em formato json
 }
 
 void setup() {
@@ -76,7 +92,10 @@ void setup() {
     server.send(200, "text/plain", "hello");
   });
 
-  server.on("/api/resistivo/sessions", handleAPI);
+  //endpoints
+  server.on("/api/resistivo/sessions", handleAPI); //pega dados resistivo
+  server.on("/api/passivo/sessions", handleAPI); //pega dados passivo
+  server.on("/api/normal/sessions", handleAPI); //pega dados normal
 
   server.begin();
 }

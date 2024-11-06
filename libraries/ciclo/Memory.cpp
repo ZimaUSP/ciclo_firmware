@@ -81,6 +81,7 @@ void Memory::read(int* dataRetrieve, const char* key, int size) {
     Preferences pref;
     pref.begin(this->name_spc, false);
     pref.getBytes(key, dataRetrieve, sizeof(int)*size); 
+    pref.end();
 }
 
 void Memory::write(double* dataStore, const char* key, int size) {
@@ -94,6 +95,7 @@ void Memory::read(double* dataRetrieve, const char* key, int size) {
     Preferences pref;
     pref.begin(this->name_spc, false);
     pref.getBytes(key, dataRetrieve, sizeof(double)*size); 
+    pref.end();
 }
 
 void Memory::remove_old() {
@@ -118,6 +120,7 @@ void Memory::push(int* tempo, double* lista_values, int size) {
     while(this->old < this->next - this->sessions) {
         remove_old();   
     }
+    pref.end();
 }
 
 void Memory::get(int n, int* tempo, double* lista_values) {

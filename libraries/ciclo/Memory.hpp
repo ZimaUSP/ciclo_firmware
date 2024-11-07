@@ -22,7 +22,7 @@ class Memory {
         int old, next, sessions;
 
     public:
-        Memory(const char* name_spc, int size);
+        Memory(int sessions);
 
         void change_namespace(const char *new_name_spc);
 
@@ -40,7 +40,7 @@ class Memory {
 
         void get(int n, int* tempo, double* lista_values);
 
-        int size(int n);
+        int size(int session_num);/*return size, number of measurements, of the nth session*/
 
         void push_resistivo(int* tempo, double* lista_values, int size);
 
@@ -54,11 +54,17 @@ class Memory {
         
         void get_passivo(int n, int* tempo, double* lista_values);
 
-        int size_resistivo(int n);
+        int get_saved_sessions_resistivo();/*return number of sessions saved in resistivo*/
         
-        int size_normal(int n);
+        int get_saved_sessions_normal();
         
-        int size_passivo(int n);
+        int get_saved_sessions_passivo();
+
+        int size_resistivo(int session_num);/*return size, number of measurements, of the nth session in resistivo*/
+        
+        int size_normal(int session_num);
+        
+        int size_passivo(int session_num);
 
 };
 

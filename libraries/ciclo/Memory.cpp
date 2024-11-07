@@ -19,8 +19,9 @@
  *****************************************/
 
 
-Memory::Memory(const char* name_spc, int sessions) {
+Memory::Memory(int sessions) {
     Preferences pref;
+    const char* name_spc = "resistivo"; //default
     this->name_spc = name_spc;
     pref.begin(this->name_spc, false);
     if(pref.isKey("old")) {
@@ -165,6 +166,21 @@ void Memory::get_normal(int n, int* tempo, double* lista_values) {
 void Memory::get_passivo(int n, int* tempo, double* lista_values) {
     change_namespace("passivo");
     get(n, tempo, lista_values);
+}
+
+int Memory::get_saved_sessions_resistivo() {
+    change_namespace("resistivo");
+    return (this->next - this->old);
+}
+        
+int Memory::get_saved_sessions_normal() {
+    change_namespace("normal");
+    return (this->next - this->old);
+}
+        
+int Memory::get_saved_sessions_passivo() {
+    change_namespace("passivo");
+    return (this->next - this->old);
 }
 
 int Memory::size_resistivo(int session_num) {

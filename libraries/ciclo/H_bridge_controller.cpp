@@ -12,6 +12,7 @@
 
 
 #include "H_bridge_controller.hpp"
+#include <Arduino.h>
 
 /*****************************************
  * Class Methods Bodies Definitions

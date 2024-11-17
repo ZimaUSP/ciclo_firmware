@@ -17,9 +17,12 @@
 #include "Joystick.hpp"
 #include "CSV.hpp"
 #include "Memory.hpp"
+#include "Website.hpp"
+
 Memory* database;
 Joystick *joystick;
 CSV *csv;
+WEBSITE* web;
 
 uint32_t adc_register;
 uint32_t wifi_register;
@@ -30,6 +33,8 @@ WebServer server(80);
 
 #define MAX_SAMPLES 5
 #define N_SESSIONS 8
+
+
 
 const char* ssid = "Zima";     // Substitua pelo nome da sua rede Wi-Fi
 const char* password = "enzimasUSP"; // Substitua pela senha da rede
@@ -80,10 +85,11 @@ void inicializaComponentes() {
     lcd.init();
     btn = new Button(btn_pin, 2);
     btn->init();
-    cur = new current_sensor(acs_pin, 1850, 20);
+    cur = new current_sensor(acs_pin, 18, 20);
     cur->init();
 	  joystick = new Joystick(pot_pin, adc_register, wifi_register);
     csv = new CSV();
+    web = new WEBSITE();
     
     database = new Memory("resistivo", N_SESSIONS);
 }
@@ -105,21 +111,26 @@ void executarLogica() {
     //if (done)
     //  return;
     Serial.println("executar lógica");
+    website_data();
     pwm_motor = def_pwm_motor();
+
     delay(500);
     lcd_timer.setInterval(duration() * 60000);
     delay(500);
     lcd.clear();
+
 
     if (verification() < 1) {
         delay(500);
         return;
     }
 
+
     resistivo();
+
     print_torque_results();
+
     delay(500);
-    website_data();
     Serial.println("logica executada");
     //done = true;
 }
@@ -405,7 +416,7 @@ void website_data(){
     Serial.println(WiFi.localIP());
 
     server.on("/dados", []() {
-      for(int i=0; i<N_SESSIONS, i++) {
+      for(int i=0; i<N_SESSIONS; i++) {
         double data_torque [MAX_SAMPLES];
         int data_tempo [MAX_SAMPLES];
         database->get_resistivo(i, data_tempo, data_torque, MAX_SAMPLES);
@@ -413,6 +424,31 @@ void website_data(){
         //server.send(200, "text/csv", data); // Envia a página HTML ao navegador
       }
   });
+
+
+    server.on("/Resistivo/sessions", [](){
+
+      String Websitehtml = web->websiteResistivo();
+ 
+      server.send(200,"text/html", Websitehtml);
+    });
+
+    server.on("/Normal/sessions", [](){
+
+      String Websitehtml = web->websiteNormal();
+ 
+      server.send(200,"text/html", Websitehtml);
+    });
+
+    server.on("/Passivo/sessions", [](){
+
+      String Websitehtml = web->websitePassivo();
+ 
+      server.send(200,"text/html", Websitehtml);
+    });
+    
+
+
     server.begin();
     Serial.println("HTTP server started");
 

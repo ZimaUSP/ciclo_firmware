@@ -59,6 +59,8 @@ int offset, pot, sum, i, contador,pwm_motor;
 double  t_Duration = 0.5;
 int verif = 1;
 int n_sessions;
+double lista_torque [MAX_SAMPLES];
+int tempo [MAX_SAMPLES];
 
 bool done = false;
 
@@ -392,8 +394,6 @@ int verification() {
 void resistivo() {
   delay(200);
     contador = 0;
-    double lista_torque [MAX_SAMPLES];
-    int tempo [MAX_SAMPLES];
     // Resetar o array de torques
     for (int i = 0; i < MAX_SAMPLES; i++) {
         lista_torque[i] = 3.0;
@@ -460,7 +460,7 @@ void website_data(){
       for(int i=0; i<N_SESSIONS; i++) {
         double data_torque [MAX_SAMPLES];
         int data_tempo [MAX_SAMPLES];
-        database->get_resistivo(i, data_tempo, data_torque);
+        database->get_resistivo(i, tempo, lista_torque);
         //String data = csv->to_csv("Torque", data_torque, "Tempo", data_tempo, MAX_SAMPLES); //necessario mudar para armazenar cada numero de sessao diferente
         //server.send(200, "text/csv", data); // Envia a página HTML ao navegador
       }
@@ -540,7 +540,7 @@ void getData() {
   int dados_tempo[size];
 
   if(path == "/data/resistivo/sessions"){ // requisição dos dados do modo resistivo
-    saved->get_resistivo(id, dados_tempo, dados_torque);
+    saved->get_resistivo(id, tempo, lista_torque);
   }
   else if(path == "/data/passivo/sessions"){ // requisição dos dados do modo passivo
     saved->get_passivo(id, dados_tempo, dados_torque);

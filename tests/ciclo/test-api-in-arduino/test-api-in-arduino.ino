@@ -11,9 +11,40 @@ WebServer server(80);  // definir porta do servidor
 const char* ssid = "Zima";
 const char* password = "enzimasUSP";
 
+int n_sessions;
+
 Memory *saved;
 
-void handleAPI() {
+void numberSessions(){
+
+  String path = server.uri(); //pega a path
+
+  if(path == "/number/resistivo/sessions"){ // requisição dos dados do modo resistivo
+    n_sessions = saved->get_saved_sessions_resistivo();
+  }
+  else if(path == "/number/passivo/sessions"){ // requisição dos dados do modo passivo
+    n_sessions = saved->get_saved_sessions_passivo();
+  }
+  else if(path == "/number/normal/sessions"){ // requisição dos dados do modo normal
+    n_sessions = saved->get_saved_sessions_normal();
+  }
+
+  //sessions = saved->get_saved_sessions_resistivo();
+  JsonDocument doc; // cria o documento em formato json 
+  
+  JsonArray sessions = doc["sessions"].to<JsonArray>(); // cria o objeto sessions
+  sessions.add(n_sessions); // adiciona valor  de sessions para o objeto json sessions
+
+  String output; // cria uma string chamada output
+
+  doc.shrinkToFit();  // optional
+
+  serializeJson(doc, output); //serializa o objeto (formata ele para string)
+
+  server.send(200, "text/json", output);
+}
+
+void getData() {
   // send response to request
   // server.send(int STATUS, string CONTENT-TYPE, string DATA_TO_SEND);
 
@@ -30,14 +61,14 @@ void handleAPI() {
   double dados_torque[size];
   int dados_tempo[size];
 
-  if(path == "/api/resistivo/sessions"){ // requisição dos dados do modo resistivo
-    saved->get_resistivo(id, dados_tempo, dados_torque, size);
+  if(path == "/data/resistivo/sessions"){ // requisição dos dados do modo resistivo
+    saved->get_resistivo(id, dados_tempo, dados_torque);
   }
-  else if(path == "/api/passivo/sessions"){ // requisição dos dados do modo passivo
-    saved->get_passivo(id, dados_tempo, dados_torque, size);
+  else if(path == "/data/passivo/sessions"){ // requisição dos dados do modo passivo
+    saved->get_passivo(id, dados_tempo, dados_torque);
   }
-  else if(path == "/api/normal/sessions"){ // requisição dos dados do modo normal
-    saved->get_normal(id, dados_tempo, dados_torque, size);
+  else if(path == "/data/normal/sessions"){ // requisição dos dados do modo normal
+    saved->get_normal(id, dados_tempo, dados_torque);
   }
 
   JsonDocument doc; //cria objeto json
@@ -65,10 +96,10 @@ void handleAPI() {
 
 void setup() {
   
-  int sessions = 8;
   const char* name_spc = "resistivo";
 
-  saved = new Memory(name_spc, sessions);//a string aqui eh o namespace
+  int max_sessions = 100;
+  saved = new Memory(max_sessions);//a string aqui eh o namespace
 
   // iniciar conexão
   WiFi.mode(WIFI_STA);
@@ -88,16 +119,26 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
+  
   server.on("/", []() {
     server.send(200, "text/plain", "hello");
   });
+  
 
   //endpoints
-  server.on("/api/resistivo/sessions", handleAPI); //pega dados resistivo
-  server.on("/api/passivo/sessions", handleAPI); //pega dados passivo
-  server.on("/api/normal/sessions", handleAPI); //pega dados normal
+  server.on("/data/resistivo/sessions", getData); //pega dados resistivo
+  server.on("/data/passivo/sessions", getData); //pega dados passivo
+  server.on("/data/normal/sessions", getData); //pega dados normal
+
+  server.on("/number/resistivo/sessions", numberSessions); //pega o número de sessões 
+  server.on("/number/passivo/sessions", numberSessions); //pega o número de sessões 
+  server.on("/number/normal/sessions", numberSessions); //pega o número de sessões 
 
   server.begin();
+
+  int data_tempo[5] = {0,1,2,3,4};
+  double data_torque[5] = {2,4,6,8,10.6};
+  saved->push_resistivo(data_tempo, data_torque, 5);
 }
 
 void loop() {

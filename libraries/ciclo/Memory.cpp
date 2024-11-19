@@ -19,8 +19,9 @@
  *****************************************/
 
 
-Memory::Memory(const char* name_spc, int sessions) {
+Memory::Memory(int sessions) {
     Preferences pref;
+    const char* name_spc = "resistivo"; //default
     this->name_spc = name_spc;
     pref.begin(this->name_spc, false);
     if(pref.isKey("old")) {
@@ -80,7 +81,7 @@ void Memory::write(int* dataStore, const char* key, int size) {
 void Memory::read(int* dataRetrieve, const char* key, int size) {
     Preferences pref;
     pref.begin(this->name_spc, false);
-    pref.getBytes(key, dataRetrieve, sizeof(int)*size);
+    pref.getBytes(key, dataRetrieve, sizeof(int)*size); 
     pref.end();
 }
 
@@ -94,7 +95,7 @@ void Memory::write(double* dataStore, const char* key, int size) {
 void Memory::read(double* dataRetrieve, const char* key, int size) {
     Preferences pref;
     pref.begin(this->name_spc, false);
-    pref.getBytes(key, dataRetrieve, sizeof(double)*size);
+    pref.getBytes(key, dataRetrieve, sizeof(double)*size); 
     pref.end();
 }
 
@@ -120,12 +121,21 @@ void Memory::push(int* tempo, double* lista_values, int size) {
     while(this->old < this->next - this->sessions) {
         remove_old();   
     }
+    pref.end();
 }
 
-void Memory::get(int n, int* tempo, double* lista_values, int size) {
+void Memory::get(int n, int* tempo, double* lista_values) {
     std::string str = std::to_string(n+this->old);
-    read(lista_values, (str+"_values").c_str(), size);
-    read(tempo, (str+"_tempo").c_str(), size);
+    int s = size(n);
+    read(lista_values, (str+"_values").c_str(), s);
+    read(tempo, (str+"_tempo").c_str(), s);
+}
+
+int Memory::size(int n) {
+    Preferences pref;
+    pref.begin(this->name_spc, false);
+    std::string str = std::to_string(n+this->old);
+    return pref.getBytesLength((str+"_tempo").c_str())/sizeof(int);
 }
 
 void Memory::push_resistivo(int* tempo, double* lista_values, int size) {
@@ -143,17 +153,47 @@ void Memory::push_passivo(int* tempo, double* lista_values, int size) {
     push(tempo, lista_values, size);
 }
 
-void Memory::get_resistivo(int n, int* tempo, double* lista_values, int size) {
+void Memory::get_resistivo(int n, int* tempo, double* lista_values) {
     change_namespace("resistivo");
-    get(n, tempo, lista_values, size);
+    get(n, tempo, lista_values);
 }
         
-void Memory::get_normal(int n, int* tempo, double* lista_values, int size) {
+void Memory::get_normal(int n, int* tempo, double* lista_values) {
     change_namespace("normal");
-    get(n, tempo, lista_values, size);
+    get(n, tempo, lista_values);
 }
         
-void Memory::get_passivo(int n, int* tempo, double* lista_values, int size) {
+void Memory::get_passivo(int n, int* tempo, double* lista_values) {
     change_namespace("passivo");
-    get(n, tempo, lista_values, size);
+    get(n, tempo, lista_values);
+}
+
+int Memory::get_saved_sessions_resistivo() {
+    change_namespace("resistivo");
+    return (this->next - this->old);
+}
+        
+int Memory::get_saved_sessions_normal() {
+    change_namespace("normal");
+    return (this->next - this->old);
+}
+        
+int Memory::get_saved_sessions_passivo() {
+    change_namespace("passivo");
+    return (this->next - this->old);
+}
+
+int Memory::size_resistivo(int session_num) {
+    change_namespace("resistivo");
+    return size(session_num);
+}
+        
+int Memory::size_normal(int session_num) {
+    change_namespace("normal");
+    return size(session_num);
+}
+        
+int Memory::size_passivo(int session_num) {
+    change_namespace("passivo");
+    return size(session_num);
 }

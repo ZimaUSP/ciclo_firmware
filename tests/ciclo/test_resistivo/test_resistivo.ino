@@ -26,10 +26,7 @@ Memory* database;
 Joystick *joystick;
 CSV *csv;
 Memory* saved;
-<<<<<<< HEAD
 WEBSITE* web;
-=======
->>>>>>> 70ad17e160fd7ea6ff31c9c68e87ccc962bf6755
 
 uint32_t adc_register;
 uint32_t wifi_register;

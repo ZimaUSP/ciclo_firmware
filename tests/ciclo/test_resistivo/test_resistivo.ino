@@ -38,9 +38,6 @@ WebServer server(80);
 #define MAX_SAMPLES 5
 #define N_SESSIONS 8
 
-<<<<<<< HEAD
-
-
 const char* ssid = "Zima";     // Substitua pelo nome da sua rede Wi-Fi
 const char* password = "enzimasUSP"; // Substitua pela senha da rede
 
@@ -50,7 +47,6 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 SimpleTimer lcd_timer;
 SimpleTimer torque_Time;
 Button* btn;
-
 
 double t0, torque, torque_max, torque_min, torque_med;
 float acs;

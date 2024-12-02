@@ -1,47 +1,52 @@
 #include "config.hpp"
 #include "Memory.hpp"
+#include <WiFi.h> 
+#include <WiFiClient.h>
+#include <WebServer.h>
+
 Memory *saved;
 
-double dados_torque[20];
-int dados_tempo[20];
-
 int size = 5;
-const char* name_spc = "resistivo";
-const char* key_torque = "SavedTorque";
-const char* key_time = "SavedTime";
+int sessions = 8;
 
+WebServer server(80); 
+
+const char* ssid = "Zima";     // Substitua pelo nome da sua rede Wi-Fi
+const char* password = "enzimasUSP"; // Substitua pela senha da rede
+
+void numberSessions() {
+  Serial.println("getting num sessions...");
+  saved = new Memory(sessions);//a string aqui eh o namespace
+  int num = saved->get_saved_sessions_resistivo();
+  Serial.println(num);
+  String out = "num session: " + String(num);
+  server.send(200, "text/plain", out);
+}
 
 
 void setup() {
   Serial.begin(9600);
 
-  saved = new Memory(name_spc);//a string aqui eh o namespace
+  Serial.println("Conectando ao Wi-Fi...");
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
 
-  saved->read(dados_torque, key_torque, size);
-  saved->read(dados_tempo, key_time, size);
-  
-  
-  Serial.println();
-  Serial.println("Dados na memoria do torque sem classe:");
-  for(int i=0;i<5;i++) {
-        Serial.print(dados_torque[i]);
-        Serial.print(" ");
-  
-  }
-  Serial.println();
-  Serial.println("Dados na memoria do tempo sem classe:");
-  for(int i=0;i<5;i++) {
-        Serial.print(dados_tempo[i]);
-        Serial.print(" ");
-  }
-  
-  //int tempo_write [5] = {0, 1, 2, 3, 4};
-  //double torque_write [5] = {20, 10, 13, 5, 17};
-  //saved->write(torque_write, key_torque, size);
-  //saved->write(tempo_write, key_time, size);
+  server.on("/", numberSessions);
+
+  server.begin();
   
 }
 
 void loop() {
-
+  server.handleClient();
+  delay(2);//allow the cpu to switch to other tasks
 }

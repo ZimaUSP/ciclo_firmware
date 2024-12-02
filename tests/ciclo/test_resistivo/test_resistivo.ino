@@ -26,7 +26,10 @@ Memory* database;
 Joystick *joystick;
 CSV *csv;
 Memory* saved;
+<<<<<<< HEAD
 WEBSITE* web;
+=======
+>>>>>>> 70ad17e160fd7ea6ff31c9c68e87ccc962bf6755
 
 uint32_t adc_register;
 uint32_t wifi_register;
@@ -38,6 +41,7 @@ WebServer server(80);
 #define MAX_SAMPLES 5
 #define N_SESSIONS 8
 
+<<<<<<< HEAD
 
 
 const char* ssid = "Zima";     // Substitua pelo nome da sua rede Wi-Fi
@@ -171,11 +175,17 @@ void executarLogica() {
         return;
     }
 
+<<<<<<< HEAD
 
     resistivo();
     print_torque_results();
+=======
+    //resistivo();
+    //print_torque_results(); // comentado
+>>>>>>> 70ad17e160fd7ea6ff31c9c68e87ccc962bf6755
     delay(500);
-    website_data();
+    //website_data(); // AQUI NAO FUNCIONA
+    //endpoints(); // AQUI NAO FUNCIONA
     Serial.println("logica executada");
     //done = true;
 }
@@ -465,6 +475,7 @@ void website_data(){
         //server.send(200, "text/csv", data); // Envia a página HTML ao navegador
       }
   });
+<<<<<<< HEAD
 
 
     server.on("/Resistivo/sessions", [](){
@@ -491,6 +502,9 @@ void website_data(){
 
 
     server.begin();
+=======
+    //server.begin();
+>>>>>>> 70ad17e160fd7ea6ff31c9c68e87ccc962bf6755
     Serial.println("HTTP server started");
 
 }

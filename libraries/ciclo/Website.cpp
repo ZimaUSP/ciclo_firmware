@@ -1,5 +1,63 @@
 #include "Website.hpp"
 
+String WEBSITE::websiteChart() {
+	String html = 
+"<!DOCTYPE html>\n"
+"<html lang='en'>\n"
+"<head>\n"
+"    <meta charset='UTF-8'>\n"
+"    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\n"
+"    <title>Document</title>\n"
+"</head>\n"
+"<body>\n"
+"    <div>\n"
+"        <canvas id='myChart' ></canvas>\n"
+"    </div>\n"
+"    <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>\n"
+"    <script>\n"
+"        const ctx = document.getElementById('myChart');\n"
+"\n"
+"        const url = '/data/resistivo/sessions';\n"
+"        \n"
+"        const options = {\n"
+"		    method: 'GET'\n"
+"        };\n"
+"        fetch(url, options)\n"
+"            .then(response => response.json() )\n"
+"            .then( response => {\n"
+"                console.log('hello');\n"
+"                console.log(response);\n"
+"                let tempo = response.tempo;\n"
+"                let torque = response.torque;\n"
+"                createChart(tempo, torque);\n"
+"            } );\n"
+"\n"
+"        function createChart(tempo, torque) {\n"
+"            const data = {\n"
+"                labels: tempo,\n"
+"                datasets: [{\n"
+"                    label: 'Teste',\n"
+"                    data: torque,\n"
+"                    fill: false,\n"
+"                    borderColor: 'rgb(75, 192, 192)',\n"
+"                    tension: 0.1\n"
+"                }]\n"
+"            };\n"
+"            const config = {\n"
+"                type: 'line',\n"
+"                data: data,\n"
+"            };\n"
+"            \n"
+"            new Chart(ctx, config);\n"
+"        }\n"
+"    </script>\n"
+"</body>\n"
+"</html>\n";
+
+	return html;
+
+}
+
 String WEBSITE::websiteResistivo(){
     //html
 String html = 

@@ -12,7 +12,6 @@
 
 
 #include "Memory.hpp"
-#include <String>
 
 /*****************************************
  * Class Methods Bodies Definitions

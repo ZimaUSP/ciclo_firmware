@@ -60,7 +60,7 @@
 
 
 // BTS
-#define MAX_PWM 255
+#define MAX_PWM 50
 #define max_pwm_cte 0.7
 #define r_pin 23 
 #define l_pin 19 
@@ -97,5 +97,5 @@
 #define LIMITE_DEBILIDADO 5
 #define LIMITE_SAUDAVEL 10
 
-#define sample_t 10 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
+#define sample_t 400 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
 #endif 

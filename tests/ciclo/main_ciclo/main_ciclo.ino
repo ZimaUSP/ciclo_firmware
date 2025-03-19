@@ -28,6 +28,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);  // LCD lib
 SimpleTimer lcd_timer;
 SimpleTimer rpmTime;
 SimpleTimer torque_Time;
+TaskHandle_t TaskWifiHandle;
 
 //******OBJECTS******//
 Encoder* encoder;
@@ -35,7 +36,6 @@ H_bridge_controller* motorController;
 Button* btn;
 PID* PID_vel;
 Joystick* joy;
-Memory* database;
 CSV *csv;
 Memory* saved;
 WEBSITE* web;
@@ -89,43 +89,151 @@ const char* password = "enzimasUSP"; // Substitua pela senha da rede
 
 //******FUNCTIONS******//
 
-void numberSessions(){
+void setEndpoints() {
+  
+  server.on("/chart", [](){
+    String Websitehtml = web->websiteChart();
+    server.send(200,"text/html", Websitehtml);
+  });
 
-  String path = server.uri(); //pega a path
+  server.on("/Resistivo/sessions", [](){
+    String Websitehtml = web->websiteResistivo();
+    server.send(200,"text/html", Websitehtml);
+  });
 
-  if(path == "/number/resistivo/sessions"){ // requisição dos dados do modo resistivo
-    n_sessions = saved->get_saved_sessions_resistivo();
-  }
-  else if(path == "/number/passivo/sessions"){ // requisição dos dados do modo passivo
-    n_sessions = saved->get_saved_sessions_passivo();
-  }
-  else if(path == "/number/normal/sessions"){ // requisição dos dados do modo normal
-    n_sessions = saved->get_saved_sessions_normal();
-  }
-  //n_sessions = saved->get_saved_sessions_resistivo();
-  JsonDocument doc; // cria o documento em formato json 
+  server.on("/Normal/sessions", [](){
+    String Websitehtml = web->websiteNormal();
+    server.send(200,"text/html", Websitehtml);
+  });
 
-  JsonArray sessions = doc["sessions"].to<JsonArray>(); // cria o objeto sessions
-  sessions.add(n_sessions); // adiciona valor de sessions para o objeto json sessions
+  server.on("/Passivo/sessions", [](){
+    String Websitehtml = web->websitePassivo();
+    server.send(200,"text/html", Websitehtml);
+  });
 
-  String output; // cria uma string chamada output
-
-  doc.shrinkToFit();  // optional
-
-  serializeJson(doc, output); //serializa o objeto (formata ele para string)
-
-  server.send(200, "text/json", output);
-}
-
-void endpoints(){
   server.on("/data/resistivo/sessions", getData); //pega dados resistivo
-  server.on("/data/passivo/sessions", getData); //pega dados passivo
+  // server.on("/data/passivo/sessions", getData); //pega dados passivo
   server.on("/data/normal/sessions", getData); //pega dados normal
 
   server.on("/number/resistivo/sessions", numberSessions); //pega o número de sessões 
   server.on("/number/passivo/sessions", numberSessions); //pega o número de sessões 
   server.on("/number/normal/sessions", numberSessions); //pega o número de sessões 
-  //server.on("/oi", oi); //pega o número de sessões 
+
+  server.on("/data/resistivo/sessions/csv", getCSV);
+  server.on("/data/passivo/sessions/csv", getCSV);
+  server.on("/data/normal/sessions/csv", getCSV);
+}
+
+void getCSV() {
+String path = server.uri(); //pega a path
+
+String string_id = server.arg("id"); //pega id da session em string
+
+Serial.print("URL: ");
+Serial.println(string_id);
+
+int id = string_id.toInt(); //transforma o id string para int 
+
+int size = MAX_SAMPLES;
+double dados_torque[size];
+int dados_tempo[size];
+CSV *csv = new CSV();
+String data = "";
+
+if(path == "/data/resistivo/sessions/csv"){ // requisição dos dados do modo resistivo
+  saved->get_resistivo(id, dados_tempo, dados_torque);
+  data = csv->to_csv("Torque", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+}
+else if(path == "/data/passivo/sessions/csv"){ // requisição dos dados do modo passivo
+  saved->get_passivo(id, dados_tempo, dados_torque);
+  data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+}
+else if(path == "/data/normal/sessions/csv"){ // requisição dos dados do modo normal
+  saved->get_normal(id, dados_tempo, dados_torque);
+  data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+}
+server.send(200, "text/csv", data);
+
+}
+
+void getData() {
+// send response to request
+// server.send(int STATUS, string CONTENT-TYPE, string DATA_TO_SEND);
+
+String path = server.uri(); //pega a path
+
+String string_id = server.arg("id"); //pega id da session em string
+
+Serial.print("URL: ");
+Serial.println(string_id);
+
+int id = string_id.toInt(); //transforma o id string para int 
+
+int size = MAX_SAMPLES;
+double dados_torque[size];
+int dados_tempo[size];
+
+if(path == "/data/resistivo/sessions"){ // requisição dos dados do modo resistivo
+  saved->get_resistivo(id, dados_tempo, dados_torque);
+}
+else if(path == "/data/passivo/sessions"){ // requisição dos dados do modo passivo
+  saved->get_passivo(id, dados_tempo, dados_torque);
+}
+else if(path == "/data/normal/sessions"){ // requisição dos dados do modo normal
+  saved->get_normal(id, dados_tempo, dados_torque);
+}
+
+JsonDocument doc; //cria objeto json
+
+JsonArray tempo = doc["tempo"].to<JsonArray>(); //cria o objeto tempo no documento json
+
+for(int i=0; i<size; i++){
+  tempo.add(dados_tempo[i]); //add os valores colhidos para o objeto tempo
+}
+
+JsonArray torque = doc["torque"].to<JsonArray>(); //cria o objeto torque no documento json
+
+for(int i=0; i<size; i++){
+  torque.add(dados_torque[i]); //add os valores colhidos para o objeto torque
+}
+
+String output;
+
+doc.shrinkToFit();  // optional
+
+serializeJson(doc, output); //serializa o objeto (formata ele para string)
+
+server.send(200, "text/json", output); //envia output em formato json
+}
+
+void numberSessions(){
+
+int n_sessions;
+
+String path = server.uri(); //pega a path
+
+if(path == "/number/resistivo/sessions"){ // requisição dos dados do modo resistivo
+  n_sessions = saved->get_saved_sessions_resistivo();
+}
+
+else if(path == "/number/passivo/sessions"){ // requisição dos dados do modo passivo
+  n_sessions = saved->get_saved_sessions_passivo();
+}
+else if(path == "/number/normal/sessions"){ // requisição dos dados do modo normal
+  n_sessions = saved->get_saved_sessions_normal();
+}
+//n_sessions = saved->get_saved_sessions_resistivo();
+JsonDocument doc; // cria o documento em formato json 
+
+JsonArray sessions = doc["sessions"].to<JsonArray>(); // cria o objeto sessions
+sessions.add(n_sessions); // adiciona valor de sessions para o objeto json sessions
+
+String output; // cria uma string chamada output
+
+doc.shrinkToFit();  // optional
+
+serializeJson(doc, output); //serializa o objeto (formata ele para string)
+server.send(200, "text/json", output);
 }
 
 void handleRoot() {
@@ -169,7 +277,21 @@ void conectarWiFi() {
       server.send(200, "text/plain", "this works as well");
     });
 
-    endpoints();
+    setEndpoints();
+
+    server.begin();
+}
+
+void TaskWifiCode( void * pvParameters ){
+  Serial.print("TaskWifi running on core ");
+  Serial.println(xPortGetCoreID());
+
+  conectarWiFi();
+
+  while (true) {
+    server.handleClient();
+    delay(2);//allow the cpu to switch to other tasks
+  }
 }
 
 void inicializaComponentes() {
@@ -198,7 +320,7 @@ void inicializaComponentes() {
   cur->init();
   csv = new CSV();
   web = new WEBSITE();
-  database = new Memory(N_SESSIONS);
+  saved = new Memory(N_SESSIONS);
     
 }
 
@@ -249,12 +371,16 @@ void passivo() {
 
 
     if (rpmTime.getTimePassed() > sample_t) {
+
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
       actual_rpm = delta_pulses * 1.01;
 
-      lista_values[contador] = actual_rpm;
-      tempo[contador]=contador*sample_t;
+      if(contador < MAX_SAMPLES) {
+        lista_values[contador] = actual_rpm;
+        tempo[contador]=contador*sample_t;
+        contador++;
+      }
 
       Serial.print(actual_rpm);
       Serial.print(", ");
@@ -270,18 +396,18 @@ void passivo() {
     
     printTime();
   }
-  database->push_passivo(tempo, lista_values, MAX_SAMPLES);
+  saved->push_passivo(tempo, lista_values, MAX_SAMPLES);
 }
 
-void website_data(){
-    //algo para saber qual modo
+/*void website_data(){
+    
     Serial.print("IP local: ");
     Serial.println(WiFi.localIP());
     server.on("/data/csv/resistivo/sessions", []() { //mudar string de acordo com o modo
       for(int i=0; i<N_SESSIONS; i++) {
         double data_torque [MAX_SAMPLES];
         int data_tempo [MAX_SAMPLES];
-        database->get_resistivo(i, tempo, lista_values);
+        saved->get_resistivo(i, tempo, lista_values);
         //String data = csv->to_csv("Torque", data_torque, "Tempo", data_tempo, MAX_SAMPLES); //necessario mudar para armazenar cada numero de sessao diferente
         //server.send(200, "text/csv", data); // Envia a página HTML ao navegador
       }
@@ -314,9 +440,9 @@ void website_data(){
     server.begin();
     Serial.println("HTTP server started");
 
-}
+}*/
 
-void getData() {
+/*void getData() {
   // send response to request
   // server.send(int STATUS, string CONTENT-TYPE, string DATA_TO_SEND);
 
@@ -364,7 +490,7 @@ void getData() {
   serializeJson(doc, output); //serializa o objeto (formata ele para string)
 
   server.send(200, "text/json", output); //envia output em formato json
-}
+}*/
 
 //Implementation resistivo mode
 void executarLogicaResistivo() {
@@ -372,7 +498,7 @@ void executarLogicaResistivo() {
     //if (done)
     //  return;'
     Serial.println("executar lógica");
-    website_data();
+    //website_data();
     pwm_motor = def_pwm_motor();
 
     delay(500);
@@ -465,7 +591,7 @@ void resistivo() {
         printTime();
     }
 
-    database->push_resistivo(tempo, lista_values, MAX_SAMPLES);
+    saved->push_resistivo(tempo, lista_values, MAX_SAMPLES);
     delay(500);
     if (contador > 0) {  // Evitar divisão por zero
         torque_max = lista_values[0];
@@ -522,26 +648,35 @@ void print_torque_results() {
 // Implemetation normal Mode (Criar Classe normal para implementar esses controle e evitar de ter muita coisa na main)
 
 void normal() {
+  contador = 0;
   lcd_timer.reset();
   rpmTime.reset();
-  website_data();
+  //website_data();
   while (!lcd_timer.isReady()) {  //tempo nao acaba
     server.handleClient(); 
 
     if (rpmTime.getTimePassed() > 400) {
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
-      actual_rpm = delta_pulses / 400;
+      double revolutions = delta_pulses/pulses_per_rev;
+      actual_rpm = revolutions*(60000/400);
+
+      if(contador < MAX_SAMPLES) {
+        lista_values[contador] = torque;
+        tempo[contador]=contador*sample_t;
+        contador++;
+      }
+      
       resetEncoderIfExceedsLimit();
       rpmTime.reset();
       last_pulses = current_pulses;
     }
     lcd.setCursor(0, 1);
     lcd.print("Frequency: ");
-    sprintf(t, "%02d", actual_rpm);
-    lcd.print(t);
+    lcd.print(actual_rpm);
     printTime();
   }
+  saved->push_normal(tempo, lista_values, MAX_SAMPLES);
 }
 
 // Select funcition
@@ -732,23 +867,28 @@ void setup() {
   inicializaComponentes();
   char* name_spc = "resistivo";
 
-  int max_sessions = 100;
-  saved = new Memory(max_sessions);//a string aqui eh o namespace
-
   Serial.begin(9600);
   // Conectar ao Wi-Fi na inicialização
-  conectarWiFi();
+  //conectarWiFi();
   //endpoints();
-  server.begin();
-
+  xTaskCreatePinnedToCore(
+                      TaskWifiCode,   // Task function.
+                      "TaskWIfi",     // name of task.
+                      10000,       // Stack size of task
+                      NULL,        // parameter of the task
+                      1,           // priority of the task
+                      &TaskWifiHandle,      // Task handle to keep track of created task
+                      0);          // pin task to core 0
+  delay(500); 
   STATE = STAND_BY;
+  
 }
 
 void loop() {
 
   switch (STATE) {
     case PASSIVE:
-      website_data();
+      //website_data();
       goal_rpm = goalRPM();
       delay(500);
       lcd_timer.setInterval(duration() * 60000);

@@ -340,11 +340,22 @@ void resetEncoderIfExceedsLimit() {
 // PID control
 void controlMotorSpeedWithPID() {
   output = PID_vel->computePID(actual_rpm, goal_rpm, tolerance);
-
+  
+  Serial.print("goal: ");
+  Serial.print(goal_rpm);
+  Serial.print("; actual rpm: ");
+  Serial.print(actual_rpm);
+  Serial.print("; tolerance: ");
+  Serial.print(tolerance);
+  Serial.print("; output: ");
+  Serial.println(output);
+  
   if (output < 0) {
+    Serial.println("going left");
     output = max(output, -MAX_PWM);
     motorController->Set_L(-output);
   } else {
+    Serial.println("going right");
     output = min(output, MAX_PWM);
     motorController->Set_R(output);
   }
@@ -369,7 +380,6 @@ void passivo() {
   while (!lcd_timer.isReady()) {  //tempo nao acaba
     server.handleClient(); 
 
-
     if (rpmTime.getTimePassed() > sample_t) {
 
       current_pulses = encoder->getPulses();
@@ -381,11 +391,10 @@ void passivo() {
         tempo[contador]=contador*sample_t;
         contador++;
       }
-
       Serial.print(actual_rpm);
-      Serial.print(", ");
-      Serial.println(lcd_timer.getTimePassed());
-
+      Serial.print("; time: ");
+      Serial.println(timePassed);
+      */
 
       resetEncoderIfExceedsLimit();
       controlMotorSpeedWithPID();
@@ -670,6 +679,11 @@ void normal() {
       resetEncoderIfExceedsLimit();
       rpmTime.reset();
       last_pulses = current_pulses;
+      Serial.print("; actual rpm: ");
+      Serial.print(actual_rpm);
+      Serial.print("; time: ");
+      Serial.println(lcd_timer.getTimePassed());
+
     }
     lcd.setCursor(0, 1);
     lcd.print("Frequency: ");
@@ -867,6 +881,7 @@ void setup() {
   inicializaComponentes();
   char* name_spc = "resistivo";
 
+<<<<<<< HEAD
   Serial.begin(9600);
   // Conectar ao Wi-Fi na inicialização
   //conectarWiFi();
@@ -967,7 +982,6 @@ void loop() {
       server.handleClient();
       delay(2);
       return;
-  
   
   }
 

@@ -19,7 +19,7 @@
 class Memory {
     private:
         const char* name_spc;
-        int old, next, sessions;
+        int old, next, sessions, limitpush;
 
     public:
         Memory(int sessions);
@@ -35,6 +35,8 @@ class Memory {
         void read(double* dataRetrieve, const char* key, int size);
 
         void remove_old();
+
+        int printalgo();
 
         void push(int* tempo, double* lista_values, int size);
 

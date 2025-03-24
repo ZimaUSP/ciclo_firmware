@@ -1,3 +1,5 @@
+#include <dummy.h>
+#include <string>
 #include "H_bridge_controller.hpp"
 #include "config.hpp"
 #include "current_sensor.hpp"

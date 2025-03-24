@@ -1,3 +1,5 @@
+#include <dummy.h>
+#include <string>
 #include "H_bridge_controller.hpp"
 #include "config.hpp"
 #include "current_sensor.hpp"
@@ -454,7 +456,7 @@ void resistivo() {
 void website_data(){
     Serial.print("IP local: ");
     Serial.println(WiFi.localIP());
-    server.on("/dados", []() {
+    server.on("/data/csv/resistivo/sessions", []() {
       for(int i=0; i<N_SESSIONS; i++) {
         double data_torque [MAX_SAMPLES];
         int data_tempo [MAX_SAMPLES];

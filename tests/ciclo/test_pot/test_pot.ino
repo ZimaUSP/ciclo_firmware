@@ -1,6 +1,6 @@
 
-#include "config.hpp"
-#include "soc/sens_reg.h" // needed for manipulating ADC2 control register
+//#include "config.hpp"
+//#include "soc/sens_reg.h" // needed for manipulating ADC2 control register
 uint64_t reg_b; // Used to store ADC2 control register
 #define PIN 15 // Substitute xx with your ADC2 Pin number
 int value;

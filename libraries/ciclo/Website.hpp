@@ -5,6 +5,7 @@
 
 class WEBSITE{
   public:
+	String websiteChart();
     String websiteResistivo();
     String websiteNormal();
     String websitePassivo();

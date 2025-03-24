@@ -66,11 +66,22 @@ void resetEncoderIfExceedsLimit() {
 // PID control
 void controlMotorSpeedWithPID() {
   output = PID_vel->computePID(actual_rpm, goal_rpm, tolerance);
-
+  
+  Serial.print("goal: ");
+  Serial.print(goal_rpm);
+  Serial.print("; actual rpm: ");
+  Serial.print(actual_rpm);
+  Serial.print("; tolerance: ");
+  Serial.print(tolerance);
+  Serial.print("; output: ");
+  Serial.println(output);
+  
   if (output < 0) {
+    Serial.println("going left");
     output = max(output, -MAX_PWM);
     motorController->Set_L(-output);
   } else {
+    Serial.println("going right");
     output = min(output, MAX_PWM);
     motorController->Set_R(output);
   }
@@ -88,16 +99,20 @@ void passivo() {
   while (!lcd_timer.isReady()) {  //tempo nao acaba
 
 
-
-    if (rpmTime.getTimePassed() > sample_t) {
+    double timePassed = rpmTime.getTimePassed();
+    if (timePassed > sample_t) {
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
-      actual_rpm = delta_pulses * 1.01;
-
+      double revolutions = delta_pulses/pulses_per_rev;
+      actual_rpm = -1 * revolutions * (60000/timePassed);
+      /*
+      Serial.print("goal: ");
+      Serial.print(goal_rpm);
+      Serial.print("; actual rpm: ");
       Serial.print(actual_rpm);
-      Serial.print(", ");
-      Serial.println(lcd_timer.getTimePassed());
-
+      Serial.print("; time: ");
+      Serial.println(timePassed);
+      */
 
       resetEncoderIfExceedsLimit();
       controlMotorSpeedWithPID();
@@ -124,15 +139,20 @@ void normal() {
     if (rpmTime.getTimePassed() > 400) {
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
-      actual_rpm = delta_pulses / 400;
+      double revolutions = delta_pulses/pulses_per_rev;
+      actual_rpm = revolutions*(60000/400);
       resetEncoderIfExceedsLimit();
       rpmTime.reset();
       last_pulses = current_pulses;
+      Serial.print("; actual rpm: ");
+      Serial.print(actual_rpm);
+      Serial.print("; time: ");
+      Serial.println(lcd_timer.getTimePassed());
+
     }
     lcd.setCursor(0, 1);
     lcd.print("Frequency: ");
-    sprintf(t, "%02d", actual_rpm);
-    lcd.print(t);
+    lcd.print(actual_rpm);
     printTime();
   }
 }
@@ -335,7 +355,7 @@ void setup() {
   lcd.init();  // initialize the lcd
   last_t = millis();
 
-  joy = new Joystick(pot_pin);
+  joy = new Joystick(pot_pin, NULL, NULL);
 
   STATE = STAND_BY;
 }
@@ -413,11 +433,7 @@ void loop() {
 
       delay(500);
       reset();
-      return;
-
-    case RESISTIVO:
-      
-  
+      return;  
   
   }
 

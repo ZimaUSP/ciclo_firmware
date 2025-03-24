@@ -7,8 +7,8 @@
 #include "CSV.hpp"
 #include <ArduinoJson.h>
 
-Memory* database;
-CSV *csv;
+TaskHandle_t TaskWifiHandle;
+
 Memory* saved;
 WEBSITE* web;
 WebServer server(80); 
@@ -16,16 +16,42 @@ WebServer server(80);
 #define MAX_SAMPLES 5
 #define N_SESSIONS 6
 
+#define led 2
+
 const char* ssid = "Zima";     // Substitua pelo nome da sua rede Wi-Fi
 const char* password = "enzimasUSP"; // Substitua pela senha da rede
 
 void setup() {
   Serial.begin(9600);
-  saved = new Memory(N_SESSIONS);//a string aqui eh o namespace
-  conectarWiFi();
-  
-  // put your setup code here, to run once:
+  pinMode(led, OUTPUT);
 
+  Serial.print("Main Task running on core ");
+  Serial.println(xPortGetCoreID());
+
+  xTaskCreatePinnedToCore(
+                    TaskWifiCode,   /* Task function. */
+                    "TaskWIfi",     /* name of task. */
+                    10000,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &TaskWifiHandle,      /* Task handle to keep track of created task */
+                    0);          /* pin task to core 0 */
+    delay(500); 
+
+}
+
+void TaskWifiCode( void * pvParameters ){
+  Serial.print("TaskWifi running on core ");
+  Serial.println(xPortGetCoreID());
+
+  saved = new Memory(N_SESSIONS);//a string aqui eh o namespace
+
+  conectarWiFi();
+
+  while (true) {
+    server.handleClient();
+    delay(2);//allow the cpu to switch to other tasks
+  }
 }
 
 void handleRoot() {
@@ -34,8 +60,14 @@ void handleRoot() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  server.handleClient();
-  delay(2);//allow the cpu to switch to other tasks
+  Serial.print("turn on led - ");
+  Serial.println(xPortGetCoreID());
+  digitalWrite(led, HIGH);
+  delay(1000);
+  Serial.print("turn off led - ");
+  Serial.println(xPortGetCoreID());
+  digitalWrite(led, LOW);
+  delay(1000);
 }
 
 
@@ -107,6 +139,12 @@ void website_data(){
 */
 
 void setEndpoints() {
+  
+    server.on("/chart", [](){
+      String Websitehtml = web->websiteChart();
+      server.send(200,"text/html", Websitehtml);
+    });
+
     server.on("/Resistivo/sessions", [](){
       String Websitehtml = web->websiteResistivo();
       server.send(200,"text/html", Websitehtml);
@@ -122,15 +160,50 @@ void setEndpoints() {
       server.send(200,"text/html", Websitehtml);
     });
 
-  //server.on("/data/resistivo/sessions", getData); //pega dados resistivo
+  server.on("/data/resistivo/sessions", getData); //pega dados resistivo
   //server.on("/data/passivo/sessions", getData); //pega dados passivo
   //server.on("/data/normal/sessions", getData); //pega dados normal
 
   server.on("/number/resistivo/sessions", numberSessions); //pega o número de sessões 
   server.on("/number/passivo/sessions", numberSessions); //pega o número de sessões 
   server.on("/number/normal/sessions", numberSessions); //pega o número de sessões 
+
+  server.on("/data/resistivo/sessions/csv", getCSV);
+  server.on("/data/passivo/sessions/csv", getCSV);
+  server.on("/data/normal/sessions/csv", getCSV);
 }
 
+void getCSV() {
+  String path = server.uri(); //pega a path
+
+  String string_id = server.arg("id"); //pega id da session em string
+
+  Serial.print("URL: ");
+  Serial.println(string_id);
+  
+  int id = string_id.toInt(); //transforma o id string para int 
+
+  int size = MAX_SAMPLES;
+  double dados_torque[size];
+  int dados_tempo[size];
+  CSV *csv = new CSV();
+  String data = "";
+
+  if(path == "/data/resistivo/sessions/csv"){ // requisição dos dados do modo resistivo
+    saved->get_resistivo(id, dados_tempo, dados_torque);
+    data = csv->to_csv("Torque", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+  }
+  else if(path == "/data/passivo/sessions/csv"){ // requisição dos dados do modo passivo
+    saved->get_passivo(id, dados_tempo, dados_torque);
+    data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+  }
+  else if(path == "/data/normal/sessions/csv"){ // requisição dos dados do modo normal
+    saved->get_normal(id, dados_tempo, dados_torque);
+    data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+  }
+  server.send(200, "text/csv", data);
+  
+}
 
 void getData() {
   // send response to request

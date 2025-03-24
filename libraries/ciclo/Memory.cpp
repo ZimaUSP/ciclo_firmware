@@ -12,7 +12,7 @@
 
 
 #include "Memory.hpp"
-#include <String>
+#include <string>
 
 /*****************************************
  * Class Methods Bodies Definitions
@@ -22,6 +22,7 @@
 Memory::Memory(int sessions) {
     Preferences pref;
     const char* name_spc = "resistivo"; //default
+    this->limitpush = 10 * 60 * sessions/5;
     this->name_spc = name_spc;
     pref.begin(this->name_spc, false);
     if(pref.isKey("old")) {
@@ -112,6 +113,9 @@ void Memory::remove_old() {
 
 void Memory::push(int* tempo, double* lista_values, int size) {
     Preferences pref;
+    if(this->next > this->limitpush){
+        return;
+    }
     pref.begin(this->name_spc, false);
     std::string str = std::to_string(this->next);
     write(tempo, (str+"_tempo").c_str(), size);
@@ -124,9 +128,20 @@ void Memory::push(int* tempo, double* lista_values, int size) {
     pref.end();
 }
 
+int Memory::printalgo(){
+    return(this->next);
+}
+
 void Memory::get(int n, int* tempo, double* lista_values) {
     std::string str = std::to_string(n+this->old);
     int s = size(n);
+    if(n + this->old > limitpush){
+        for(int i = 0; i < 5; i++ ){
+            tempo[i] = 0;
+            lista_values[i] = 0;
+        }
+        return;
+    }
     read(lista_values, (str+"_values").c_str(), s);
     read(tempo, (str+"_tempo").c_str(), s);
 }

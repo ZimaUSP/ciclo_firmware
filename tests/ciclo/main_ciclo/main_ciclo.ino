@@ -507,7 +507,7 @@ void executarLogicaResistivo() {
     lcd.clear();
 
 
-    if (verification() < 1) {
+    if (verificationResistivo() < 1) {
         delay(500);
         return;
     }
@@ -569,26 +569,25 @@ void resistivo() {
     motorController->Set_L(pwm_motor);
 
     while (!lcd_timer.isReady() ) {
-      server.handleClient(); 
-        if (torque_Time.getTimePassed() > sample_t * 50) {
-            if (contador < MAX_SAMPLES) {
-                //Serial.println("ok");
-                acs = cur->get_current();
-                torque = cur->get_torque(acs);
-                //Serial.print(torque);
-                //Serial.print(", ");
-                //Serial.println(lcd_timer.getTimePassed());
-                lista_values[contador] = torque;
-                tempo[contador]=contador*sample_t * 50;
-                contador++;
-                torque_Time.reset();
-                lcd.setCursor(1, 1);
-                lcd.print("TORQUE: ");
-                sprintf(t, "%02f", torque);
-                lcd.print(t);
-            }
-        }
-        printTime();
+      acs = cur->get_current();
+      torque = cur->get_torque(acs);
+      if (torque_Time.getTimePassed() > sample_t * 50) {
+          if (contador < MAX_SAMPLES) {
+              //Serial.println("ok");
+              //Serial.print(torque);
+              //Serial.print(", ");
+              //Serial.println(lcd_timer.getTimePassed());
+              lista_values[contador] = torque;
+              tempo[contador]=contador*sample_t * 50;
+              contador++;
+              torque_Time.reset();
+          }
+      }
+      lcd.setCursor(1, 1);
+      lcd.print("TORQUE: ");
+      sprintf(t, "%02f", torque);
+      lcd.print(t);
+      printTime();
     }
 
     saved->push_resistivo(tempo, lista_values, MAX_SAMPLES);
@@ -633,10 +632,6 @@ void print_torque_results() {
     lcd.print("Med:");
     sprintf(t, "%.2f", torque_med);
     lcd.print(t);
-    while (!btn->getPress()) {
-        server.handleClient();
-        delay(10);  // Evitar loop sem pausa
-    }
     lcd.clear();
     delay(10);
     lcd.setCursor(0, 0);
@@ -699,7 +694,7 @@ void selectFunction() {
     lcd.setCursor(0, 1);
     lcd.print("Modo: Resistivo   ");
     lcd.setCursor(0, 0);
-    STATE = PASSIVE;
+    STATE = FADE;
   }
   
 }
@@ -821,7 +816,43 @@ int goalRPM() {
 
 // Verification
 
-int verification() {
+int verificationResistivo() {
+  lcd.clear();
+  while (!btn->getPress()) {
+    server.handleClient();
+    // if (analogRead(pot_pin)==0)
+    // {
+    //   verif = 0;
+    // }
+    // if (analogRead(pot_pin)==4095)
+    // {
+    //   verif = 1;
+    // }
+    lcd.setCursor(0, 0);
+    lcd.print("PWM: ");
+    sprintf(t, "%02d", pwm_motor);
+    lcd.print(t);
+    lcd.print("|");
+    lcd.print("Time:");
+    sprintf(t, "%02d", lcd_timer.getInterval() / 60000);
+    lcd.print(t);
+    lcd.setCursor(0, 1);
+    if (verif == 0) {
+      lcd.print("Nao            ");
+      lcd.setCursor(0, 1);
+      lcd.noBacklight();
+    }
+    if (verif == 1) {
+      lcd.print("Sim            ");
+      lcd.setCursor(0, 1);
+      lcd.noBacklight();
+    }
+  }
+  lcd.clear();
+  return verif;
+}
+
+int verificationPassivo() {
   lcd.clear();
   while (!btn->getPress()) {
     server.handleClient();
@@ -894,7 +925,7 @@ void loop() {
       lcd_timer.setInterval(duration() * 60000);
       delay(500);
       lcd.clear();
-      verif = verification();
+      verif = verificationPassivo();
       delay(500);
       if (verif >= 1) {
         delay(500);
@@ -906,11 +937,8 @@ void loop() {
       }
       passivo();
       motorController->Set_L(0);
-      STATE = STAND_BY;
+      // STATE = STAND_BY;
       lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print("FIM");
-      delay(2000);
       reset();
       return;
 
@@ -964,14 +992,14 @@ void loop() {
       delay(100);
       motorController->Set_R(0);
       executarLogicaResistivo();
-      server.handleClient();
       delay(2);
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("FIM");
+      delay(500);
+      reset();
       return;
   
   
   }
-
-
-
-
 }

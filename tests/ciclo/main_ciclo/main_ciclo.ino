@@ -556,7 +556,6 @@ void normal() {
   rpmTime.reset();
   //website_data();
   while (!lcd_timer.isReady()) {  //tempo nao acaba
-    server.handleClient(); 
 
     if (rpmTime.getTimePassed() > 400) {
       current_pulses = encoder->getPulses();
@@ -658,13 +657,10 @@ int duration() {
   lcd.setCursor(0, 0);
   lcd.print("              ");
   while (!btn->getPress()){
-    server.handleClient();
-         //if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
          if (joy->middle())
             {
                 joystick_check=true;
             }
-            //if (analogRead(pot_pin) == 0 && joystick_check)
             if (joy->left() && joystick_check)
             {
                 if(t_Duration !=0 ){
@@ -768,13 +764,10 @@ int verificationResistivo() {
 int verificationPassivo() {
   lcd.clear();
   while (!btn->getPress()) {
-    server.handleClient();
-    //if (analogRead(pot_pin)==0)
     if (joy->left())
     {
       verif = 0;
     }
-    //if (analogRead(pot_pin)==4095)
     if (joy->right())
     {
       verif = 1;

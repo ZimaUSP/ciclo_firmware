@@ -8,9 +8,6 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <SimpleTimer.h>
-#include <iostream>
-#include <algorithm>  // Para std::max_element e std::min_element
-#include <numeric>    // Para std::accumulate
 
 #include <WiFiClient.h>
 #include <WebServer.h>
@@ -63,7 +60,6 @@ int goal_rpm;
 //int verif;
 int output;
 char STATE = MODE;
-double pageSelec;
 double revolutions;
 bool joystick_check;
 
@@ -125,115 +121,115 @@ void setEndpoints() {
 }
 
 void getCSV() {
-String path = server.uri(); //pega a path
+  String path = server.uri(); //pega a path
 
-String string_id = server.arg("id"); //pega id da session em string
+  String string_id = server.arg("id"); //pega id da session em string
 
-Serial.print("URL: ");
-Serial.println(string_id);
+  Serial.print("URL: ");
+  Serial.println(string_id);
 
-int id = string_id.toInt(); //transforma o id string para int 
+  int id = string_id.toInt(); //transforma o id string para int 
 
-int size = MAX_SAMPLES;
-double dados_torque[size];
-int dados_tempo[size];
-CSV *csv = new CSV();
-String data = "";
+  int size = MAX_SAMPLES;
+  double dados_torque[size];
+  int dados_tempo[size];
+  CSV *csv = new CSV();
+  String data = "";
 
-if(path == "/data/resistivo/sessions/csv"){ // requisição dos dados do modo resistivo
-  saved->get_resistivo(id, dados_tempo, dados_torque);
-  data = csv->to_csv("Torque", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
-}
-else if(path == "/data/passivo/sessions/csv"){ // requisição dos dados do modo passivo
-  saved->get_passivo(id, dados_tempo, dados_torque);
-  data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
-}
-else if(path == "/data/normal/sessions/csv"){ // requisição dos dados do modo normal
-  saved->get_normal(id, dados_tempo, dados_torque);
-  data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
-}
-server.send(200, "text/csv", data);
+  if(path == "/data/resistivo/sessions/csv"){ // requisição dos dados do modo resistivo
+    saved->get_resistivo(id, dados_tempo, dados_torque);
+    data = csv->to_csv("Torque", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+  }
+  else if(path == "/data/passivo/sessions/csv"){ // requisição dos dados do modo passivo
+    saved->get_passivo(id, dados_tempo, dados_torque);
+    data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+  }
+  else if(path == "/data/normal/sessions/csv"){ // requisição dos dados do modo normal
+    saved->get_normal(id, dados_tempo, dados_torque);
+    data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+  }
+  server.send(200, "text/csv", data);
 
-}
+  }
 
-void getData() {
-// send response to request
-// server.send(int STATUS, string CONTENT-TYPE, string DATA_TO_SEND);
+  void getData() {
+  // send response to request
+  // server.send(int STATUS, string CONTENT-TYPE, string DATA_TO_SEND);
 
-String path = server.uri(); //pega a path
+  String path = server.uri(); //pega a path
 
-String string_id = server.arg("id"); //pega id da session em string
+  String string_id = server.arg("id"); //pega id da session em string
 
-Serial.print("URL: ");
-Serial.println(string_id);
+  Serial.print("URL: ");
+  Serial.println(string_id);
 
-int id = string_id.toInt(); //transforma o id string para int 
+  int id = string_id.toInt(); //transforma o id string para int 
 
-int size = MAX_SAMPLES;
-double dados_torque[size];
-int dados_tempo[size];
+  int size = MAX_SAMPLES;
+  double dados_torque[size];
+  int dados_tempo[size];
 
-if(path == "/data/resistivo/sessions"){ // requisição dos dados do modo resistivo
-  saved->get_resistivo(id, dados_tempo, dados_torque);
-}
-else if(path == "/data/passivo/sessions"){ // requisição dos dados do modo passivo
-  saved->get_passivo(id, dados_tempo, dados_torque);
-}
-else if(path == "/data/normal/sessions"){ // requisição dos dados do modo normal
-  saved->get_normal(id, dados_tempo, dados_torque);
-}
+  if(path == "/data/resistivo/sessions"){ // requisição dos dados do modo resistivo
+    saved->get_resistivo(id, dados_tempo, dados_torque);
+  }
+  else if(path == "/data/passivo/sessions"){ // requisição dos dados do modo passivo
+    saved->get_passivo(id, dados_tempo, dados_torque);
+  }
+  else if(path == "/data/normal/sessions"){ // requisição dos dados do modo normal
+    saved->get_normal(id, dados_tempo, dados_torque);
+  }
 
-JsonDocument doc; //cria objeto json
+  JsonDocument doc; //cria objeto json
 
-JsonArray tempo = doc["tempo"].to<JsonArray>(); //cria o objeto tempo no documento json
+  JsonArray tempo = doc["tempo"].to<JsonArray>(); //cria o objeto tempo no documento json
 
-for(int i=0; i<size; i++){
-  tempo.add(dados_tempo[i]); //add os valores colhidos para o objeto tempo
-}
+  for(int i=0; i<size; i++){
+    tempo.add(dados_tempo[i]); //add os valores colhidos para o objeto tempo
+  }
 
-JsonArray torque = doc["torque"].to<JsonArray>(); //cria o objeto torque no documento json
+  JsonArray torque = doc["torque"].to<JsonArray>(); //cria o objeto torque no documento json
 
-for(int i=0; i<size; i++){
-  torque.add(dados_torque[i]); //add os valores colhidos para o objeto torque
-}
+  for(int i=0; i<size; i++){
+    torque.add(dados_torque[i]); //add os valores colhidos para o objeto torque
+  }
 
-String output;
+  String output;
 
-doc.shrinkToFit();  // optional
+  doc.shrinkToFit();  // optional
 
-serializeJson(doc, output); //serializa o objeto (formata ele para string)
+  serializeJson(doc, output); //serializa o objeto (formata ele para string)
 
-server.send(200, "text/json", output); //envia output em formato json
+  server.send(200, "text/json", output); //envia output em formato json
 }
 
 void numberSessions(){
 
-int n_sessions;
+  int n_sessions;
 
-String path = server.uri(); //pega a path
+  String path = server.uri(); //pega a path
 
-if(path == "/number/resistivo/sessions"){ // requisição dos dados do modo resistivo
-  n_sessions = saved->get_saved_sessions_resistivo();
-}
+  if(path == "/number/resistivo/sessions"){ // requisição dos dados do modo resistivo
+    n_sessions = saved->get_saved_sessions_resistivo();
+  }
 
-else if(path == "/number/passivo/sessions"){ // requisição dos dados do modo passivo
-  n_sessions = saved->get_saved_sessions_passivo();
-}
-else if(path == "/number/normal/sessions"){ // requisição dos dados do modo normal
-  n_sessions = saved->get_saved_sessions_normal();
-}
-//n_sessions = saved->get_saved_sessions_resistivo();
-JsonDocument doc; // cria o documento em formato json 
+  else if(path == "/number/passivo/sessions"){ // requisição dos dados do modo passivo
+    n_sessions = saved->get_saved_sessions_passivo();
+  }
+  else if(path == "/number/normal/sessions"){ // requisição dos dados do modo normal
+    n_sessions = saved->get_saved_sessions_normal();
+  }
+  //n_sessions = saved->get_saved_sessions_resistivo();
+  JsonDocument doc; // cria o documento em formato json 
 
-JsonArray sessions = doc["sessions"].to<JsonArray>(); // cria o objeto sessions
-sessions.add(n_sessions); // adiciona valor de sessions para o objeto json sessions
+  JsonArray sessions = doc["sessions"].to<JsonArray>(); // cria o objeto sessions
+  sessions.add(n_sessions); // adiciona valor de sessions para o objeto json sessions
 
-String output; // cria uma string chamada output
+  String output; // cria uma string chamada output
 
-doc.shrinkToFit();  // optional
+  doc.shrinkToFit();  // optional
 
-serializeJson(doc, output); //serializa o objeto (formata ele para string)
-server.send(200, "text/json", output);
+  serializeJson(doc, output); //serializa o objeto (formata ele para string)
+  server.send(200, "text/json", output);
 }
 
 void handleRoot() {
@@ -313,6 +309,7 @@ void inicializaComponentes() {
   btn->init();
 
   lcd.init();  // initialize the lcd
+  //lcd.noBacklight();
   last_t = millis();
 
   joy = new Joystick(pot_pin, adc_register, wifi_register);
@@ -371,17 +368,15 @@ void passivo() {
   contador = 0;
   lcd_timer.reset();
   rpmTime.reset();
+  
   // Resetar o array de torques
   for (int i = 0; i < MAX_SAMPLES; i++) {
       lista_values[i] = 3.0;
       tempo[i]=3;
   }
 
-  while (!lcd_timer.isReady()) {  //tempo nao acaba
-    server.handleClient(); 
-
+  while (!lcd_timer.isReady()) {
     if (rpmTime.getTimePassed() > sample_t) {
-
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
       actual_rpm = delta_pulses * 1.01;
@@ -392,9 +387,8 @@ void passivo() {
         contador++;
       }
       Serial.print(actual_rpm);
-      Serial.print("; time: ");
-      Serial.println(timePassed);
-      */
+      Serial.print(", ");
+      Serial.println(lcd_timer.getTimePassed());
 
       resetEncoderIfExceedsLimit();
       controlMotorSpeedWithPID();
@@ -407,99 +401,6 @@ void passivo() {
   }
   saved->push_passivo(tempo, lista_values, MAX_SAMPLES);
 }
-
-/*void website_data(){
-    
-    Serial.print("IP local: ");
-    Serial.println(WiFi.localIP());
-    server.on("/data/csv/resistivo/sessions", []() { //mudar string de acordo com o modo
-      for(int i=0; i<N_SESSIONS; i++) {
-        double data_torque [MAX_SAMPLES];
-        int data_tempo [MAX_SAMPLES];
-        saved->get_resistivo(i, tempo, lista_values);
-        //String data = csv->to_csv("Torque", data_torque, "Tempo", data_tempo, MAX_SAMPLES); //necessario mudar para armazenar cada numero de sessao diferente
-        //server.send(200, "text/csv", data); // Envia a página HTML ao navegador
-      }
-  });
-
-
-    server.on("/Resistivo/sessions", [](){
-
-      String Websitehtml = web->websiteResistivo();
- 
-      server.send(200,"text/html", Websitehtml);
-    });
-
-    server.on("/Normal/sessions", [](){
-
-      String Websitehtml = web->websiteNormal();
- 
-      server.send(200,"text/html", Websitehtml);
-    });
-
-    server.on("/Passivo/sessions", [](){
-
-      String Websitehtml = web->websitePassivo();
- 
-      server.send(200,"text/html", Websitehtml);
-    });
-    
-
-
-    server.begin();
-    Serial.println("HTTP server started");
-
-}*/
-
-/*void getData() {
-  // send response to request
-  // server.send(int STATUS, string CONTENT-TYPE, string DATA_TO_SEND);
-
-  String path = server.uri(); //pega a path
-
-  String string_id = server.arg("id"); //pega id da session em string
-
-  Serial.print("URL: ");
-  Serial.println(string_id);
-  
-  int id = string_id.toInt(); //transforma o id string para int 
-
-  int size = MAX_SAMPLES;
-  double dados_torque[size];
-  int dados_tempo[size];
-
-  if(path == "/data/resistivo/sessions"){ // requisição dos dados do modo resistivo
-    saved->get_resistivo(id, tempo, lista_values);
-  }
-  else if(path == "/data/passivo/sessions"){ // requisição dos dados do modo passivo
-    saved->get_passivo(id, dados_tempo, dados_torque);
-  }
-  else if(path == "/data/normal/sessions"){ // requisição dos dados do modo normal
-    saved->get_normal(id, dados_tempo, dados_torque);
-  }
-
-  JsonDocument doc; //cria objeto json
-
-  JsonArray tempo = doc["tempo"].to<JsonArray>(); //cria o objeto tempo no documento json
-
-  for(int i=0; i<size; i++){
-    tempo.add(dados_tempo[i]); //add os valores colhidos para o objeto tempo
-  }
-
-  JsonArray torque = doc["torque"].to<JsonArray>(); //cria o objeto torque no documento json
-
-  for(int i=0; i<size; i++){
-    torque.add(dados_torque[i]); //add os valores colhidos para o objeto torque
-  }
-
-  String output;
-
-  doc.shrinkToFit();  // optional
-
-  serializeJson(doc, output); //serializa o objeto (formata ele para string)
-
-  server.send(200, "text/json", output); //envia output em formato json
-}*/
 
 //Implementation resistivo mode
 void executarLogicaResistivo() {
@@ -536,28 +437,26 @@ int def_pwm_motor() {
     lcd.setCursor(0, 0);
     lcd.print("              ");
     
-    while (!btn->getPress()) { 
-        Serial.println(joy->get_power());
+    while (!btn->getPress()) {
         //Serial.println("Botão não apertado");
-        server.handleClient();
         if (joy->middle()) {
-            Serial.println("Middle");
+            // Serial.println("Middle");
             joystick_check = true;
         }
         if (joy->left() && joystick_check) {
-            Serial.println("Left");
+            // Serial.println("Left");
             if (pwm_motor >= 10) {
                 pwm_motor -= 10;
                 joystick_check = false;
             }
         } else if (joy->right()  && joystick_check) {
-            Serial.println("Right");
+            // Serial.println("Right");
             if (pwm_motor < 100) {
                 pwm_motor += 10;
                 joystick_check = false;
             }
         }
-        lcd.setCursor(1, 0);
+        lcd.setCursor(0, 0);
         lcd.print("PWM: ");
         sprintf(t, "%02d", pwm_motor);
         lcd.print(t);
@@ -688,33 +587,47 @@ void normal() {
   saved->push_normal(tempo, lista_values, MAX_SAMPLES);
 }
 
-// Select funcition
-void selectFunction() {
-  if (pageSelec ==0 ) {
-    lcd.print("Escolha o modo ");
-    lcd.setCursor(0, 1);
-    lcd.print("Modo: Normal   ");
-    lcd.setCursor(0, 0);
-    STATE = NORMAL;
-  } else if (pageSelec == 1) {
-    lcd.print("Escolha o modo ");
-    lcd.setCursor(0, 1);
-    lcd.print("Modo: Passive   ");
-    lcd.setCursor(0, 0);
-    STATE = PASSIVE;
+void setMode() {
+  double pageSelect = 0;
+  lcd.clear();
+  lcd.print("Escolha o modo ");
+  while (!btn->getPress()){
+    if (joy->middle()) {
+      joystick_check=true;
+    } else if (joy->left() && joystick_check) {
+      joystick_check = false;
+      if(pageSelect > 0 ){
+        pageSelect--;
+      } else {
+        pageSelect = 2;
+      }
+    } else if (joy->right() && joystick_check) {
+      joystick_check = false;
+      if(pageSelect < 2) {
+          pageSelect++;
+      } else {
+        pageSelect = 0;
+      }
+    }
+    if (pageSelect ==0 ) {
+      STATE = NORMAL;
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Normal   ");
+    } else if (pageSelect == 1) {
+      STATE = PASSIVE;
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Passivo   ");
+    } else if (pageSelect == 2) {
+      STATE = FADE;
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Resistivo   ");
+    }
   }
-  else if (pageSelec == 2) {
-    lcd.print("Escolha o modo ");
-    lcd.setCursor(0, 1);
-    lcd.print("Modo: Resistivo   ");
-    lcd.setCursor(0, 0);
-    STATE = FADE;
-  }
-  
 }
 
 // Print in LCD the MODE select
-void printMode() {
+void printSelectedMode() {
+  lcd.clear();
   lcd.setCursor(0, 0);
   switch (STATE) {
     case NORMAL:
@@ -738,7 +651,6 @@ void printMode() {
       return;
   }
 }
-
 
 // Select Duration
 int duration() {
@@ -790,7 +702,7 @@ void printTime() {
 }
 
 void printFrequency() {
-  lcd.setCursor(0, 1);
+  lcd.setCursor(0, 0);
   lcd.print("Frequency: ");
   sprintf(t, "%02d", goal_rpm);
   lcd.print(t);
@@ -799,31 +711,27 @@ void printFrequency() {
 
 // Get frequency (Implementar como Vetor quando criar a Classe)
 int goalRPM() {
-
-   while (!btn->getPress()){
-         //if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
-         if (!joy->right() && !joy->left())
-            {
-                joystick_check=true;
-            }
-            //if (analogRead(pot_pin) == 0 && joystick_check)
-            if (joy->left() && joystick_check)
-            {
-                if(goal_rpm !=0 ){
-                    goal_rpm--;
-                    joystick_check = false;
-                }
-            }
-            //else if (analogRead(pot_pin) == 4095 && joystick_check)
-            else if (joy->right() && joystick_check)
-            {
-                if(goal_rpm != 50){
-                    goal_rpm++;
-                    joystick_check = false;
-                }
-            }   
+  while (!btn->getPress()){
+    if (!joy->right() && !joy->left())
+    {
+      joystick_check=true;
+    }
+    if (joy->left() && joystick_check)
+    {
+      if(goal_rpm !=0 ){
+        goal_rpm--;
+        joystick_check = false;
+      }
+    }
+    else if (joy->right() && joystick_check)
+    {
+      if(goal_rpm != 50){
+        goal_rpm++;
+        joystick_check = false;
+      }
+    }   
     printFrequency();
-   }
+  }
   return goal_rpm;
 }
 
@@ -833,15 +741,6 @@ int goalRPM() {
 int verificationResistivo() {
   lcd.clear();
   while (!btn->getPress()) {
-    server.handleClient();
-    // if (analogRead(pot_pin)==0)
-    // {
-    //   verif = 0;
-    // }
-    // if (analogRead(pot_pin)==4095)
-    // {
-    //   verif = 1;
-    // }
     lcd.setCursor(0, 0);
     lcd.print("PWM: ");
     sprintf(t, "%02d", pwm_motor);
@@ -912,7 +811,6 @@ void setup() {
   inicializaComponentes();
   char* name_spc = "resistivo";
 
-<<<<<<< HEAD
   Serial.begin(9600);
   // Conectar ao Wi-Fi na inicialização
   //conectarWiFi();
@@ -958,35 +856,8 @@ void loop() {
       return;
 
     case STAND_BY:
-       while (!btn->getPress()){
-          //if (analogRead(pot_pin) != 0 && analogRead(pot_pin) != 4095)
-          if (!joy->right() && !joy->left())
-          {
-            joystick_check=true;
-          }
-          
-        //if (analogRead(pot_pin) == 0 && joystick_check)
-        if (joy->left() && joystick_check)
-        {
-            if(pageSelec !=0 ){
-                pageSelec--;
-                joystick_check = false;
-            }
-
-        }
-        //else if (analogRead(pot_pin) == 4095 && joystick_check)
-        else if (joy->right() && joystick_check)
-        {
-            if(pageSelec != 2){
-                pageSelec++;
-                joystick_check = false;
-            }
-        }
-        
-        selectFunction();
-        lcd.noBacklight();
-      }
-      printMode();
+      setMode();
+      printSelectedMode();
       delay(500);
       return;
 

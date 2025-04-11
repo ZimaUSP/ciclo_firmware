@@ -11,6 +11,7 @@
 
 #include <WiFiClient.h>
 #include <WebServer.h>
+#include <ESPmDNS.h>
 
 #include <ArduinoJson.h>
 
@@ -82,6 +83,7 @@ uint32_t wifi_register;
 WebServer server(80);  
 const char* ssid = "Zima";     // Substitua pelo nome da sua rede Wi-Fi
 const char* password = "enzimasUSP"; // Substitua pela senha da rede
+const char* MDNSDOMAIN = "ciclo";
 
 //******FUNCTIONS******//
 
@@ -275,7 +277,18 @@ void conectarWiFi() {
 
     setEndpoints();
 
+    if (!MDNS.begin(MDNSDOMAIN)) {
+        Serial.println("Error setting up MDNS responder!");
+        while(1) {
+            delay(1000);
+        }
+    }
+    Serial.println("mDNS responder started");
+
     server.begin();
+
+    // Add service to MDNS-SD
+    MDNS.addService("http", "tcp", 80);
 }
 
 void TaskWifiCode( void * pvParameters ){
@@ -802,12 +815,6 @@ int verificationPassivo() {
 void setup() {
   Serial.begin(9600);
   inicializaComponentes();
-  char* name_spc = "resistivo";
-
-  Serial.begin(9600);
-  // Conectar ao Wi-Fi na inicialização
-  //conectarWiFi();
-  //endpoints();
   xTaskCreatePinnedToCore(
                       TaskWifiCode,   // Task function.
                       "TaskWIfi",     // name of task.
@@ -818,7 +825,6 @@ void setup() {
                       0);          // pin task to core 0
   delay(500); 
   STATE = STAND_BY;
-  
 }
 
 void loop() {

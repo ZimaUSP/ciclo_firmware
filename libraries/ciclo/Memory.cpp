@@ -72,6 +72,24 @@ void Memory::change_namespace(const char *new_name_spc) {
     pref.end();
 }
 
+void Memory::vetorcomsize(int*& dataStore, int size) {
+    int* novodataStore = new int[size + 1];
+    novodataStore[0] = size;
+    for (int i = 0; i < size; i++){
+        novodataStore[i+1] = dataStore[i]; 
+    }
+    dataStore = novodataStore;
+}
+
+void Memory::vetorcomsize(double*& dataStore, int size) {
+    double* novodataStore = new double[size + 1];
+    novodataStore[0] = size;
+    for (int i = 0; i < size; i++){
+        novodataStore[i+1] = dataStore[i]; 
+    }
+    dataStore = novodataStore;
+}
+
 void Memory::write(int* dataStore, const char* key, int size) {
     Preferences pref;
     pref.begin(this->name_spc, false);
@@ -118,8 +136,10 @@ void Memory::push(int* tempo, double* lista_values, int size) {
     }
     pref.begin(this->name_spc, false);
     std::string str = std::to_string(this->next);
-    write(tempo, (str+"_tempo").c_str(), size);
-    write(lista_values, (str+"_values").c_str(), size);
+    vetorcomsize(tempo, size);
+    vetorcomsize(lista_values, size);
+    write(tempo, (str+"_tempo").c_str(), size + 1);
+    write(lista_values, (str+"_values").c_str(), size + 1);
     this->next = this->next+1;
     pref.putInt("next", this->next);
     while(this->old < this->next - this->sessions) {
@@ -128,8 +148,9 @@ void Memory::push(int* tempo, double* lista_values, int size) {
     pref.end();
 }
 
-int Memory::printalgo(){
-    return(this->next);
+ String Memory::printalgo(int n){
+    std::string str = std::to_string(n+this->old);
+    return((str+"_values").c_str());
 }
 
 void Memory::get(int n, int* tempo, double* lista_values) {
@@ -149,7 +170,7 @@ void Memory::get(int n, int* tempo, double* lista_values) {
 int Memory::size(int n) {
     Preferences pref;
     pref.begin(this->name_spc, false);
-    std::string str = std::to_string(n+this->old);
+    std::string str = std::to_string(n + this->old);
     return pref.getBytesLength((str+"_tempo").c_str())/sizeof(int);
 }
 

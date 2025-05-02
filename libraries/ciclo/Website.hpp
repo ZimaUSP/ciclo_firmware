@@ -9,6 +9,7 @@ class WEBSITE{
     String websiteResistivo();
     String websiteNormal();
     String websitePassivo();
+    String websiteTESTE();
 };
 
 #endif 

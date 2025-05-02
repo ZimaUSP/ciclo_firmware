@@ -145,6 +145,11 @@ void setEndpoints() {
       server.send(200,"text/html", Websitehtml);
     });
 
+    server.on("/teste", [](){
+      String Websitehtml = web->websiteTESTE();
+      server.send(200,"text/html", Websitehtml);
+    });
+
     server.on("/Resistivo/sessions", [](){
       String Websitehtml = web->websiteResistivo();
       server.send(200,"text/html", Websitehtml);

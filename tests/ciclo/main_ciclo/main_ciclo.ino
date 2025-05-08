@@ -615,7 +615,7 @@ void setMode() {
       }
     } else if (joy->right() && joystick_check) {
       joystick_check = false;
-      if(pageSelect < 2) {
+      if(pageSelect < 3) {
           pageSelect++;
       } else {
         pageSelect = 0;
@@ -633,7 +633,54 @@ void setMode() {
       STATE = FADE;
       lcd.setCursor(0, 1);
       lcd.print("Modo Resistivo   ");
+    } else if (pageSelect == 3) {
+      STATE = CONFIG;
+      lcd.setCursor(0, 1);
+      lcd.print("Configuracoes   ");
     }
+  }
+}
+
+void configMode() {
+
+  lcd.clear();
+    while (!btn->getPress()){
+    if (joy->middle()) {
+      joystick_check=true;
+    } else if (joy->left() && joystick_check) {
+      joystick_check = false;
+      if(pageSelect > 0 ){
+        pageSelect--;
+      } else {
+        pageSelect = 2;
+      }
+    } else if (joy->right() && joystick_check) {
+      joystick_check = false;
+      if(pageSelect < 3) {
+          pageSelect++;
+      } else {
+        pageSelect = 0;
+      }
+    }
+
+    if (pageSelect ==0 ) {
+      STATE = GETIP;
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Normal   ");
+    } else if (pageSelect == 1) {
+      STATE = RESETWIFI;
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Passivo   ");
+    } else if (pageSelect == 2) {
+      STATE = BACK;
+      lcd.setCursor(0, 1);
+      lcd.print("Modo Resistivo   ");
+
+  }
+    }
+  while (!btn->getPress()) {
+
+    delay(500);
   }
 }
 
@@ -660,6 +707,13 @@ void printSelectedMode() {
       lcd.setCursor(0, 1);
       lcd.print("Modo Resistivo     ");
       lcd.setCursor(0, 1);
+      return;
+    case CONFIG:
+      lcd.print("Selecionado:  ");
+      lcd.setCursor(0, 1);
+      lcd.print("Configuracoes     ");
+      lcd.setCursor(0, 1);
+
       return;
   }
 }
@@ -884,6 +938,12 @@ void loop() {
       delay(500);
       reset();
       return;
-  
+
+    case CONFIG:
+      lcd.clear();
+      configMode();
+      delay(500);
+      reset();
+      return;
   }
 }

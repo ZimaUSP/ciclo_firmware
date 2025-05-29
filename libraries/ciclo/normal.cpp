@@ -4,19 +4,10 @@
 #include<Encoder.hpp>
 #include<H_bridge_controller.hpp>
 
-class normal
-{
-public:
-    int contador;
-    int tempo[];
-    double lista_values[];
-    LiquidCrystal_I2C lcd;
-    SimpleTimer rpmTime;
-    SimpleTimer lcd_timer;
-    Encoder* encoder;
-    H_bridge_controller motor;
-}
+#include<normal.hpp>
 
+
+    
 normal::normal(int contador,int tempo,double lista_values,LiquidCrystal_I2C lcd, SimpleTimer rpmTime,SimpleTimer lcd_timer, encoder, H_bridge_controller motor){
     this->contador = contador;
     this->lcd = lcd;

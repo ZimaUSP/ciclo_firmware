@@ -50,7 +50,7 @@ void normal::executaNormal(){
           Serial.println(display.lcd_timer.getTimePassed());
     
           //resetEncoderIfExceedsLimit();
-          resetaEncoder(current_pulses);
+          resetaEncoder(current_pulses,last_pulses);
           rpmTime.reset();
           last_pulses = current_pulses;
           Serial.print("; actual rpm: ");
@@ -68,7 +68,7 @@ void normal::executaNormal(){
     saved->push_normal(tempo, lista_values, MAX_SAMPLES);
 }
 
-void normal::resetaEncoder(double current_pulses){
+void normal::resetaEncoder(double current_pulses,double last_pulses){
   if (current_pulses > MAX_ENCODER_VALUE || current_pulses < -MAX_ENCODER_VALUE) {
     encoder->setPulses(0);
     last_pulses = 0;

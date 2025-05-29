@@ -28,7 +28,9 @@
 #define CONFIG 4
 #define GETIP 0
 #define RESETWIFI 1
-#define BACK 2
+#define RESETESP 2
+#define BACK 3
+
 
 #define WEEK 0
 #define NORMAL 1

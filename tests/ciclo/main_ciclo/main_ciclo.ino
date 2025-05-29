@@ -611,11 +611,11 @@ void setMode() {
       if(pageSelect > 0 ){
         pageSelect--;
       } else {
-        pageSelect = 2;
+        pageSelect = 3;
       }
     } else if (joy->right() && joystick_check) {
       joystick_check = false;
-      if(pageSelect < 3) {
+      if(pageSelect < 4) {
           pageSelect++;
       } else {
         pageSelect = 0;
@@ -641,49 +641,6 @@ void setMode() {
   }
 }
 
-void configMode() {
-
-  lcd.clear();
-    while (!btn->getPress()){
-    if (joy->middle()) {
-      joystick_check=true;
-    } else if (joy->left() && joystick_check) {
-      joystick_check = false;
-      if(pageSelect > 0 ){
-        pageSelect--;
-      } else {
-        pageSelect = 2;
-      }
-    } else if (joy->right() && joystick_check) {
-      joystick_check = false;
-      if(pageSelect < 3) {
-          pageSelect++;
-      } else {
-        pageSelect = 0;
-      }
-    }
-
-    if (pageSelect ==0 ) {
-      STATE = GETIP;
-      lcd.setCursor(0, 1);
-      lcd.print("Modo Normal   ");
-    } else if (pageSelect == 1) {
-      STATE = RESETWIFI;
-      lcd.setCursor(0, 1);
-      lcd.print("Modo Passivo   ");
-    } else if (pageSelect == 2) {
-      STATE = BACK;
-      lcd.setCursor(0, 1);
-      lcd.print("Modo Resistivo   ");
-
-  }
-    }
-  while (!btn->getPress()) {
-
-    delay(500);
-  }
-}
-
 // Print in LCD the MODE select
 void printSelectedMode() {
   lcd.clear();
@@ -702,21 +659,99 @@ void printSelectedMode() {
       lcd.print("Modo Passivo  ");
       lcd.setCursor(0, 1);
       return;
+
     case FADE:
       lcd.print("Selecionado:  ");
       lcd.setCursor(0, 1);
       lcd.print("Modo Resistivo     ");
       lcd.setCursor(0, 1);
       return;
+
     case CONFIG:
       lcd.print("Selecionado:  ");
       lcd.setCursor(0, 1);
       lcd.print("Configuracoes     ");
       lcd.setCursor(0, 1);
-
       return;
   }
 }
+
+//Selection of the configuration options
+void selectConfig() {
+  double pageSelect = 0;
+  lcd.clear();
+    while (!btn->getPress()){
+    if (joy->middle()) {
+      joystick_check=true;
+    } else if (joy->left() && joystick_check) {
+      joystick_check = false;
+      if(pageSelect > 0 ){
+        pageSelect--;
+      } else {
+        pageSelect = 3;
+      }
+    } else if (joy->right() && joystick_check) {
+      joystick_check = false;
+      if(pageSelect < 4) {
+          pageSelect++;
+      } else {
+        pageSelect = 0;
+      }
+    }
+
+    if (pageSelect ==0 ) {
+      STATE = GETIP;
+      lcd.setCursor(0, 1);
+      lcd.print("Obter o IP   ");
+    } else if (pageSelect == 1) {
+      STATE = RESETWIFI;
+      lcd.setCursor(0, 1);
+      lcd.print("Resetar o Wifi   ");
+    } else if (pageSelect == 2) {
+      STATE = RESETESP;
+      lcd.setCursor(0, 1);
+      lcd.print("Resetar o ESP   ");     
+    } else if (pageSelect == 3) {
+      STATE = BACK;
+      lcd.setCursor(0, 1);
+      lcd.print("Voltar   ");
+
+  }
+  }
+}
+
+//Implementation of the configuration tab
+void configMode() {
+  switch (STATE) {
+    case GETIP:
+      lcd.setCursor(0,0);
+      lcd.print("IP:   ");
+      lcd.print(WiFi.localIP());
+      delay(500);
+      return;
+    
+    case RESETWIFI:
+      lcd.setCursor(0,0);
+      lcd.print("Resetando o wifi...   ");
+      delay(2000);
+      //chamar a funcao de resetar quando a mesma existir
+      return;
+
+    case RESETESP: //reseta o esp
+      lcd.setCursor(0,0);
+      lcd.print("Resetando o ESP...   ");
+      delay(2000);  
+      reset();
+      return;
+
+    case BACK: //chama a aba para selecionar o modo novamente
+      setMode();
+      delay(500);
+      return;
+  }
+}
+
+
 
 // Select Duration
 int duration() {
@@ -941,6 +976,7 @@ void loop() {
 
     case CONFIG:
       lcd.clear();
+      selectConfig();
       configMode();
       delay(500);
       reset();

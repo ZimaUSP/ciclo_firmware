@@ -3,9 +3,9 @@
  *
  * @brief Joystick Class
  *
- * @author Thomaz Akira Furukawa <thomazakira@usp.br>
+ * @author Guilherme Tokio Kawahara <guitokio@usp.br>
  *
- * @date 10/2021
+ * @date 10/2024
  * 
  * @copyright MIT License
  */

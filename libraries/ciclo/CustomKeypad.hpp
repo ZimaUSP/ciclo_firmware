@@ -18,8 +18,8 @@
 
 class CustomKeypad {
     private:
-        const byte linhas = 4; // Linhas do teclado
-        const byte colunas = 4; // Colunas do teclado
+        static const byte linhas = 4; // Linhas do teclado
+        static const byte colunas = 4; // Colunas do teclado
         const char TECLAS_MATRIZ[linhas][colunas] = { // Matriz de caracteres (mapeamento do teclado)
             {'1', '2', '3', 'A'},
             {'4', '5', '6', 'B'},

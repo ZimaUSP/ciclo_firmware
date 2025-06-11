@@ -16,10 +16,10 @@
  * Class Methods Bodies Definitions
  *****************************************/
 CustomKeypad::CustomKeypad(byte pinos_linhas [linhas], byte pinos_colunas [colunas]) {
-  for(int i = 0; i < linhas; i++) {
+  for(int i = 0; i < this->linhas; i++) {
         this->pinos_linhas[i] = pinos_linhas[i];
     }
-    for(int i = 0; i < colunas; i++) { 
+    for(int i = 0; i < this->colunas; i++) { 
         this->pinos_colunas[i] = pinos_colunas[i];
     }
   this->teclado = new Keypad(makeKeymap(TECLAS_MATRIZ), pinos_linhas, pinos_colunas, linhas, colunas);
@@ -28,7 +28,7 @@ CustomKeypad::CustomKeypad(byte pinos_linhas [linhas], byte pinos_colunas [colun
 char CustomKeypad::whatIsPressed() {
     char agora = teclado->getKey();
     if(agora != ultima_tecla) {
-        if(teclado.isPressed(ultima_tecla))
+        if(teclado->isPressed(ultima_tecla))
             return ultima_tecla;
         ultima_tecla = agora;
     }

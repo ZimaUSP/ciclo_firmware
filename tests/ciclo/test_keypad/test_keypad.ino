@@ -2,8 +2,8 @@
 
 CustomKeypad* Keypad;
 
-byte linhas[4] = {9, 8, 7, 6}; //pinos a serem definidos
-byte colunas[4] = {5, 4, 3, 2}; //pinos a serem definidos
+byte linhas[4] = {13, 12, 14, 27}; //pinos a serem definidos
+byte colunas[4] = {26, 25, 33, 32}; //pinos a serem definidos
 
 void setup() {
   Serial.begin(9600); 
@@ -12,8 +12,12 @@ void setup() {
 
 void loop() {
 
-  Serial.println("O que esta sendo pressionado agora eh: ");
-  Serial.print(Keypad->whatIsPressed());
+  Serial.print("left: ");
+  Serial.println(Keypad->left() ? "true" : "false");
+  Serial.print("rigth: ");
+  Serial.println(Keypad->right() ? "true" : "false");
+  Serial.print("enter: ");
+  Serial.println(Keypad->enter() ? "true" : "false");
   delay(500);
 
 }

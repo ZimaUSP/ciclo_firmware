@@ -868,6 +868,7 @@ void loop() {
       lcd.clear();
 
       normal();
+      //normal(contador,tempo,lista_values,lcd,rpmTime,lcd_timer,encoder,motorController);
 
       delay(500);
       reset();

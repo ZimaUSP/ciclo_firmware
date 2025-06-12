@@ -13,6 +13,8 @@
 #include <WebServer.h>
 #include <ESPmDNS.h>
 
+#include <WiFiManager.h> 
+
 #include <ArduinoJson.h>
 
 #include "soc/sens_reg.h" // needed for manipulating ADC2 control register
@@ -81,8 +83,7 @@ uint32_t wifi_register;
 
 //Parametros para website
 WebServer server(80);  
-const char* ssid = "Zima";     // Substitua pelo nome da sua rede Wi-Fi
-const char* password = "enzimasUSP"; // Substitua pela senha da rede
+WiFiManager wm; //objeto da classe wifimanager
 const char* MDNSDOMAIN = "ciclo";
 
 //******FUNCTIONS******//
@@ -255,18 +256,21 @@ void handleNotFound() {
 
 void conectarWiFi() {
     Serial.println("Conectando ao Wi-Fi...");
-	  adc_register = READ_PERI_REG(SENS_SAR_READ_CTRL2_REG); // Wifi with ADC2 on ESP32 workaround.
-	  WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
-	  wifi_register = READ_PERI_REG(SENS_SAR_READ_CTRL2_REG);
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
+    WiFi.mode(WIFI_STA);
+    bool res = wm.autoConnect("CicloErgometro"); 
+
+    if(!res) { 
+        Serial.println("Falha ao conectar"); 
+        ESP.restart(); //reseta o esp caso nao tenha sido possivel conectar
     }
+    else {  
+      Serial.println("Conectado!"); //verifica se foi possivel conectar ao wifi
+    } 
+
     Serial.println("");
-    Serial.print("Connected to ");
-    Serial.println(ssid);
-    Serial.print("IP address: ");
+    Serial.print("Rede: ");
+    Serial.println(WiFi.SSID());
+    Serial.print("Endereco de IP: ");
     Serial.println(WiFi.localIP());
 
     server.on("/", handleRoot);
@@ -289,6 +293,11 @@ void conectarWiFi() {
 
     // Add service to MDNS-SD
     MDNS.addService("http", "tcp", 80);
+}
+
+void resetWifi() { //reseta as informacoes de wifi salvas
+  Serial.println("Resetando o wifi");
+  wm.resetSettings();
 }
 
 void TaskWifiCode( void * pvParameters ){
@@ -615,7 +624,7 @@ void setMode() {
       }
     } else if (joy->right() && joystick_check) {
       joystick_check = false;
-      if(pageSelect < 4) {
+      if(pageSelect < 3) {
           pageSelect++;
       } else {
         pageSelect = 0;
@@ -636,7 +645,7 @@ void setMode() {
     } else if (pageSelect == 3) {
       STATE = CONFIG;
       lcd.setCursor(0, 1);
-      lcd.print("Configuracoes   ");
+      lcd.print("Configuracoes ");
     }
   }
 }
@@ -680,6 +689,7 @@ void printSelectedMode() {
 void selectConfig() {
   double pageSelect = 0;
   lcd.clear();
+  lcd.print("Configuracoes:");
     while (!btn->getPress()){
     if (joy->middle()) {
       joystick_check=true;
@@ -688,11 +698,11 @@ void selectConfig() {
       if(pageSelect > 0 ){
         pageSelect--;
       } else {
-        pageSelect = 3;
+        pageSelect = 2;
       }
     } else if (joy->right() && joystick_check) {
       joystick_check = false;
-      if(pageSelect < 4) {
+      if(pageSelect < 2) {
           pageSelect++;
       } else {
         pageSelect = 0;
@@ -702,53 +712,43 @@ void selectConfig() {
     if (pageSelect ==0 ) {
       STATE = GETIP;
       lcd.setCursor(0, 1);
-      lcd.print("Obter o IP   ");
+      lcd.print("Obter o IP    ");
     } else if (pageSelect == 1) {
       STATE = RESETWIFI;
       lcd.setCursor(0, 1);
-      lcd.print("Resetar o Wifi   ");
+      lcd.print("Resetar o Wifi");
     } else if (pageSelect == 2) {
-      STATE = RESETESP;
-      lcd.setCursor(0, 1);
-      lcd.print("Resetar o ESP   ");     
-    } else if (pageSelect == 3) {
       STATE = BACK;
       lcd.setCursor(0, 1);
-      lcd.print("Voltar   ");
-
+      lcd.print("Voltar        ");
   }
   }
 }
 
 //Implementation of the configuration tab
 void configMode() {
+  lcd.clear();
+  lcd.setCursor(0, 0); 
   switch (STATE) {
     case GETIP:
       lcd.setCursor(0,0);
-      lcd.print("IP:   ");
+      lcd.print("IP:");
+      lcd.setCursor(0,1);
       lcd.print(WiFi.localIP());
-      delay(500);
+      delay(2000);
       return;
     
     case RESETWIFI:
       lcd.setCursor(0,0);
-      lcd.print("Resetando o wifi...   ");
-      delay(2000);
-      //chamar a funcao de resetar quando a mesma existir
+      lcd.print("Resetando o wifi...");
+      delay(500);
+      resetWifi();
       return;
 
-    case RESETESP: //reseta o esp
-      lcd.setCursor(0,0);
-      lcd.print("Resetando o ESP...   ");
-      delay(2000);  
+    case BACK: //volta (reseta o esp)
       reset();
       return;
-
-    case BACK: //chama a aba para selecionar o modo novamente
-      setMode();
-      delay(500);
-      return;
-  }
+}
 }
 
 

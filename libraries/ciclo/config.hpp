@@ -25,6 +25,12 @@
 #define SET_DRAG 7
 #define DONE 8
 #define RESET 9
+#define CONFIG 4
+#define GETIP 0
+#define RESETWIFI 1
+#define RESETESP 2
+#define BACK 3
+
 
 #define WEEK 0
 #define NORMAL 1

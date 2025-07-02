@@ -1,11 +1,11 @@
 /**
- * @file  current_sensor.cpp
+ * @file  Joystick.cpp
  *
- * @brief Encoder class
+ * @brief Joystick class
  *
- * @author Thomaz Akira Furukawa <thomazakira@usp.br>
+ * @author Guilherme Tokio Kawahara <guitokio@usp.br>
  *
- * @date 05/2022
+ * @date 10/2024
  * 
  * @copyright MIT License
  */

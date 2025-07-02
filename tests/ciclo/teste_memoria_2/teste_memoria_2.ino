@@ -8,6 +8,8 @@
 Memory *saved;
 
 int size = 5;
+int size2 = 4;
+int size3 = 3;
 int sessions = 8;
 
 WebServer server(80); 
@@ -48,37 +50,47 @@ void setup() {
   saved = new Memory(sessions);//a string aqui eh o namespace
   int num = saved->get_saved_sessions_resistivo();
   int tempo[size] = {10,20,30,40,50};
-  int tempo2[size] = {11,21,31,41,51};
-  int tempo3[size] = {12,22,32,42,52};
+  int tempo2[size] = {11,21,31,41};
+  int tempo3[size] = {12,22,32};
 
   double val[size] = {15,25,35,45,55};
-  double val2[size] = {16,26,36,46,56};
-  double val3[size] = {17,27,37,47,57};
-  int tempoget[size] = {};
-  double valget[size] = {};
+  double val2[size] = {16,26,36,46};
+  double val3[size] = {17,27,37};
+  int tempoget[size + 1] = {};
+  double valget[size + 1] = {};
 
-  for(int n = 0; n < 1; n++){
+  saved->push(tempo,val,size);
+  saved->push(tempo2,val2,size2);
+  saved->push(tempo3,val3,size3);
+
+  for(int n = 0; n < 3; n++){
     saved->get(n, tempoget, valget);
-    for(int i = 0; i < size; i++){
-      Serial.println(tempoget[i]);
-      Serial.println(valget[i]);
+    for(int i = 0; i < tempoget[0]; i++){
+      Serial.print(tempoget[i + 1]);
+      Serial.print(", ");
     }
-    Serial.println(n);
-  }
 
-  int next = saved->printalgo();
-  Serial.print("next: ");
-  Serial.println(next);
-  saved->push(tempo,val,size);
-  Serial.print("next: ");
-  Serial.println(next);
-  saved->push(tempo,val,size);
-  Serial.print("next: ");
-  Serial.println(next);
-  saved->push(tempo,val,size);
-  Serial.print("next: ");
-  Serial.println(next);
-  saved->push(tempo,val,size);
+    Serial.println(" ");
+
+    for(int i = 0; i < valget[0]; i++){
+      Serial.print(valget[i + 1]);
+      Serial.print(", ");
+    }
+    Serial.println(" ");
+    String next = saved->printalgo(n);
+    Serial.print("a: ");
+    Serial.println(next);
+  }
+  //saved->push(tempo,val,size);
+  //Serial.print("next: ");
+  //Serial.println(next);
+  //saved->push(tempo,val,size);
+  //Serial.print("next: ");
+  //Serial.println(next);
+  //saved->push(tempo,val,size);
+  //Serial.print("next: ");
+  //Serial.println(next);
+  //saved->push(tempo,val,size);
   //next = saved->printalgo();
   //Serial.print("next: ");
   //Serial.println(next);
@@ -88,16 +100,6 @@ void setup() {
   //saved->push(tempo3,val3,size);
   //saved->push(tempo2,val2,size);
   //saved->push(tempo,val,size);
-
-  for(int n = 0; n < 9; n++){
-    saved->get(n, tempoget, valget);
-    for(int i = 0; i < size; i++){
-      Serial.println(tempoget[i]);
-      Serial.println(valget[i]);
-    }
-
-    Serial.println(n);
-  }
 
   Serial.println(num);
   String out = "num session: " + String(num);

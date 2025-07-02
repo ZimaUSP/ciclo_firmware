@@ -26,6 +26,10 @@ class Memory {
 
         void change_namespace(const char *new_name_spc);
 
+        void vetorcomsize(int*& dataStore, int size);
+
+        void vetorcomsize(double*& dataStore, int size);
+
         void write(int* dataStore, const char* key, int size);
 
         void read(int* dataRetrieve, const char* key, int size);
@@ -36,7 +40,7 @@ class Memory {
 
         void remove_old();
 
-        int printalgo();
+        String printalgo(int n);
 
         void push(int* tempo, double* lista_values, int size);
 

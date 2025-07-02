@@ -89,6 +89,11 @@ const char* MDNSDOMAIN = "ciclo";
 //******FUNCTIONS******//
 
 void setEndpoints() {
+
+  server.on("/", [](){
+    server.sendHeader("Location", "/Resistivo/sessions", true);
+    server.send(301, "text/plain", "");
+  });
   
   server.on("/chart", [](){
     String Websitehtml = web->websiteChart();
@@ -272,8 +277,6 @@ void conectarWiFi() {
     Serial.println(WiFi.SSID());
     Serial.print("Endereco de IP: ");
     Serial.println(WiFi.localIP());
-
-    server.on("/", handleRoot);
 
     server.on("/inline", []() {
       server.send(200, "text/plain", "this works as well");

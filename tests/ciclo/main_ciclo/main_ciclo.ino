@@ -116,7 +116,7 @@ void setEndpoints() {
   });
 
   server.on("/data/resistivo/sessions", getData); //pega dados resistivo
-  // server.on("/data/passivo/sessions", getData); //pega dados passivo
+  server.on("/data/passivo/sessions", getData); //pega dados passivo
   server.on("/data/normal/sessions", getData); //pega dados normal
 
   server.on("/number/resistivo/sessions", numberSessions); //pega o número de sessões 
@@ -238,10 +238,6 @@ void numberSessions(){
 
   serializeJson(doc, output); //serializa o objeto (formata ele para string)
   server.send(200, "text/json", output);
-}
-
-void handleRoot() {
-  server.send(200, "text/html", "<html><head><title>ESPSERVER</title></head><body><h1>hello from esp32!</h1></body></html>");
 }
 
 void handleNotFound() {

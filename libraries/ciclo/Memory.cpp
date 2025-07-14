@@ -21,34 +21,16 @@
 
 Memory::Memory(int sessions) {
     Preferences pref;
-    const char* name_spc = "resistivo"; //default
+    const char* name_spc = ""; //default
     this->limitpush = 10 * 60 * sessions/5;
     this->name_spc = name_spc;
-    pref.begin(this->name_spc, false);
-    if(pref.isKey("old")) {
-        this->old = pref.getInt("old", 0);
-    }
-    else {
-        this->old = 0;
-        pref.putInt("old", 0);
-    }
     this->sessions = sessions; /*sessions = number of sessions to be stored*/
-    //pref.putInt("sessions", this->sessions);
-    if(pref.isKey("next")) {
-        this->next = pref.getInt("next", 0);
-    }
-    else {
-        this->next = this->old;
-        pref.putInt("next", this->next);
-    }
-    while( this->next > this->old + this->sessions ) {//if there is conflict between new number of sessions and old one
-        remove_old();
-    }
-    pref.end();
 }
 
 void Memory::change_namespace(const char *new_name_spc) {
     if(std::string(this->name_spc) == std::string(new_name_spc))  return;
+	Serial.print("change namespace to: ");
+	Serial.println(new_name_spc);
     Preferences pref;
     this->name_spc = new_name_spc;
     pref.begin(this->name_spc, false);
@@ -59,14 +41,26 @@ void Memory::change_namespace(const char *new_name_spc) {
         this->old = 0;
         pref.putInt("old", 0);
     }
+	Serial.print("old: ");
+	Serial.println(this->old);
     if(pref.isKey("next")) {
-        this->next = pref.getInt("next", 0);
+        int next = pref.getInt("next", 0);
+		if (next >= this->old) {
+			this->next = next;
+		} else {
+			this->next = this->old;
+		}
     }
     else {
         this->next = this->old;
         pref.putInt("next", this->next);
     }
+	Serial.print("next: ");
+	Serial.println(this->next);
+	Serial.print("old + sessions: ");
+	Serial.println(this->old + this->sessions);
     while( this->next > this->old + this->sessions ) {//if there is conflict between new number of sessions and old one
+		Serial.println("removing sessions");
         remove_old();
     }
     pref.end();
@@ -120,6 +114,7 @@ void Memory::read(double* dataRetrieve, const char* key, int size) {
 
 void Memory::remove_old() {
     Preferences pref;
+	Serial.println("remove old");
     pref.begin(this->name_spc, false);
     std::string str = std::to_string(this->old);
     pref.remove((str+"_values").c_str());
@@ -131,13 +126,19 @@ void Memory::remove_old() {
 
 void Memory::push(int* tempo, double* lista_values, int size) {
     Preferences pref;
+	Serial.println("got to push");
+	Serial.print("current namespace: ");
+	Serial.println(this->name_spc);
     if(this->next > this->limitpush){
+		Serial.println("failed miserably!");
         return;
     }
     pref.begin(this->name_spc, false);
-    std::string str = std::to_string(this->next);
+    String str = String(this->next);
     vetorcomsize(tempo, size);
     vetorcomsize(lista_values, size);
+	Serial.print("pushing: ");
+	Serial.println(str);
     write(tempo, (str+"_tempo").c_str(), size + 1);
     write(lista_values, (str+"_values").c_str(), size + 1);
     this->next = this->next+1;
@@ -154,17 +155,28 @@ void Memory::push(int* tempo, double* lista_values, int size) {
 }
 
 void Memory::get(int n, int* tempo, double* lista_values) {
-    std::string str = std::to_string(n+this->old);
+    String str = String(n+this->old);
     int s = size(n);
+	Serial.println("got to get");
+	Serial.print("current namespace: ");
+	Serial.println(this->name_spc);
+	Serial.print("getting: ");
+	Serial.println(str);
+	Serial.print("old: ");
+	Serial.println(this->old);
+	Serial.print("old + n: ");
+	Serial.println(str);
     if(n + this->old > limitpush){
+		Serial.println("no good");
         for(int i = 0; i < 5; i++ ){
             tempo[i] = 0;
             lista_values[i] = 0;
         }
         return;
     }
-    read(lista_values, (str+"_values").c_str(), s);
-    read(tempo, (str+"_tempo").c_str(), s);
+	Serial.println("good");
+    // read(lista_values, (str+"_values").c_str(), s);
+    // read(tempo, (str+"_tempo").c_str(), s);
 }
 
 int Memory::size(int n) {

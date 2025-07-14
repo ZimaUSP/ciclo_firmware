@@ -43,8 +43,8 @@ current_sensor *cur;
 
 //******GLOBAL VARIABELS******//
 //Numero de sessoes website/memoria
-#define MAX_SAMPLES 5
-#define N_SESSIONS 8
+// #define MAX_SAMPLES 5
+// #define N_SESSIONS 8
 
 // Time
 unsigned long current_t;
@@ -447,10 +447,7 @@ void executarLogicaResistivo() {
     resistivo();
     print_torque_results();
     delay(500);
-    //website_data(); // AQUI NAO FUNCIONA
-    //endpoints(); // AQUI NAO FUNCIONA
     Serial.println("logica executada");
-    //done = true;
 }
 
 int def_pwm_motor() {

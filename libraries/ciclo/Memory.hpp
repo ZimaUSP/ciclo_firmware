@@ -22,21 +22,17 @@ class Memory {
         int old, next, sessions, limitpush;
 
     public:
-        Memory(int sessions);
+        Memory();
 
         void change_namespace(const char *new_name_spc);
 
-        void vetorcomsize(int*& dataStore, int size);
-
-        void vetorcomsize(double*& dataStore, int size);
-
         void write(int* dataStore, const char* key, int size);
 
-        void read(int* dataRetrieve, const char* key, int size);
+        void read(int* dataRetrieve, const char* key);
 
         void write(double* dataStore, const char* key, int size);
 
-        void read(double* dataRetrieve, const char* key, int size);
+        void read(double* dataRetrieve, const char* key);
 
         void remove_old();
 
@@ -45,8 +41,6 @@ class Memory {
         void push(int* tempo, double* lista_values, int size);
 
         void get(int n, int* tempo, double* lista_values);
-
-        int size(int session_num);/*return size, number of measurements, of the nth session*/
 
         void push_resistivo(int* tempo, double* lista_values, int size);
 
@@ -65,6 +59,8 @@ class Memory {
         int get_saved_sessions_normal();
         
         int get_saved_sessions_passivo();
+
+        int size(int sessions_num);
 
         int size_resistivo(int session_num);/*return size, number of measurements, of the nth session in resistivo*/
         

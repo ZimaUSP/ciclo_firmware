@@ -12,25 +12,21 @@
 
 
 #include "Memory.hpp"
-#include <string>
+#include "config.hpp"
 
 /*****************************************
  * Class Methods Bodies Definitions
  *****************************************/
 
 
-Memory::Memory(int sessions) {
+Memory::Memory() {
     Preferences pref;
-    const char* name_spc = ""; //default
-    this->limitpush = 10 * 60 * sessions/5;
+    const char* name_spc = ""; //default]
     this->name_spc = name_spc;
-    this->sessions = sessions; /*sessions = number of sessions to be stored*/
 }
 
 void Memory::change_namespace(const char *new_name_spc) {
-    if(std::string(this->name_spc) == std::string(new_name_spc))  return;
-	Serial.print("change namespace to: ");
-	Serial.println(new_name_spc);
+    if(String(this->name_spc) == String(new_name_spc))  return;
     Preferences pref;
     this->name_spc = new_name_spc;
     pref.begin(this->name_spc, false);
@@ -41,8 +37,6 @@ void Memory::change_namespace(const char *new_name_spc) {
         this->old = 0;
         pref.putInt("old", 0);
     }
-	Serial.print("old: ");
-	Serial.println(this->old);
     if(pref.isKey("next")) {
         int next = pref.getInt("next", 0);
 		if (next >= this->old) {
@@ -55,33 +49,10 @@ void Memory::change_namespace(const char *new_name_spc) {
         this->next = this->old;
         pref.putInt("next", this->next);
     }
-	Serial.print("next: ");
-	Serial.println(this->next);
-	Serial.print("old + sessions: ");
-	Serial.println(this->old + this->sessions);
-    while( this->next > this->old + this->sessions ) {//if there is conflict between new number of sessions and old one
-		Serial.println("removing sessions");
+    while( this->next > this->old + N_SESSIONS ) {//if there is conflict between new number of sessions and old one
         remove_old();
     }
     pref.end();
-}
-
-void Memory::vetorcomsize(int*& dataStore, int size) {
-    int* novodataStore = new int[size + 1];
-    novodataStore[0] = size;
-    for (int i = 0; i < size; i++){
-        novodataStore[i+1] = dataStore[i]; 
-    }
-    dataStore = novodataStore;
-}
-
-void Memory::vetorcomsize(double*& dataStore, int size) {
-    double* novodataStore = new double[size + 1];
-    novodataStore[0] = size;
-    for (int i = 0; i < size; i++){
-        novodataStore[i+1] = dataStore[i]; 
-    }
-    dataStore = novodataStore;
 }
 
 void Memory::write(int* dataStore, const char* key, int size) {
@@ -91,10 +62,10 @@ void Memory::write(int* dataStore, const char* key, int size) {
     pref.end(); 
 }
 
-void Memory::read(int* dataRetrieve, const char* key, int size) {
+void Memory::read(int* dataRetrieve, const char* key) {
     Preferences pref;
     pref.begin(this->name_spc, false);
-    pref.getBytes(key, dataRetrieve, sizeof(int)*size); 
+    pref.getBytes(key, dataRetrieve, pref.getBytesLength(key)); 
     pref.end();
 }
 
@@ -105,18 +76,17 @@ void Memory::write(double* dataStore, const char* key, int size) {
     pref.end();
 }
 
-void Memory::read(double* dataRetrieve, const char* key, int size) {
+void Memory::read(double* dataRetrieve, const char* key) {
     Preferences pref;
     pref.begin(this->name_spc, false);
-    pref.getBytes(key, dataRetrieve, sizeof(double)*size); 
+    pref.getBytes(key, dataRetrieve, pref.getBytesLength(key)); 
     pref.end();
 }
 
 void Memory::remove_old() {
     Preferences pref;
-	Serial.println("remove old");
     pref.begin(this->name_spc, false);
-    std::string str = std::to_string(this->old);
+    String str = String(this->old);
     pref.remove((str+"_values").c_str());
     pref.remove((str+"_tempo").c_str());
     this->old = this->old+1;
@@ -126,64 +96,27 @@ void Memory::remove_old() {
 
 void Memory::push(int* tempo, double* lista_values, int size) {
     Preferences pref;
-	Serial.println("got to push");
-	Serial.print("current namespace: ");
-	Serial.println(this->name_spc);
-    if(this->next > this->limitpush){
-		Serial.println("failed miserably!");
-        return;
-    }
     pref.begin(this->name_spc, false);
     String str = String(this->next);
-    vetorcomsize(tempo, size);
-    vetorcomsize(lista_values, size);
-	Serial.print("pushing: ");
-	Serial.println(str);
-    write(tempo, (str+"_tempo").c_str(), size + 1);
-    write(lista_values, (str+"_values").c_str(), size + 1);
+    write(tempo, (str+"_tempo").c_str(), size);
+    write(lista_values, (str+"_values").c_str(), size);
     this->next = this->next+1;
     pref.putInt("next", this->next);
-    while(this->old < this->next - this->sessions) {
+    while(this->old < this->next - N_SESSIONS) {
         remove_old();   
     }
     pref.end();
 }
 
  String Memory::printalgo(int n){
-    std::string str = std::to_string(n+this->old);
+    String str = String(n+this->old);
     return((str+"_values").c_str());
 }
 
 void Memory::get(int n, int* tempo, double* lista_values) {
     String str = String(n+this->old);
-    int s = size(n);
-	Serial.println("got to get");
-	Serial.print("current namespace: ");
-	Serial.println(this->name_spc);
-	Serial.print("getting: ");
-	Serial.println(str);
-	Serial.print("old: ");
-	Serial.println(this->old);
-	Serial.print("old + n: ");
-	Serial.println(str);
-    if(n + this->old > limitpush){
-		Serial.println("no good");
-        for(int i = 0; i < 5; i++ ){
-            tempo[i] = 0;
-            lista_values[i] = 0;
-        }
-        return;
-    }
-	Serial.println("good");
-    // read(lista_values, (str+"_values").c_str(), s);
-    // read(tempo, (str+"_tempo").c_str(), s);
-}
-
-int Memory::size(int n) {
-    Preferences pref;
-    pref.begin(this->name_spc, false);
-    std::string str = std::to_string(n + this->old);
-    return pref.getBytesLength((str+"_tempo").c_str())/sizeof(int);
+    read(lista_values, (str+"_values").c_str());
+    read(tempo, (str+"_tempo").c_str());
 }
 
 void Memory::push_resistivo(int* tempo, double* lista_values, int size) {
@@ -229,6 +162,16 @@ int Memory::get_saved_sessions_normal() {
 int Memory::get_saved_sessions_passivo() {
     change_namespace("passivo");
     return (this->next - this->old);
+}
+
+int Memory::size(int session_num) {
+    Preferences pref;
+    pref.begin(this->name_spc, false);
+    String str = String(session_num);
+    int size = pref.getBytesLength((str + "_tempo").c_str());
+    size /= sizeof(int);
+    pref.end();
+    return size;
 }
 
 int Memory::size_resistivo(int session_num) {

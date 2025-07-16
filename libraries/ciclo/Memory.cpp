@@ -58,7 +58,13 @@ void Memory::change_namespace(const char *new_name_spc) {
 void Memory::write(int* dataStore, const char* key, int size) {
     Preferences pref;
     pref.begin(this->name_spc, false);
-    pref.putBytes(key, (byte*)dataStore, sizeof(int)*size);
+    size_t len = pref.putBytes(key, (byte*)dataStore, sizeof(int)*size);
+    Serial.print("Len: ");
+    Serial.println(len);
+    Serial.print("Size: ");
+    Serial.println(size * sizeof(int));
+    if(len != size * sizeof(int))
+        Serial.println(" Deu ruim no int :( ");
     pref.end(); 
 }
 
@@ -72,7 +78,13 @@ void Memory::read(int* dataRetrieve, const char* key) {
 void Memory::write(double* dataStore, const char* key, int size) {
     Preferences pref;
     pref.begin(this->name_spc, false);
-    pref.putBytes(key, (byte*)(dataStore), sizeof(double)*size);
+    size_t len = pref.putBytes(key, (byte*)(dataStore), sizeof(double)*size);
+    Serial.print("Len: ");
+    Serial.println(len);
+    Serial.print("Size: ");
+    Serial.println(size * sizeof(double));
+    if(len != size * sizeof(double))
+        Serial.println(" Deu ruim no double :( ");
     pref.end();
 }
 

@@ -29,11 +29,11 @@ void setup() {
 
   int size = 5;
 
-  saved->push_resistivo (tempo_write1, torque_write1, size);
-  saved->push_resistivo (tempo_write2, torque_write2, size);
-  saved->push_resistivo (tempo_write3, torque_write3, size);
-  saved->push_resistivo (tempo_write4, torque_write4, size);
-  saved->push_resistivo (tempo_write0, torque_write0, size);
+  saved->push_passivo (tempo_write1, torque_write1, size);
+  saved->push_passivo (tempo_write2, torque_write2, size);
+  saved->push_passivo (tempo_write3, torque_write3, size);
+  saved->push_passivo (tempo_write4, torque_write4, size);
+  saved->push_passivo (tempo_write0, torque_write0, size);
   
 }
 
@@ -45,7 +45,7 @@ void loop() {
       pega_tempo[i] = 1;
       pega_torque[i] = 1;
     }
-    saved->get_resistivo(i, pega_tempo, pega_torque);
+    saved->get_passivo(i, pega_tempo, pega_torque);
     Serial.println();
     Serial.print("Dados na memoria do torque: ");
     Serial.print(i);

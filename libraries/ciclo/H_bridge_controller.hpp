@@ -24,8 +24,8 @@ class H_bridge_controller {
         int PWM_frequency;
         int PWM_resolution;
 
-        int R_channel;
-        int L_channel;
+        int r_channel;
+        int l_channel;
 
     public:
 
@@ -36,12 +36,12 @@ class H_bridge_controller {
          * @param L_pin L PWM pin 
          * @param PWM_frequency
          * @param PWM_resolution
-         * @param R_channel R PMW CHANNEL pin
-         * @param L_channel L PWM CHANNEL pin
+         * @param r_channel R PMW CHANNEL pin
+         * @param l_channel L PWM CHANNEL pin
          *
          */
         // HBridgeController - high camel case
-        H_bridge_controller(int R_pin, int L_pin, int PWM_frequency, int PWM_resolution, int R_channel, int L_channel);
+        H_bridge_controller(int R_pin, int L_pin, int PWM_frequency, int PWM_resolution, int r_channel, int l_channel);
 
         /**
          * @brief Init PWM pins

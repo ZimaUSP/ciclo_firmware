@@ -17,14 +17,14 @@
  * Class Methods Bodies Definitions
  *****************************************/
 
-PID::PID(double k_p,double k_i,double k_d,int i_saturation) {
+PID::PID(double k_p,double k_i,double k_d,int i_sat) {
     this->k_p = k_p;
     this->k_i = k_i;
     this->k_d = k_d; 
-    this->i_saturation = i_saturation;
+    this->i_sat = i_sat;
 }
 
-double PID::computePID(double input,float setpoint,float tolerance) {
+double PID::computePID(double input,float setpoint,float tolerancia) {
   
 
   this->current_time= millis();                                              //get current time
@@ -33,11 +33,11 @@ double PID::computePID(double input,float setpoint,float tolerance) {
 
   this->error = setpoint - input;                                      // determine error
   this->i_error +=  this->error *  this->delta_time;
-  if(this->i_error > this->i_saturation){
-    this->i_error = this->i_saturation;
+  if(this->i_error > this->i_sat){
+    this->i_error = this->i_sat;
 
-    }else if(this->i_error < -this->i_saturation){
-      this->i_error=  -this->i_saturation;
+    }else if(this->i_error < -this->i_sat){
+      this->i_error=  -this->i_sat;
 
     }
   

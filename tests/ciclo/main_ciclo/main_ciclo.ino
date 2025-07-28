@@ -115,6 +115,11 @@ void setEndpoints() {
     server.send(200,"text/html", Websitehtml);
   });
 
+  server.on("/teste", [](){
+    String Websitehtml = web->websiteTESTE();
+    server.send(200,"text/html", Websitehtml);
+  });
+
   server.on("/data/resistivo/sessions", getData); //pega dados resistivo
   server.on("/data/passivo/sessions", getData); //pega dados passivo
   server.on("/data/normal/sessions", getData); //pega dados normal

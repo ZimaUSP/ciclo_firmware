@@ -88,7 +88,7 @@ void Passive::new_torques(){
   saved->push_passivo(tempo, lista_values, MAX_SAMPLES);
 }
 
-void Passive::init_passive(Passive passive){
-  passive.reset_mode();
-  passive.new_torques();
+void Passive::init_passive(){
+  this->reset_mode();
+  this->new_torques();
 }

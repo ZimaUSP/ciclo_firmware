@@ -43,7 +43,7 @@ class Passive {
     Passive(SimpleTimer lcd_timer, SimpleTimer rpmTimer, Encoder* encoder, Memory* saved, PID* PID_vel, H_bridge_controller* motorController, LiquidCrystal_I2C* lcd);
     void controlMotorSpeedWithPID();
     void resetEncoderIfExceedsLimit();
-    void init_passive(Passive passive);
+    void init_passive();
 };
 
 #endif // __PASSIVE_HPP__

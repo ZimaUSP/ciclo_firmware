@@ -176,17 +176,26 @@ void getData() {
 
   int id = string_id.toInt(); //transforma o id string para int 
 
-  int size = MAX_SAMPLES;
-  double dados_torque[size];
-  int dados_tempo[size];
+  int size = 0;
+  double *dados_torque = NULL;
+  int *dados_tempo =  NULL;
 
-  if (path == "/data/resistivo/sessions"){ // requisição dos dados do modo resistivo
+  if(path == "/data/resistivo/sessions"){ // requisição dos dados do modo resistivo
+    size = saved->size_resistivo(id);
+    dados_torque = (double*)calloc(size, sizeof(double));
+    dados_tempo =  (int*)calloc(size, sizeof(int));
     saved->get_resistivo(id, dados_tempo, dados_torque);
   }
-  else if (path == "/data/passivo/sessions"){ // requisição dos dados do modo passivo
+  else if(path == "/data/passivo/sessions"){ // requisição dos dados do modo passivo
+    size = saved->size_passivo(id);
+    dados_torque = (double*)calloc(size, sizeof(double));
+    dados_tempo =  (int*)calloc(size, sizeof(int));
     saved->get_passivo(id, dados_tempo, dados_torque);
   }
-  else if (path == "/data/normal/sessions"){ // requisição dos dados do modo normal
+  else if(path == "/data/normal/sessions"){ // requisição dos dados do modo normal
+    size = saved->size_normal(id);
+    dados_torque = (double*)calloc(size, sizeof(double));
+    dados_tempo =  (int*)calloc(size, sizeof(int));
     saved->get_normal(id, dados_tempo, dados_torque);
   }
 
@@ -211,6 +220,7 @@ void getData() {
   serializeJson(doc, output); //serializa o objeto (formata ele para string)
 
   server.send(200, "text/json", output); //envia output em formato json
+  
 }
 
 void numberSessions(){
@@ -341,7 +351,7 @@ void inicializaComponentes() {
   cur->init();
   csv = new CSV();
   web = new WEBSITE();
-  saved = new Memory(N_SESSIONS);
+  saved = new Memory();
     
 }
 
@@ -405,7 +415,7 @@ void passivo() {
       delta_pulses = current_pulses - last_pulses;
       actual_rpm = delta_pulses * 1.01;
 
-      if(contador < MAX_SAMPLES) {
+      if(contador <= MAX_SAMPLES) {
         lista_values[contador] = actual_rpm;
         tempo[contador]=contador*sample_t;
         contador++;
@@ -423,7 +433,7 @@ void passivo() {
     
     printTime();
   }
-  saved->push_passivo(tempo, lista_values, MAX_SAMPLES);
+  saved->push_passivo(tempo, lista_values, contador + 1);
 }
 
 //Implementation resistivo mode
@@ -495,19 +505,20 @@ void resistivo() {
         tempo[i]=3;
     }
     lcd_timer.reset();
+    torque_Time.reset();
     motorController->Set_L(pwm_motor);
 
     while (!lcd_timer.isReady() ) {
       acs = cur->get_current();
       torque = cur->get_torque(acs);
-      if (torque_Time.getTimePassed() > sample_t * 50) {
-          if (contador < MAX_SAMPLES) {
+      if (torque_Time.getTimePassed() > sample_t) {
+          if (contador <= MAX_SAMPLES) {
               //Serial.println("ok");
               //Serial.print(torque);
               //Serial.print(", ");
               //Serial.println(lcd_timer.getTimePassed());
               lista_values[contador] = torque;
-              tempo[contador]=contador*sample_t * 50;
+              tempo[contador] = contador * sample_t;
               contador++;
               torque_Time.reset();
           }
@@ -519,7 +530,7 @@ void resistivo() {
       printTime();
     }
 
-    saved->push_resistivo(tempo, lista_values, MAX_SAMPLES);
+    saved->push_resistivo(tempo, lista_values, contador + 1);
     delay(500);
     if (contador > 0) {  // Evitar divisão por zero
         torque_max = lista_values[0];
@@ -585,7 +596,7 @@ void normal() {
       actual_rpm = revolutions*(60000/400);
 
       if(contador < MAX_SAMPLES) {
-        lista_values[contador] = torque;
+        lista_values[contador] = actual_rpm;
         tempo[contador]=contador*sample_t;
         contador++;
       }
@@ -604,7 +615,7 @@ void normal() {
     lcd.print(actual_rpm);
     printTime();
   }
-  saved->push_normal(tempo, lista_values, MAX_SAMPLES);
+  saved->push_normal(tempo, lista_values, contador + 1);
 }
 
 void setMode() {

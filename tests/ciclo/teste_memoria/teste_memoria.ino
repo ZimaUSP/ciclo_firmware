@@ -13,7 +13,7 @@ const char* key_time = "SavedTime";
 void setup() {
   Serial.begin(115200);
 
-  saved = new Memory(N_SESSIONS);//a string aqui eh o namespace
+  saved = new Memory();
 
   int tempo_write0[5] = {0, 1, 2, 3, 4};
   int tempo_write1[5] = {1, 7, 1, 4, 1};
@@ -29,55 +29,9 @@ void setup() {
 
   int size = 5;
 
-  saved->push_resistivo (tempo_write1, torque_write1, size);
-  saved->push_resistivo (tempo_write2, torque_write2, size);
-  saved->push_resistivo (tempo_write3, torque_write3, size);
-  saved->push_resistivo (tempo_write4, torque_write4, size);
-  saved->push_resistivo (tempo_write0, torque_write0, size);
-  int pega_tempo[5];
-  double pega_torque[5];
-
-  for(int i = 0; i < 5; i++) {
-    pega_tempo[i] = i;
-    pega_torque[i] = i;
-  }
-  for (int i = 0; i < 5; i++) {
-    Serial.println("here i am");
-    saved->get_resistivo(i, pega_tempo, pega_torque);
-  }
-  Serial.println("Dados na memoria do torque: ");
-  for(int i = 0; i < 5; i++) {
-    Serial.print(pega_torque[i]);
-    Serial.print(" ");
-  
-  }
-  Serial.println("");
-  Serial.println("Dados na memoria do tempo: ");
-  for(int i = 0; i < 5; i++) {
-    Serial.print(pega_tempo[i]);
-    Serial.print(" ");
-  }
-  Serial.println("");
-  Serial.println("Deleta os dados");
-  saved->remove_old();
-  Serial.println("Dados deletados");
-  Serial.println("Dados na memoria do torque: ");
-  for(int i = 0; i < 5; i++) {
-    Serial.print(pega_torque[i]);
-    Serial.print(" ");
-  
-  }
-  Serial.println("");
-  Serial.println("Dados na memoria do tempo: ");
-  for(int i = 0; i < 5; i++) {
-    Serial.print(pega_tempo[i]);
-    Serial.print(" ");
-  }
 }
 
 void loop() { 
-  
-  /*
   for(int i=0;i<5;i++) {
     int pega_tempo[5];
     double pega_torque[5];
@@ -85,7 +39,7 @@ void loop() {
       pega_tempo[i] = 1;
       pega_torque[i] = 1;
     }
-    saved->get_resistivo(i, pega_tempo, pega_torque);
+    saved->get_passivo(i, pega_tempo, pega_torque);
     Serial.println();
     Serial.print("Dados na memoria do torque: ");
     Serial.print(i);
@@ -93,7 +47,6 @@ void loop() {
     for(int i=0;i<5;i++) {
           Serial.print(pega_torque[i]);
           Serial.print(" ");
-    
     }
     Serial.println();
     Serial.print("Dados na memoria do tempo: ");
@@ -104,8 +57,5 @@ void loop() {
           Serial.print(" ");
     }
   }
-  */
   delay(10000);
-
-
 }

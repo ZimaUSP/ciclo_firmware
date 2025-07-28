@@ -36,27 +36,43 @@ void setup() {
   saved->push_resistivo (tempo_write0, torque_write0, size);
   int pega_tempo[5];
   double pega_torque[5];
-  for(int i=0;i<5;i++) {
-    pega_tempo[i] = 1;
-    pega_torque[i] = 1;
+
+  for(int i = 0; i < 5; i++) {
+    pega_tempo[i] = i;
+    pega_torque[i] = i;
   }
   for (int i = 0; i < 5; i++) {
     Serial.println("here i am");
     saved->get_resistivo(i, pega_tempo, pega_torque);
   }
   Serial.println("Dados na memoria do torque: ");
-  for(int i=0;i<5;i++) {
+  for(int i = 0; i < 5; i++) {
     Serial.print(pega_torque[i]);
     Serial.print(" ");
   
   }
   Serial.println("");
   Serial.println("Dados na memoria do tempo: ");
-  for(int i=0;i<5;i++) {
+  for(int i = 0; i < 5; i++) {
     Serial.print(pega_tempo[i]);
     Serial.print(" ");
   }
   Serial.println("");
+  Serial.println("Deleta os dados");
+  saved->remove_old();
+  Serial.println("Dados deletados");
+  Serial.println("Dados na memoria do torque: ");
+  for(int i = 0; i < 5; i++) {
+    Serial.print(pega_torque[i]);
+    Serial.print(" ");
+  
+  }
+  Serial.println("");
+  Serial.println("Dados na memoria do tempo: ");
+  for(int i = 0; i < 5; i++) {
+    Serial.print(pega_tempo[i]);
+    Serial.print(" ");
+  }
 }
 
 void loop() { 

@@ -14,8 +14,8 @@ int sessions = 8;
 
 WebServer server(80); 
 
-const char* ssid = "MAIS VIRUS INTEL";     // Substitua pelo nome da sua rede Wi-Fi
-const char* password = "14021973"; // Substitua pela senha da rede
+const char* ssid = "";     // Substitua pelo nome da sua rede Wi-Fi
+const char* password = ""; // Substitua pela senha da rede
 
 void numberSessions() {
   Serial.println("getting num sessions...");
@@ -29,8 +29,8 @@ void numberSessions() {
 
 void setup() {
   Serial.begin(9600);
-  //nvs_flash_erase(); // erase the NVS partition and...
-  //nvs_flash_init(); // initialize the NVS partition.
+  nvs_flash_erase(); // erase the NVS partition and...
+  nvs_flash_init(); // initialize the NVS partition.
   //while(true);
   Serial.println("Conectando ao Wi-Fi...");
   WiFi.mode(WIFI_STA);
@@ -62,9 +62,10 @@ void setup() {
   saved->push(tempo,val,size);
   saved->push(tempo2,val2,size2);
   saved->push(tempo3,val3,size3);
-
+  
   for(int n = 0; n < 3; n++){
     saved->get(n, tempoget, valget);
+    Serial.println("Dados na memoria do tempo: ");
     for(int i = 0; i < tempoget[0]; i++){
       Serial.print(tempoget[i + 1]);
       Serial.print(", ");
@@ -72,6 +73,7 @@ void setup() {
 
     Serial.println(" ");
 
+    Serial.println("Dados na memoria do torque: ");
     for(int i = 0; i < valget[0]; i++){
       Serial.print(valget[i + 1]);
       Serial.print(", ");
@@ -81,6 +83,7 @@ void setup() {
     Serial.print("a: ");
     Serial.println(next);
   }
+
   //saved->push(tempo,val,size);
   //Serial.print("next: ");
   //Serial.println(next);

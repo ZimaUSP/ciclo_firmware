@@ -104,8 +104,8 @@
 #define LIMITE_SAUDAVEL 10
 
 // Memory
-#define MAX_SAMPLES 1024000 // just a big number
-#define N_SESSIONS 1024000
+#define MAX_SAMPLES 1024 // just a big number
+#define N_SESSIONS 1024
 
 #define sample_t 400 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
 #endif

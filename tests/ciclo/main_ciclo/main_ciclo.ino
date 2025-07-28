@@ -144,6 +144,9 @@ void getCSV() {
   CSV *csv = new CSV();
   String data = "";
 
+
+
+
   if(path == "/data/resistivo/sessions/csv"){ // requisição dos dados do modo resistivo
     saved->get_resistivo(id, dados_tempo, dados_torque);
     data = csv->to_csv("Torque", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
@@ -160,7 +163,7 @@ void getCSV() {
 
   }
 
-  void getData() {
+void getData() {
   // send response to request
   // server.send(int STATUS, string CONTENT-TYPE, string DATA_TO_SEND);
 
@@ -177,13 +180,13 @@ void getCSV() {
   double dados_torque[size];
   int dados_tempo[size];
 
-  if(path == "/data/resistivo/sessions"){ // requisição dos dados do modo resistivo
+  if (path == "/data/resistivo/sessions"){ // requisição dos dados do modo resistivo
     saved->get_resistivo(id, dados_tempo, dados_torque);
   }
-  else if(path == "/data/passivo/sessions"){ // requisição dos dados do modo passivo
+  else if (path == "/data/passivo/sessions"){ // requisição dos dados do modo passivo
     saved->get_passivo(id, dados_tempo, dados_torque);
   }
-  else if(path == "/data/normal/sessions"){ // requisição dos dados do modo normal
+  else if (path == "/data/normal/sessions"){ // requisição dos dados do modo normal
     saved->get_normal(id, dados_tempo, dados_torque);
   }
 
@@ -259,7 +262,7 @@ void conectarWiFi() {
     Serial.println("Conectando ao Wi-Fi...");
     WiFi.mode(WIFI_STA);
     bool res = wm.autoConnect("CicloErgometro"); 
-
+    
     if(!res) { 
         Serial.println("Falha ao conectar"); 
         ESP.restart(); //reseta o esp caso nao tenha sido possivel conectar
@@ -746,6 +749,23 @@ void configMode() {
       return;
 }
 }
+NEW SKETCH
+749750751752753754755756757758759760761762763764
+//******MAIN******//
+
+void setup() {
+  Serial.begin(9600);
+  inicializaComponentes();
+  xTaskCreatePinnedToCore(
+                      TaskWifiCode,   // Task function.
+                      "TaskWIfi",     // name of task.
+                      10000,       // Stack size of task
+                      NULL,        // parameter of the task
+
+Message (Enter to send message to 'DOIT ESP32 DEVKIT V1' on 'COM9')
+New Line
+9600 baud
+
 
 
 
@@ -909,6 +929,7 @@ void setup() {
                       &TaskWifiHandle,      // Task handle to keep track of created task
                       0);          // pin task to core 0
   delay(500); 
+
   STATE = STAND_BY;
 }
 

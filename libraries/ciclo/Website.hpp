@@ -2,6 +2,7 @@
 #define __WEBSITE_HPP__
 
 #include "Arduino.h"
+#include <WebServer.h>
 
 class WEBSITE{
   public:

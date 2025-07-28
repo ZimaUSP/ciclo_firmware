@@ -175,8 +175,8 @@ void Memory::get(int n, int* tempo, double* lista_values) {
         return;
     }
 	Serial.println("good");
-    // read(lista_values, (str+"_values").c_str(), s);
-    // read(tempo, (str+"_tempo").c_str(), s);
+    read(lista_values, (str+"_values").c_str(), s);
+    read(tempo, (str+"_tempo").c_str(), s);
 }
 
 int Memory::size(int n) {

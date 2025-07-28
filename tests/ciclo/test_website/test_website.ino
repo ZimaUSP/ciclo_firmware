@@ -6,6 +6,7 @@
 #include "Website.hpp"
 #include "CSV.hpp"
 #include <ArduinoJson.h>
+#include <nvs_flash.h>
 
 TaskHandle_t TaskWifiHandle;
 
@@ -18,8 +19,8 @@ WebServer server(80);
 
 #define led 2
 
-const char* ssid = "Zima";     // Substitua pelo nome da sua rede Wi-Fi
-const char* password = "enzimasUSP"; // Substitua pela senha da rede
+const char* ssid = "";     // Substitua pelo nome da sua rede Wi-Fi
+const char* password = ""; // Substitua pela senha da rede
 
 void setup() {
   Serial.begin(9600);
@@ -46,6 +47,36 @@ void TaskWifiCode( void * pvParameters ){
 
   saved = new Memory(N_SESSIONS);//a string aqui eh o namespace
 
+  // TESTE
+
+  nvs_flash_erase(); // erase the NVS partition and...
+  nvs_flash_init(); // initialize the NVS partition.
+
+  int size = 5;
+  int size2 = 4;
+  int size3 = 3;
+  int sessions = 8;
+
+  server.on("/", numberSessions);
+  Serial.println("getting num sessions...");
+  saved = new Memory(sessions);//a string aqui eh o namespace
+  int num = saved->get_saved_sessions_resistivo();
+  int tempo[size] = {10,20,30,40,50};
+  int tempo2[size] = {11,21,31,41};
+  int tempo3[size] = {12,22,32};
+
+  double val[size] = {15,25,35,45,55};
+  double val2[size] = {16,26,36,46};
+  double val3[size] = {17,27,37};
+  int tempoget[size + 1] = {};
+  double valget[size + 1] = {};
+
+  saved->push(tempo,val,size);
+  saved->push(tempo2,val2,size2);
+  saved->push(tempo3,val3,size3);
+
+  // TESTE
+
   conectarWiFi();
 
   while (true) {
@@ -60,6 +91,7 @@ void handleRoot() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  /*
   Serial.print("turn on led - ");
   Serial.println(xPortGetCoreID());
   digitalWrite(led, HIGH);
@@ -68,6 +100,7 @@ void loop() {
   Serial.println(xPortGetCoreID());
   digitalWrite(led, LOW);
   delay(1000);
+  */
 }
 
 
@@ -139,6 +172,8 @@ void website_data(){
 */
 
 void setEndpoints() {
+
+    Serial.println("Setting up endpoints...");
   
     server.on("/chart", [](){
       String Websitehtml = web->websiteChart();
@@ -149,7 +184,13 @@ void setEndpoints() {
       String Websitehtml = web->websiteTESTE();
       server.send(200,"text/html", Websitehtml);
     });
-
+      
+    /*
+    web->websiteTESTE(server,
+                      saved->get_saved_sessions_resistivo(),
+                      saved->get_saved_sessions_normal(),
+                      saved->get_saved_sessions_passivo());
+*/
     server.on("/Resistivo/sessions", [](){
       String Websitehtml = web->websiteResistivo();
       server.send(200,"text/html", Websitehtml);
@@ -211,6 +252,8 @@ void getCSV() {
 }
 
 void getData() {
+  Serial.println("Setting up getData endpoint");
+
   // send response to request
   // server.send(int STATUS, string CONTENT-TYPE, string DATA_TO_SEND);
 
@@ -251,13 +294,14 @@ void getData() {
     torque.add(dados_torque[i]); //add os valores colhidos para o objeto torque
   }
 
-  String output;
+  String output; 
 
   doc.shrinkToFit();  // optional
 
   serializeJson(doc, output); //serializa o objeto (formata ele para string)
 
   server.send(200, "text/json", output); //envia output em formato json
+
 }
 
 void numberSessions(){

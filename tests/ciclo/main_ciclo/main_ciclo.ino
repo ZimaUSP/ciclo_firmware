@@ -138,29 +138,35 @@ void getCSV() {
 
   int id = string_id.toInt(); //transforma o id string para int 
 
-  int size = MAX_SAMPLES;
-  double dados_torque[size];
-  int dados_tempo[size];
+  int size = 0;
+  double* dados_torque = NULL;
+  int* dados_tempo = NULL;
   CSV *csv = new CSV();
   String data = "";
-
-
-
-
   if(path == "/data/resistivo/sessions/csv"){ // requisição dos dados do modo resistivo
+    size = saved->size_resistivo(id);
+    dados_torque = (double*)calloc(size, sizeof(double));
+    dados_tempo =  (int*)calloc(size, sizeof(int));
     saved->get_resistivo(id, dados_tempo, dados_torque);
-    data = csv->to_csv("Torque", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+    data = csv->to_csv("Torque", dados_torque, "Tempo", dados_tempo, size);
   }
   else if(path == "/data/passivo/sessions/csv"){ // requisição dos dados do modo passivo
+    size = saved->size_passivo(id);
+    dados_torque = (double*)calloc(size, sizeof(double));
+    dados_tempo =  (int*)calloc(size, sizeof(int));
     saved->get_passivo(id, dados_tempo, dados_torque);
-    data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+    data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, size);
   }
   else if(path == "/data/normal/sessions/csv"){ // requisição dos dados do modo normal
+    size = saved->size_normal(id);
+    dados_torque = (double*)calloc(size, sizeof(double));
+    dados_tempo =  (int*)calloc(size, sizeof(int));
     saved->get_normal(id, dados_tempo, dados_torque);
-    data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, MAX_SAMPLES);
+    data = csv->to_csv("Frequência", dados_torque, "Tempo", dados_tempo, size);
   }
   server.send(200, "text/csv", data);
-
+  free(dados_torque);
+  free(dados_tempo);
   }
 
 void getData() {
@@ -220,7 +226,8 @@ void getData() {
   serializeJson(doc, output); //serializa o objeto (formata ele para string)
 
   server.send(200, "text/json", output); //envia output em formato json
-  
+  free(dados_torque);
+  free(dados_tempo);
 }
 
 void numberSessions(){
@@ -760,25 +767,6 @@ void configMode() {
       return;
 }
 }
-NEW SKETCH
-749750751752753754755756757758759760761762763764
-//******MAIN******//
-
-void setup() {
-  Serial.begin(9600);
-  inicializaComponentes();
-  xTaskCreatePinnedToCore(
-                      TaskWifiCode,   // Task function.
-                      "TaskWIfi",     // name of task.
-                      10000,       // Stack size of task
-                      NULL,        // parameter of the task
-
-Message (Enter to send message to 'DOIT ESP32 DEVKIT V1' on 'COM9')
-New Line
-9600 baud
-
-
-
 
 // Select Duration
 int duration() {

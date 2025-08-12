@@ -19,8 +19,8 @@ WebServer server(80);
 
 #define led 2
 
-const char* ssid = "";     // Substitua pelo nome da sua rede Wi-Fi
-const char* password = ""; // Substitua pela senha da rede
+const char* ssid = "Panda";     // Substitua pelo nome da sua rede Wi-Fi
+const char* password = "NekoForlifE690"; // Substitua pela senha da rede
 
 void setup() {
   Serial.begin(9600);
@@ -45,7 +45,7 @@ void TaskWifiCode( void * pvParameters ){
   Serial.print("TaskWifi running on core ");
   Serial.println(xPortGetCoreID());
 
-  saved = new Memory(N_SESSIONS);//a string aqui eh o namespace
+  saved = new Memory();//a string aqui eh o namespace
 
   // TESTE
 
@@ -59,7 +59,7 @@ void TaskWifiCode( void * pvParameters ){
 
   server.on("/", numberSessions);
   Serial.println("getting num sessions...");
-  saved = new Memory(sessions);//a string aqui eh o namespace
+  saved = new Memory();//a string aqui eh o namespace
   int num = saved->get_saved_sessions_resistivo();
   int tempo[size] = {10,20,30,40,50};
   int tempo2[size] = {11,21,31,41};
@@ -180,7 +180,7 @@ void setEndpoints() {
       server.send(200,"text/html", Websitehtml);
     });
 
-    server.on("/teste", [](){
+    server.on("/graficos", [](){
       String Websitehtml = web->websiteTESTE();
       server.send(200,"text/html", Websitehtml);
     });

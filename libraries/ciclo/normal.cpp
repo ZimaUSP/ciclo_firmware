@@ -132,7 +132,7 @@ normal::normal(int contador, int *tempo, double *lista_values, LiquidCrystal_I2C
     this->saved = saved;
     this->sample_time = sample_time;
 }
-
+/**/
 void normal::printTime() {
     lcd.setCursor(0, 0);
     lcd.print("Duration: ");
@@ -156,19 +156,16 @@ void normal::executaNormal(){
         if (rpmTime.getTimePassed() > 400) {
             current_pulses = encoder->getPulses();
             delta_pulses = current_pulses - last_pulses;
-            actual_rpm = delta_pulses * 1.01;
+            double revolutions = delta_pulses/pulses_per_rev;
+            actual_rpm = revolutions*(60000/400);
     
             if(contador < MAX_SAMPLES) {
                 lista_values[contador] = actual_rpm;
                 tempo[contador] = contador * sample_t;
                 contador++;
             }
-            
-            Serial.print(actual_rpm);
-            Serial.print(", ");
-            Serial.println(lcd_timer.getTimePassed());
-    
-            resetaEncoder(current_pulses, last_pulses);
+
+            normal::resetaEncoder(current_pulses, last_pulses);
             rpmTime.reset();
             last_pulses = current_pulses;
             Serial.print("; actual rpm: ");
@@ -180,7 +177,7 @@ void normal::executaNormal(){
         lcd.setCursor(0, 1);
         lcd.print("Frequency: ");
         lcd.print(actual_rpm);
-        printTime();
+        normal::printTime();
     }
     saved->push_normal(tempo, lista_values, MAX_SAMPLES);
 }

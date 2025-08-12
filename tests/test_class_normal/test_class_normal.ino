@@ -100,8 +100,7 @@ void setup(){
     normal* n = new normal(contador, tempo, lista_values, lcd, rpmTime, lcd_timer, 
                           encoder, motorController, saved, sample_t);
     n->executaNormal();
-    
-    delay(500);
+    delay(10000);
     reset();
 }
 

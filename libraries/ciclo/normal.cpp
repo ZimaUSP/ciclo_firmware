@@ -136,7 +136,7 @@ normal::normal(int contador, int *tempo, double *lista_values, LiquidCrystal_I2C
 void normal::printTime() {
     lcd.setCursor(0, 0);
     lcd.print("Duration: ");
-    char t[10];
+    char t[4096];
     sprintf(t, "%02d", lcd_timer.getMinutes());
     lcd.print(t);
     lcd.print(":");

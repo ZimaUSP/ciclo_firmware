@@ -69,9 +69,9 @@ bool joystick_check;
 //resistivo
 double t0, torque, torque_max, torque_min, torque_med;
 float acs;
-char t[10];  // Aumentado o tamanho do buffer de sprintf
+char t[8192];  // Aumentado o tamanho do buffer de sprintf
 int offset, pot, sum, i, contador,pwm_motor;
-double  t_Duration = 0.5;
+//double  t_Duration = 0.5;
 int verif = 1;
 int n_sessions;
 double lista_values [MAX_SAMPLES];
@@ -156,7 +156,7 @@ void TaskWifiCode( void * pvParameters ){
 }
 */
 int duration() {
-  int t_Duration;
+  int t_Duration = 0 ;
   lcd.setCursor(0, 0);
   lcd.print("              ");
   while (!btn->getPress()){

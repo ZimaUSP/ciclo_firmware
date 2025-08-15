@@ -20,6 +20,8 @@
 #include "Memory.hpp"
 #include "Website.hpp"
 
+#include  "normal.hpp"
+
 //******CONSTRUCTOR******//
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // LCD lib
@@ -38,6 +40,8 @@ CSV *csv;
 Memory* saved;
 WEBSITE* web;
 current_sensor *cur;
+
+normal* normal;
 
 //******GLOBAL VARIABELS******//
 //Numero de sessoes website/memoria
@@ -562,7 +566,7 @@ void print_torque_results() {
 }
 
 // Implemetation normal Mode (Criar Classe normal para implementar esses controle e evitar de ter muita coisa na main)
-
+/*
 void normal() {
   contador = 0;
   lcd_timer.reset();
@@ -597,7 +601,7 @@ void normal() {
     printTime();
   }
   saved->push_normal(tempo, lista_values, MAX_SAMPLES);
-}
+}*/
 
 void setMode() {
   double pageSelect = 0;
@@ -867,8 +871,9 @@ void loop() {
       delay(500);
       lcd.clear();
 
-      normal();
-      //normal(contador,tempo,lista_values,lcd,rpmTime,lcd_timer,encoder,motorController);
+      //normal();
+      normalnormal(contador, tempo, lista_values, lcd, rpmTime, lcd_timer, 
+                          encoder, motorController, saved, sample_t);;
 
       delay(500);
       reset();

@@ -11,6 +11,7 @@ class WEBSITE{
     String websiteNormal();
     String websitePassivo();
     String websiteTESTE();
+    String websiteGRAFICOS();
 };
 
 #endif 

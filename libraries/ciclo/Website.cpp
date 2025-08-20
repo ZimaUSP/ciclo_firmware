@@ -154,137 +154,138 @@ String WEBSITE::websiteGRAFICOS(){
 
 String WEBSITE::websiteResistivo(){
     //html
-String html = 
-"<!DOCTYPE html>\n"
-"<html lang='en'>\n"
-"<head>\n"
-    "<meta charset='UTF-8'>\n"  
-    "<meta name='viewport' content='width=device-width, initial-scale=1.0'>\n"
-"<title>Document</title>\n"
-"</head>\n"
-"<body>\n"
-    "<nav>\n"
-        "<ul>\n"
-            "<li class='liRes'><a style='color: #E0B700;' href='/resistivo/sessions'>Resistivo</a></li>\n"
-            "<li class='liNor'><a style='color:#0031A3;' href='/normal/sessions'>Normal</a></li>\n"
-            "<li class='liPas'><a style='color: #00B800;' href='/passivo/sessions'>Passivo</a></li>\n"
-        "</ul>\n"
-    "</nav>\n"
-    "<div id='ContainerBotoes'>\n"
+String html = R"DELIM(
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>Document</title>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li class='liRes'><a style='color: #E0B700;' href='/resistivo/sessions'>Resistivo</a></li>
+            <li class='liNor'><a style='color:#0031A3;' href='/normal/sessions'>Normal</a></li>
+            <li class='liPas'><a style='color: #00B800;' href='/passivo/sessions'>Passivo</a></li>
+        </ul>
+    </nav>
+    <div id='ContainerBotoes'>
 
-    "</div>\n"
-"</body>\n"
-"</html>\n"
-
-
-
-"<style>\n"
-
-"body{\n"
-"    padding: 0;\n"
-"    margin: 0;\n"
-"    background-color: #FFF7D6;\n"
-"}\n"
-
-"nav ul{\n"
-"    list-style-type: none;\n"
-"    display: grid;\n"
-"    grid-template-columns: repeat(3, 1fr);\n"
-"    padding: 0;\n"
-"    margin: 0;\n"
-"    height: 60px;\n"
-"}\n"
-
-"nav ul li{\n"
-"    text-align: center;\n"
-"    justify-content: center;\n"
-"    display: flex;\n"
-"    align-items: center;\n"
-"}\n"
-
-".liRes{\n"
-"    background-color: #FFF7D6;\n"
-"    border: 1px solid black;\n"
-"    border-bottom: none;\n"
-"    border-left: none;\n"
-"    text-decoration: underline;\n"
-"    text-decoration-color: #E0B700;\n"
-"}\n"
-
-".liNor{\n"
-"    background-color: #EBF1FF;\n"
-"    border: 1px solid black;\n"
-"}\n"
-
-".liPas{\n"
-"    background-color: #EBFFEB;\n"
-"    border: 1px solid black;\n"
-"}\n"
-
-"nav ul li a{\n"
-"    text-decoration: none;\n"
-"    font-size: 22px;\n"
-"}\n"
-
-"div{\n"
-"    display: flex;\n"
-"    justify-content: space-between;\n"
-"    flex-direction: row;\n"
-"    width: 350px;\n"
-"    margin-left: auto;\n"
-"    margin-right: auto;\n"
-"    margin-top: 50px;\n"
-"    gap: 12px;\n"
-"    flex-wrap: wrap;\n"
-"}\n"
-
-"div a{\n"
-"    flex: 0 0 40%;\n"
-"}\n"
-
-"div a button{\n"
-"    height: 50px;\n"
-"    border-radius: 14px;\n"
-"    cursor: pointer;\n"
-"    width: 100px;\n"
-"    background-color: white;\n"
-"    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;\n"
-"    border: 1px solid black;\n"
-"}\n"
-
-"div a button:hover{\n"
-"    border: 1.5px solid black;\n"
-"}\n"
-
-"</style>\n"
-
-"<script>\n"
-
-"const url = '/number/resistivo/sessions';\n"
-"fetch(url).then(response =>{\n"
-"    return response.json();\n"
-"})\n"
-".then(data => {\n"
-"    nbotoes = data.sessions;\n"
-"    const a = document.createElement('a');\n"
-"    const Botao = document.createElement('button');\n"
-"    const ContainerBotoes = document.getElementById('ContainerBotoes');\n"
-"    for (let index = 1; index <= nbotoes; index++) {\n"
-"        const a = document.createElement('a');\n"
-"        const Botao = document.createElement('button');\n"
-"        a.href = '/graficos' + '?id=' + index + '&' + 'modo=resistivo';\n"
-"        Botao.innerHTML = 'Sessao ' + index;\n"
-"        a.appendChild(Botao);\n"
-"        ContainerBotoes.appendChild(a);\n"
-"    }\n"
-"})\n"
-".catch(error =>{\n"
-"    console.log('Erro ao buscar os dados:',error);\n"
-"});\n"
+    </div>
+</body>
+</html>
 
 
 
-"</script>\n";
+<style>
+
+body{
+    padding: 0;
+    margin: 0;
+    background-color: #FFF7D6;
+}
+
+nav ul{
+    list-style-type: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 0;
+    margin: 0;
+    height: 60px;
+}
+
+nav ul li{
+    text-align: center;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+}
+
+.liRes{
+    background-color: #FFF7D6;
+    border: 1px solid black;
+    border-bottom: none;
+    border-left: none;
+    text-decoration: underline;
+    text-decoration-color: #E0B700;
+}
+
+.liNor{
+    background-color: #EBF1FF;
+    border: 1px solid black;
+}
+
+.liPas{
+    background-color: #EBFFEB;
+    border: 1px solid black;
+}
+
+nav ul li a{
+    text-decoration: none;
+    font-size: 22px;
+}
+
+div{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    width: 350px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+div a{
+    flex: 0 0 40%;
+}
+
+div a button{
+    height: 50px;
+    border-radius: 14px;
+    cursor: pointer;
+    width: 100px;
+    background-color: white;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    border: 1px solid black;
+}
+
+div a button:hover{
+    border: 1.5px solid black;
+}
+
+</style>
+
+<script>
+
+const url = '/number/resistivo/sessions';
+fetch(url).then(response =>{
+    return response.json();
+})
+.then(data => {
+    nbotoes = data.sessions;
+    const a = document.createElement('a');
+    const Botao = document.createElement('button');
+    const ContainerBotoes = document.getElementById('ContainerBotoes');
+    for (let index = 0; index < nbotoes; index++) {
+        const a = document.createElement('a');
+        const Botao = document.createElement('button');
+        a.href = '/graficos' + '?id=' + index + '&' + 'modo=resistivo';
+        Botao.innerHTML = 'Sessao ' + index;
+        a.appendChild(Botao);
+        ContainerBotoes.appendChild(a);
+    }
+})
+.catch(error =>{
+    console.log('Erro ao buscar os dados:',error);
+});
+
+
+
+</script>
+)DELIM";
 
 
 return html;

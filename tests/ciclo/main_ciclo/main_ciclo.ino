@@ -91,7 +91,7 @@ const char* MDNSDOMAIN = "ciclo";
 void setEndpoints() {
 
   server.on("/", [](){
-    server.sendHeader("Location", "/Resistivo/sessions", true);
+    server.sendHeader("Location", "/resistivo/sessions", true);
     server.send(301, "text/plain", "");
   });
   
@@ -100,18 +100,23 @@ void setEndpoints() {
     server.send(200,"text/html", Websitehtml);
   });
 
-  server.on("/Resistivo/sessions", [](){
+  server.on("/resistivo/sessions", [](){
     String Websitehtml = web->websiteResistivo();
     server.send(200,"text/html", Websitehtml);
   });
 
-  server.on("/Normal/sessions", [](){
+  server.on("/normal/sessions", [](){
     String Websitehtml = web->websiteNormal();
     server.send(200,"text/html", Websitehtml);
   });
 
-  server.on("/Passivo/sessions", [](){
+  server.on("/passivo/sessions", [](){
     String Websitehtml = web->websitePassivo();
+    server.send(200,"text/html", Websitehtml);
+  });
+
+  server.on("/graficos", [](){
+    String Websitehtml = web->websiteGRAFICOS();
     server.send(200,"text/html", Websitehtml);
   });
 

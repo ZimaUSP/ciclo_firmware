@@ -78,7 +78,8 @@ String WEBSITE::websiteGRAFICOS(){
     <script>
         let params =  new URLSearchParams(document.location.search);
         let id = params.get('id');
-        let modo = params.get('modo')
+        let modo = params.get('modo');
+        idShow = parseInt(id) + 1;
         console.log('id: ' + id);
     </script>
 
@@ -97,8 +98,8 @@ String WEBSITE::websiteGRAFICOS(){
         const ctx = document.getElementById('myChart');
 
         const url = '/data/' + modo + '/sessions';
-        let titulo_cont = 'Gráfico de torque x tempo da Sessão ' + id
-        document.getElementById('titulo').innerText = titulo_cont
+        let titulo_cont = 'Gráfico de torque x tempo da Sessão ' + idShow;
+        document.getElementById('titulo').innerText = titulo_cont;
 
         const options = {
             method: 'GET'
@@ -306,7 +307,7 @@ String html = R"DELIM(
 <!DOCTYPE html>
 <html lang='en'>
 <head>
-   <meta charset='UTF-8'>\n
+   <meta charset='UTF-8'>
    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 <title>Document</title>
 </head>

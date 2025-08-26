@@ -19,8 +19,8 @@ WebServer server(80);
 
 #define led 2
 
-const char* ssid = "Panda";     // Substitua pelo nome da sua rede Wi-Fi
-const char* password = "NekoForlifE690"; // Substitua pela senha da rede
+const char* ssid = "Zima_5G";     // Substitua pelo nome da sua rede Wi-Fi
+const char* password = "enzimasUSP"; // Substitua pela senha da rede
 
 void setup() {
   Serial.begin(9600);
@@ -52,7 +52,8 @@ void TaskWifiCode( void * pvParameters ){
   nvs_flash_erase(); // erase the NVS partition and...
   nvs_flash_init(); // initialize the NVS partition.
 
-  int size = 5;
+  int size = 50;
+  int size1 = 5;
   int size2 = 4;
   int size3 = 3;
   int sessions = 8;
@@ -61,19 +62,40 @@ void TaskWifiCode( void * pvParameters ){
   Serial.println("getting num sessions...");
   saved = new Memory();//a string aqui eh o namespace
   int num = saved->get_saved_sessions_resistivo();
-  int tempo[size] = {10,20,30,40,50};
-  int tempo2[size] = {11,21,31,41};
-  int tempo3[size] = {12,22,32};
+  /*
+  int tempo[size1] = {10,20,30,40,50};
+  int tempo2[size2] = {11,21,31,41};
+  int tempo3[size3] = {12,22,32};
 
-  double val[size] = {15,25,35,45,55};
-  double val2[size] = {16,26,36,46};
-  double val3[size] = {17,27,37};
+  double val[size1] = {15,25,35,45,55};
+  double val2[size2] = {16,26,36,46};
+  double val3[size3] = {17,27,37};
   int tempoget[size + 1] = {};
   double valget[size + 1] = {};
 
   saved->push(tempo,val,size);
   saved->push(tempo2,val2,size2);
-  saved->push(tempo3,val3,size3);
+  saved->push(tempo3,val3,size3);*/
+
+    int tempo2[size] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
+                      21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,
+                      36,37,38,39,40,41,42,43,44,45,46,47,48,49,50};
+
+    double val4[size] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
+                      21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,
+                      36,37,38,39,40,41,42,43,44,45,46,47,48,49,50};
+
+    double val5[size] = {50,49,48,47,46,45,44,43,42,41,40,39,38,37,36,35,34,33,32,31,
+                      30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,
+                      10,9,8,7,6,5,4,3,2,1};
+
+    double val6[size] = {50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,
+                      50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,
+                      50,50,50,50,50,50,50,50,50,50};
+
+    saved->push_normal(tempo2,val4,50);
+    saved->push_normal(tempo2,val5,50);
+    saved->push_normal(tempo2,val6,50);
 
   // TESTE
 
@@ -181,7 +203,7 @@ void setEndpoints() {
     });
 
     server.on("/graficos", [](){
-      String Websitehtml = web->websiteTESTE();
+      String Websitehtml = web->websiteGRAFICOS();
       server.send(200,"text/html", Websitehtml);
     });
       

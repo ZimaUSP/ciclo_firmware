@@ -872,7 +872,7 @@ void loop() {
       lcd.clear();
 
       //normal();
-      normalnormal(contador, tempo, lista_values, lcd, rpmTime, lcd_timer, 
+      normal normal(contador, tempo, lista_values, lcd, rpmTime, lcd_timer, 
                           encoder, motorController, saved, sample_t);;
 
       delay(500);

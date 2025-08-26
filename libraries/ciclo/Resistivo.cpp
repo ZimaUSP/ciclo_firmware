@@ -2,6 +2,11 @@
 
 #include "Resistivo.hpp"
 
+resistivo::resistivo(LiquidCrystal_I2C *lcd, SimpleTimer lcd_timer, SimpleTimer rpmTime, Encoder *encoder, Memory *saved, PID *PID_vel, H_bridge_controller *motorController)
+{
+
+    
+}
 
 
 /*
@@ -155,7 +160,3 @@ void print_torque_results() {
 
 
 */
-
-resistivo::resistivo(LiquidCrystal_I2C *lcd, SimpleTimer lcd_timer, SimpleTimer rpmTime, Encoder *encoder, Memory *saved, PID *PID_vel, H_bridge_controller *motorController)
-{
-}

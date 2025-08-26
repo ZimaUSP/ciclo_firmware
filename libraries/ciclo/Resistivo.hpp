@@ -37,6 +37,8 @@ const char* MDNSDOMAIN = "ciclo";
 
 */
 
+// Funções: executarLogicaResistivo(), int def_pwm_motor(), resistivo(), print_torque_results()
+
 
 class resistivo {
     private:
@@ -66,6 +68,14 @@ class resistivo {
     resistivo(LiquidCrystal_I2C* lcd, SimpleTimer lcd_timer, SimpleTimer rpmTime, Encoder* encoder, Memory* saved,
 PID* PID_vel, H_bridge_controller* motorController);
 
+    void executarLogicaResistivo();
 
+    int def_pwm_motor();
 
+    void resistivo();
+    
+    void print_torque_results();
+    
 };
+
+#endif

@@ -394,8 +394,9 @@ void controlMotorSpeedWithPID() {
   Serial.println(output);
   
   if (output < 0) {
-    Serial.println("going left");
+    Serial.print("going left");
     output = max(output, -MAX_PWM);
+    Serial.println(output);
     motorController->Set_L(-output);
   } else {
     Serial.println("going right");
@@ -425,7 +426,9 @@ void passivo() {
     if (rpmTime.getTimePassed() > sample_t) {
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
-      actual_rpm = delta_pulses * 1.01;
+      double revolutions = delta_pulses/pulses_per_rev;
+      actual_rpm = -revolutions*(60000/400);
+      //actual_rpm = delta_pulses * 1.01;
 
       if(contador <= MAX_SAMPLES) {
         lista_values[contador] = actual_rpm;
@@ -836,15 +839,15 @@ int goalRPM() {
     }
     if (joy->left() && joystick_check)
     {
-      if(goal_rpm !=0 ){
-        goal_rpm--;
+      if(goal_rpm >=80 ){
+        goal_rpm-= 10;
         joystick_check = false;
       }
     }
     else if (joy->right() && joystick_check)
     {
-      if(goal_rpm != 50){
-        goal_rpm++;
+      if(goal_rpm <= 150){
+        goal_rpm+=10;
         joystick_check = false;
       }
     }   

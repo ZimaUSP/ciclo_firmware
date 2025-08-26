@@ -87,7 +87,9 @@ String WEBSITE::websiteGRAFICOS(){
     <div>
         <canvas id='myChart' style='width: 700px; display: block; height: 400px'></canvas>
     </div>
+    
     <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+
     <button id='grafico'> Download grafico </button>
     <button id='csv'> Download csv </button>
 
@@ -145,10 +147,15 @@ String WEBSITE::websiteGRAFICOS(){
             }
         };
 
-        function download_csv() {}
+        function download_csv() {
+            const hiddenElement = document.createElement('a');
+            hiddenElement.href = '/data/' + modo + '/sessions/csv?id=' + id;
+            hiddenElement.download = 'sessao_' + modo + '_' + id + '.csv';
+            hiddenElement.click();
+        }
 
         document.getElementById('grafico').addEventListener('click', downloadGrafico);
-        document.getElementById('csv').addEventListener('click'), 
+        document.getElementById('csv').addEventListener('click', download_csv);
     </script>
 </body>
 </html>
@@ -274,10 +281,10 @@ fetch(url).then(response =>{
     const a = document.createElement('a');
     const Botao = document.createElement('button');
     const ContainerBotoes = document.getElementById('ContainerBotoes');
-    for (let index = 0; index < nbotoes; index++) {
+    for (let index = 1; index < nbotoes; index++) {
         const a = document.createElement('a');
         const Botao = document.createElement('button');
-        a.href = '/graficos' + '?id=' + index + '&' + 'modo=resistivo';
+        a.href = '/graficos' + '?id=' + (index-1) + '&' + 'modo=resistivo';
         Botao.innerHTML = 'Sessao ' + index;
         a.appendChild(Botao);
         ContainerBotoes.appendChild(a);
@@ -399,7 +406,7 @@ fetch(url).then(response =>{
     for (let index = 1; index <= nbotoes; index++) {
         const a = document.createElement('a');
         const Botao = document.createElement('button');
-        a.href = '/graficos' + '?id=' + index + '&' + 'modo=normal';\
+        a.href = '/graficos' + '?id=' + (index-1) + '&' + 'modo=normal';
         Botao.innerHTML = 'Sessao ' + index;
         a.appendChild(Botao);
         ContainerBotoes.appendChild(a);
@@ -518,7 +525,7 @@ fetch(url).then(response =>{
     for (let index = 1; index <= nbotoes; index++) {
         const a = document.createElement('a');
         const Botao = document.createElement('button');
-        a.href = '/graficos' + '?id=' + index + '&' + 'modo=passivo';
+        a.href = '/graficos' + '?id=' + (index-1) + '&' + 'modo=passivo';
         Botao.innerHTML = 'Sessao ' + index;
         a.appendChild(Botao);
         ContainerBotoes.appendChild(a);

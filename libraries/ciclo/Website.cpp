@@ -306,20 +306,20 @@ String html = R"DELIM(
 <!DOCTYPE html>
 <html lang='en'>
 <head>
-   "<meta charset='UTF-8'>\n
-   "<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+   <meta charset='UTF-8'>\n
+   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 <title>Document</title>
 </head>
 <body>
-   "<nav>
-       "<ul>
-           "<li class='liRes'><a style='color: #E0B700;' href='/resistivo/sessions'>Resistivo</a></li>
-           "<li class='liNor'><a style='color:#0031A3;' href='/normal/sessions'>Normal</a></li>
-           "<li class='liPas'><a style='color: #00B800;' href='/passivo/sessions'>Passivo</a></li>
-       "</ul>
-   "</nav>
-   "<div id='ContainerBotoes'>
-   "</div>
+   <nav>
+       <ul>
+           <li class='liRes'><a style='color: #E0B700;' href='/resistivo/sessions'>Resistivo</a></li>
+           <li class='liNor'><a style='color:#0031A3;' href='/normal/sessions'>Normal</a></li>
+           <li class='liPas'><a style='color: #00B800;' href='/passivo/sessions'>Passivo</a></li>
+       </ul>
+   </nav>
+   <div id='ContainerBotoes'>
+   </div>
 </body>
 </html>
 <style>
@@ -424,20 +424,20 @@ String html = R"DELIM(
 <!DOCTYPE html>
 <html lang='en'>
 <head>
-   "<meta charset='UTF-8'>
-   "<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+   <meta charset='UTF-8'>
+   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 <title>Document</title>
 </head>
 <body>
-   "<nav>
-       "<ul>
-           "<li class='liRes'><a style='color: #E0B700;' href='/resistivo/sessions'>Resistivo</a></li>
-           "<li class='liNor'><a style='color:#0031A3;' href='/normal/sessions'>Normal</a></li>
-           "<li class='liPas'><a style='color: #00B800;' href='/passivo/sessions'>Passivo</a></li>
-       "</ul>
-   "</nav>
-   "<div id='ContainerBotoes'>
-   "</div>
+   <nav>
+       <ul>
+           <li class='liRes'><a style='color: #E0B700;' href='/resistivo/sessions'>Resistivo</a></li>
+           <li class='liNor'><a style='color:#0031A3;' href='/normal/sessions'>Normal</a></li>
+           <li class='liPas'><a style='color: #00B800;' href='/passivo/sessions'>Passivo</a></li>
+       </ul>
+   </nav>
+   <div id='ContainerBotoes'>
+   </div>
 </body>
 </html>
 <style>

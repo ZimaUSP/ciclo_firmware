@@ -873,7 +873,9 @@ void loop() {
 
       //normal();
       normal normal(contador, tempo, lista_values, lcd, rpmTime, lcd_timer, 
-                          encoder, motorController, saved, sample_t);;
+                          encoder, motorController, saved, sample_t);
+      
+      normal->executaNormal();
 
       delay(500);
       reset();

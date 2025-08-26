@@ -104,8 +104,7 @@ String WEBSITE::websiteGRAFICOS(){
             method: 'GET'
         };
 
-        let chart; // Variável para armazenar a instância do gráfico
-\n 
+        let chart; // Variável para armazenar a instância do gráfico 
         fetch(url + '?id=' + id, options)
             .then(response => response.json())
             .then(response => {
@@ -187,8 +186,6 @@ String html = R"DELIM(
     </div>
 </body>
 </html>
-
-
 
 <style>
 
@@ -293,8 +290,6 @@ fetch(url).then(response =>{
 .catch(error =>{
     console.log('Erro ao buscar os dados:',error);
 });
-
-
 
 </script>
 )DELIM";

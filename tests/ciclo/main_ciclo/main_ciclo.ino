@@ -433,6 +433,10 @@ void passivo() {
       actual_rpm = -revolutions*(60000/400);
       //actual_rpm = delta_pulses * 1.01;
 
+      rpmTime.reset();
+      last_pulses = current_pulses;
+
+      resetEncoderIfExceedsLimit();
       if(contador <= MAX_SAMPLES) {
         lista_values[contador] = actual_rpm;
         tempo[contador]=contador*sample_t;
@@ -442,11 +446,7 @@ void passivo() {
       Serial.print(", ");
       Serial.println(lcd_timer.getTimePassed());
 
-      resetEncoderIfExceedsLimit();
       controlMotorSpeedWithPID();
-
-      rpmTime.reset();
-      last_pulses = current_pulses;
     }
     
     printTime();

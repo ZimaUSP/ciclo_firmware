@@ -59,9 +59,9 @@ double last_pulses;
 double delta_pulses;
 double delta_ciclos;
 float actual_rpm;
-int goal_rpm;
+int goal_rpm = 45;
 //int verif;
-int output;
+double output;
 char STATE = MODE;
 double revolutions;
 bool joystick_check;
@@ -344,7 +344,7 @@ void inicializaComponentes() {
   motorController = new H_bridge_controller(r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
   motorController->init();
 
-  PID_vel = new PID(1.4, 0.008, kd, i_saturation);
+  PID_vel = new PID(0.00095, 0.0008, 1, i_saturation);
 
 
   // Inicialização das variáveis
@@ -385,7 +385,7 @@ bool resetEncoderIfExceedsLimit() {
 
 // PID control
 void controlMotorSpeedWithPID() {
-  output = PID_vel->computePID(actual_rpm, goal_rpm, tolerance);
+  output = -(PID_vel->computePID(actual_rpm, goal_rpm, 0.5));
   
   Serial.print("goal: ");
   Serial.print(goal_rpm);
@@ -398,12 +398,12 @@ void controlMotorSpeedWithPID() {
   
   if (output < 0) {
     Serial.print("going left");
-    output = max(output, -MAX_PWM);
+    output = max(output-30, -(double)100);
     Serial.println(output);
     motorController->Set_L(-output);
   } else {
     Serial.println("going right");
-    output = min(output, MAX_PWM);
+    output = min(output+30, (double)100);
     motorController->Set_R(output);
   }
 }
@@ -430,7 +430,7 @@ void passivo() {
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
       double revolutions = delta_pulses/pulses_per_rev;
-      actual_rpm = -revolutions*(60000/400);
+      actual_rpm = revolutions*(60000/400);
       //actual_rpm = delta_pulses * 1.01;
 
       rpmTime.reset();
@@ -847,15 +847,15 @@ int goalRPM() {
     }
     if (joy->left() && joystick_check)
     {
-      if(goal_rpm >=80 ){
-        goal_rpm-= 10;
+      if(goal_rpm >=50 ){
+        goal_rpm-= 5;
         joystick_check = false;
       }
     }
     else if (joy->right() && joystick_check)
     {
       if(goal_rpm <= 150){
-        goal_rpm+=10;
+        goal_rpm+= 5;
         joystick_check = false;
       }
     }   

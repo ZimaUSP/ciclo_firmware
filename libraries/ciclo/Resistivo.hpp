@@ -3,79 +3,63 @@
 #ifndef __RESISTIVO_HPP__
 #define __RESISTIVO_HPP__
 
-
 #include <SimpleTimer.h>
 #include <Arduino.h>
+#include <LiquidCrystal_I2C.h>
 #include "Encoder.hpp"
-#include "config.hpp"
+#include "config.hpp" 
 #include "Memory.hpp"
 #include "PID.hpp"
 #include "H_bridge_controller.hpp"
-#include <LiquidCrystal_I2C.h>
 
-/*
-TRECHO DO MAIN CICLO
-//resistivo
-double t0, torque, torque_max, torque_min, torque_med;
-float acs;
-char t[10];  // Aumentado o tamanho do buffer de sprintf
-int offset, pot, sum, i, contador,pwm_motor;
-double  t_Duration = 0.5;
-int verif = 1;
-int n_sessions;
-double lista_values [MAX_SAMPLES];
-int tempo [MAX_SAMPLES];
 
-//Parametros para joystick
-uint32_t adc_register;
-uint32_t wifi_register;
-
-//Parametros para website
-WebServer server(80);  
-WiFiManager wm; //objeto da classe wifimanager
-const char* MDNSDOMAIN = "ciclo";
-
-*/
-
-// Funções: executarLogicaResistivo(), int def_pwm_motor(), resistivo(), print_torque_results()
-
+#include "Button.hpp"
+#include "Joystick.hpp"
+#include "current_sensor.hpp"
 
 class resistivo {
-    private:
-
+private:
+    
     LiquidCrystal_I2C* lcd;
-    SimpleTimer lcd_timer;
-    SimpleTimer rpmTime;
+    SimpleTimer* lcd_timer;
+    SimpleTimer* rpmTime;
+    SimpleTimer* torque_Time; 
     Encoder* encoder;
     Memory* saved;
     PID* PID_vel;
     H_bridge_controller* motorController;
+    Button* btn;
+    Joystick* joy;
+    current_sensor* cur;
 
-
+    
     double t0, torque, torque_max, torque_min, torque_med;
     float acs;
     char t[10];
-    int offset, pot, sum, i, contador,pwm_motor;
-    double  t_Duration = 0.5;
+    int offset, pot, sum, i, contador, pwm_motor;
+    double  t_Duration = 0.5; 
     int verif = 1;
     int n_sessions;
-    double lista_values [MAX_SAMPLES];
-    int tempo [MAX_SAMPLES];
+    double lista_values[MAX_SAMPLES];
+    int tempo[MAX_SAMPLES];
+    bool joystick_check;
 
+    
+    int verificationResistivo();
+    int duration();
+    void printTime();
 
-    public:
+public:
+    // Construtor 
+    resistivo(LiquidCrystal_I2C* lcd, SimpleTimer* lcd_timer, SimpleTimer* rpmTime, SimpleTimer* torque_Time,
+        Encoder* encoder, Memory* saved, PID* PID_vel, H_bridge_controller* motorController,
+        Button* btn, Joystick* joy, current_sensor* cur);
 
-    resistivo(LiquidCrystal_I2C* lcd, SimpleTimer lcd_timer, SimpleTimer rpmTime, Encoder* encoder, Memory* saved,
-PID* PID_vel, H_bridge_controller* motorController);
-
+    
     void executarLogicaResistivo();
-
     int def_pwm_motor();
-
-    void resistivo();
-    
+    void resistivo(); 
     void print_torque_results();
-    
 };
 
-#endif
+#endif 

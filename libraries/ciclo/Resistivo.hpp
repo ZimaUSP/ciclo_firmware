@@ -17,6 +17,8 @@
 #include "Joystick.hpp"
 #include "current_sensor.hpp"
 
+#define MAX_SAMPLES 5
+
 class resistivo {
 private:
     
@@ -58,7 +60,7 @@ public:
     
     void executarLogicaResistivo();
     int def_pwm_motor();
-    void resistivo(); 
+    void resis(); 
     void print_torque_results();
 };
 

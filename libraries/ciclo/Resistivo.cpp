@@ -43,7 +43,7 @@ void resistivo::executarLogicaResistivo() {
         return;
     }
 
-    resistivo(); 
+    resis(); 
     print_torque_results(); 
     delay(500);
     
@@ -79,7 +79,7 @@ int resistivo::def_pwm_motor() {
     return pwm_motor_local;
 }
 
-void resistivo::resistivo() {
+void resistivo::resis() {
     delay(200);
     contador = 0; 
     

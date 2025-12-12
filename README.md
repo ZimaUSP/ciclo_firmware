@@ -37,7 +37,7 @@ Para compilar o firmware, selecione a placa:
 > **DOIT ESP32 DEVKIT V1**
 
 <p align="center">
-  <img src="assets/img/add-board-url.png" width="650px">
+  <img src="assets/img/add-board-manager.png" width="650px">
 </p>
 
 ---
@@ -143,5 +143,5 @@ Em seguida:
 * Existe uma versão publicada pela própria Arduino chamada “ESP32” — **não utilize essa**, pois ela não é compatível com o projeto.
 
 <p align="center">
-  <img src="assets/img/add-board-url.png" width="650px">
+  <img src="assets/img/add-board-manager.png" width="650px">
 </p>

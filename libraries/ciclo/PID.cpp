@@ -27,8 +27,8 @@ PID::PID(double k_p,double k_i,double k_d,int i_sat) {
 double PID::computePID(double input,float setpoint,float tolerancia) {
   
 
-  this->current_time= millis();                                              //get current time
-  this->delta_time = (double)(this->current_time - this->previus_time);        //compute time elapsed from previous computation
+  this->current_time= 400;                                              //get current time: this->current_time= millis();
+  this->delta_time = 400;        //compute time elapsed from previous computation: (double)(this->current_time - this->previus_time);
 
 
   this->error = setpoint - input;                                      // determine error
@@ -44,9 +44,12 @@ double PID::computePID(double input,float setpoint,float tolerancia) {
                              // compute integral
   
   this->d_error = (this->error - this->previus_error) / this->delta_time;             // compute derivative
-
-  double out = this->k_p * this->error + this->k_i * this->i_error + this->k_d * this->d_error;  //PID output
-
+  
+  this->proportional = this->k_p * this->error;
+  this->integrative = this->k_i * this->i_error;
+  this ->derivative = this->k_d * this->d_error;
+  double out = proportional + integrative + derivative;  //PID output
+  
   this->previus_error = this->error;                                         //remember current error
   this->previus_time =  this->current_time;                                //remember current time
   return out;                                                 //have function return the PID output
@@ -57,4 +60,13 @@ void PID::reset() {
     this->i_error = 0;
     this->d_error = 0;
     this->previus_time = millis();
+}
+
+void PID::imprimir() {
+  Serial.print("Proporcional: ");
+  Serial.print(this->proportional);
+  Serial.print("; Integrativo: ");
+  Serial.print(this->integrative);
+  Serial.print("; Derivativo: "); 
+  Serial.println(this->derivative); 
 }

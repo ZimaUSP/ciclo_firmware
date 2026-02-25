@@ -30,6 +30,10 @@ class PID {
         double k_i;
         double k_d;
 
+        double proportional;
+        double integrative;
+        double derivative;
+
         double error;
         double previus_error;
 
@@ -57,6 +61,8 @@ class PID {
          * 
          */
         void reset();
+
+        void imprimir();
 
 
 };

@@ -74,9 +74,9 @@
 
 // PID
 #define kp  1.4
-#define ki  0.008
+#define ki  0.00000000008 //0.008
 #define kd  0
-#define i_saturation 10000
+#define i_saturation 6000 //10000
 
 //Rele
 #define stand_by_active 9

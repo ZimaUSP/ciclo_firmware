@@ -382,26 +382,40 @@ void resetEncoderIfExceedsLimit() {
 
 // PID control
 void controlMotorSpeedWithPID() {
-  output = PID_vel->computePID(actual_rpm, goal_rpm, tolerance);
-  
+  double output_temp;
+  output_temp = (PID_vel->computePID(actual_rpm, goal_rpm, tolerance)); // PID_vel->computePID(actual_rpm, goal_rpm, tolerance);
+  if (output_temp < 0) {
+    output = -(output_temp);
+  } 
+  else {
+    output = output_temp;
+  }
+  Serial.println("--------------------------------------------------------------------------------------------");
   Serial.print("goal: ");
   Serial.print(goal_rpm);
   Serial.print("; actual rpm: ");
   Serial.print(actual_rpm);
-  Serial.print("; tolerance: ");
-  Serial.print(tolerance);
+  Serial.print("; d_pulses: "); //Serial.print("; tolerance: ");
+  Serial.print(delta_pulses); //Serial.print(tolerance);
   Serial.print("; output: ");
   Serial.println(output);
+  PID_vel->imprimir();
   
   if (output < 0) {
     Serial.println("going left");
+    output = 0;
+    Serial.println("--------------------------------------------------------------------------------------------");
+    /*
     output = max(output, -MAX_PWM);
     motorController->Set_L(-output);
+    */
   } else {
     Serial.println("going right");
     output = min(output, MAX_PWM);
     motorController->Set_R(output);
+    Serial.println("--------------------------------------------------------------------------------------------");
   }
+  
 }
 
 // Turns it off and on to reset the program
@@ -425,7 +439,8 @@ void passivo() {
     if (rpmTime.getTimePassed() > sample_t) {
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
-      actual_rpm = delta_pulses * 1.01;
+      double revolutions = delta_pulses/pulses_per_rev;
+      actual_rpm = revolutions*(60000/sample_t); //1.01
 
       if(contador <= MAX_SAMPLES) {
         lista_values[contador] = actual_rpm;

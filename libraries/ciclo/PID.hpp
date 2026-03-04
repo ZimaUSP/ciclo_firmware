@@ -16,24 +16,35 @@
 #include "Arduino.h"
 
 class PID {
-    protected:
+    private:
 
         unsigned long current_time;
-        unsigned long previus_time = 0;
+        unsigned long previous_time;
         double delta_time;
 
-        
-        double i_error;
+        double integrative_term;
         double d_error;
+        double input_error;
 
         double k_p;
         double k_i;
         double k_d;
 
-        double error;
-        double previus_error;
+        double proportional;
+        double integrative;
+        double derivative;
 
-        int i_saturation;
+        double error;
+        static const int INPUT_AVG_BUFFER_SIZE = 5;
+        double previous_inputs[INPUT_AVG_BUFFER_SIZE];
+        int input_index;
+        int input_count;
+        double previous_input_avg;
+        double previous_input;
+        double previous_error;
+        double previous_output;
+
+        int wind_up_saturation;
     public:
         /**
          * @brief Default constructor of a PID base class
@@ -50,7 +61,7 @@ class PID {
          * @param Input input value 
          * @param setpoint Set goal, the value that input should be
          */
-        double computePID(double input,float setpoint,float tolerance); 
+        double computePID(double input,float setpoint,float tolerance); //, double& error, double& integrative_term, double& d_error); 
 
         /**
          * @brief Reset PID values
@@ -58,6 +69,7 @@ class PID {
          */
         void reset();
 
+        void imprimir();
 
 };
 

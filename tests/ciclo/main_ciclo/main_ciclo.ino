@@ -25,8 +25,8 @@
 //******CONSTRUCTOR******//
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // LCD lib
-SimpleTimer lcd_timer;
-SimpleTimer rpmTime;
+SimpleTimer lcd_timer; // Absolute time of the session
+SimpleTimer rpmTime; // Timer used for PID
 SimpleTimer torque_Time;
 TaskHandle_t TaskWifiHandle;
 
@@ -50,8 +50,13 @@ current_sensor *cur;
 unsigned long current_t;
 unsigned long last_t;
 unsigned long delta_t;
+unsigned long previous_time = 0; // passivo
 //int t_Duration;
 //char t[2];
+
+// Gears relation
+double gear_encoder;
+double gear_pedal;
 
 // Control
 double current_pulses;
@@ -59,7 +64,7 @@ double last_pulses;
 double delta_pulses;
 double delta_ciclos;
 float actual_rpm;
-int goal_rpm = 45;
+int goal_rpm;
 //int verif;
 double output;
 char STATE = MODE;
@@ -344,7 +349,7 @@ void inicializaComponentes() {
   motorController = new H_bridge_controller(r_pin, l_pin, PWM_frequency_channel, PWM_resolution_channel, R_channel, L_channel);
   motorController->init();
 
-  PID_vel = new PID(0.00095, 0.0008, 1, i_saturation);
+  PID_vel = new PID(kp, ki, kd, wind_up_saturation);
 
 
   // Inicialização das variáveis
@@ -385,27 +390,23 @@ bool resetEncoderIfExceedsLimit() {
 
 // PID control
 void controlMotorSpeedWithPID() {
-  output = -(PID_vel->computePID(actual_rpm, goal_rpm, 0.5));
-  
-  Serial.print("goal: ");
-  Serial.print(goal_rpm);
-  Serial.print("; actual rpm: ");
-  Serial.print(actual_rpm);
-  Serial.print("; tolerance: ");
-  Serial.print(tolerance);
+  output = PID_vel->computePID(actual_rpm, goal_rpm, 0.5); //, error, integrative_term, d_error);
   Serial.print("; output: ");
-  Serial.println(output);
+  Serial.print(output);
+  PID_vel->imprimir();
+  // Não há diferença de tempo entre o momento que o PID é chamado e o momento
+  // que o output é calculado, e o momento que o output é aplicado no motor.
+  //Serial.print("; Tempo PID: ");
+  //Serial.println(lcd_timer.getTimePassed());
   
   if (output < 0) {
-    Serial.print("going left");
-    output = max(output-30, -(double)100);
-    Serial.println(output);
-    motorController->Set_L(-output);
+    output = max(output, -(double)75);
+    motorController->Set_R(-output);
   } else {
-    Serial.println("going right");
-    output = min(output+30, (double)100);
-    motorController->Set_R(output);
+    output = min(output, (double)75);
+    motorController->Set_L(output);
   }
+  Serial.println("---------------------------------------------------------------------------------------");
 }
 
 // Turns it off and on to reset the program
@@ -416,8 +417,10 @@ void reset() {
 // Implemetation passive Mode (Criar Classe passivo para implementar esses controle e evitar de ter muita coisa na main)
 void passivo() {
   contador = 0;
+  previous_time = 0;
   lcd_timer.reset();
   rpmTime.reset();
+  PID_vel->reset();
   
   // Resetar o array de torques
   for (int i = 0; i < MAX_SAMPLES; i++) {
@@ -426,27 +429,32 @@ void passivo() {
   }
 
   while (!lcd_timer.isReady()) {
-    if (rpmTime.getTimePassed() > sample_t) {
+    // Usar dt para calcular a passagem de tempo ao invés de usar um timer separado
+    // que precisa chamar uma outra função diminui a latência no cálculo do próprio tempo
+    double dt = rpmTime.getTimePassed() - previous_time;
+    if (dt > sample_t) {      
+      Serial.print("; dt: ");
+      Serial.print(dt);
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
       double revolutions = delta_pulses/pulses_per_rev;
-      actual_rpm = revolutions*(60000/400);
-      //actual_rpm = delta_pulses * 1.01;
+      actual_rpm = revolutions*(60000/dt); // Ao invés de dividir por sample_t, deve ser dividido pelo tempo que um loop demora
+      Serial.print("; Rpm: ");
+      Serial.print(actual_rpm);
 
-      rpmTime.reset();
+      previous_time = rpmTime.getTimePassed(); //rpmTime.reset();
       last_pulses = current_pulses;
-
-      resetEncoderIfExceedsLimit();
       if(contador <= MAX_SAMPLES) {
         lista_values[contador] = actual_rpm;
         tempo[contador]=contador*sample_t;
         contador++;
       }
-      Serial.print(actual_rpm);
-      Serial.print(", ");
-      Serial.println(lcd_timer.getTimePassed());
 
       controlMotorSpeedWithPID();
+    } else {
+      Serial.print("; dt: ");
+      Serial.print(dt);
+      Serial.println("; TIME PASSED < SAMPLE_T");
     }
     
     printTime();
@@ -464,7 +472,7 @@ void executarLogicaResistivo() {
     pwm_motor = def_pwm_motor();
 
     delay(500);
-    lcd_timer.setInterval(duration() * 60000);
+    lcd_timer.setInterval(duration() * 10000);
     delay(500);
     lcd.clear();
 
@@ -482,7 +490,7 @@ void executarLogicaResistivo() {
 }
 
 int def_pwm_motor() {
-    int pwm_motor = 50;  // Inicialize o valor do PWM
+    int pwm_motor = 20;  // Inicialize o valor do PWM
     lcd.setCursor(0, 0);
     lcd.print("              ");
     
@@ -524,7 +532,7 @@ void resistivo() {
     }
     lcd_timer.reset();
     torque_Time.reset();
-    motorController->Set_L(pwm_motor);
+    motorController->Set_R(pwm_motor);
 
     while (!lcd_timer.isReady() ) {
       acs = cur->get_current();
@@ -573,7 +581,7 @@ void resistivo() {
     }
 
     delay(100);
-    motorController->Set_L(0);
+    motorController->Set_R(0);
 }
 
 void print_torque_results() {
@@ -847,15 +855,15 @@ int goalRPM() {
     }
     if (joy->left() && joystick_check)
     {
-      if(goal_rpm >=50 ){
-        goal_rpm-= 5;
+      if(goal_rpm >= 15){
+        goal_rpm -= 5;
         joystick_check = false;
       }
     }
     else if (joy->right() && joystick_check)
     {
-      if(goal_rpm <= 150){
-        goal_rpm+= 5;
+      if(goal_rpm <= 80){
+        goal_rpm += 5;
         joystick_check = false;
       }
     }   
@@ -953,9 +961,10 @@ void loop() {
   switch (STATE) {
     case PASSIVE:
       //website_data();
+      Serial.println("modo passivo");
       goal_rpm = goalRPM();
       delay(500);
-      lcd_timer.setInterval(duration() * 60000);
+      lcd_timer.setInterval(duration() * 10000);
       delay(500);
       lcd.clear();
       verif = verificationPassivo();

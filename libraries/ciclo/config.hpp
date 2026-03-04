@@ -57,7 +57,7 @@
 #define Mode 1
 #define PWM_frequency_channel 10000
 #define PWM_resolution_channel 8
-#define tolerance 5
+#define tolerance 2
 
 //Channel
 
@@ -73,10 +73,12 @@
 
 
 // PID
+//#define kp  0.00008
+//#define ki  0.000020
 #define kp  1.4
 #define ki  0.008
 #define kd  0
-#define i_saturation 10000
+#define wind_up_saturation 60
 
 //Rele
 #define stand_by_active 9
@@ -107,5 +109,5 @@
 #define MAX_SAMPLES 1024 // just a big number
 #define N_SESSIONS 1024
 
-#define sample_t 400 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
+#define sample_t 24 // min value possible - to recalibrate that use debug on odometry_calc to se delta_t
 #endif

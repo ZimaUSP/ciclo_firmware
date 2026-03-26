@@ -1,78 +1,147 @@
 <p>
-  <img src="https://forthebadge.com/images/badges/made-with-c-plus-plus.svg" width="150px" height="35px"/>
+  <img src="https://forthebadge.com/images/badges/made-with-c-plus-plus.svg" height="35px"/>
   <img src="https://forthebadge.com/images/badges/built-with-love.svg"/>
 </p>
 
 # Firmware do Cicloergômetro
-> Repositório para organizar o código usado no Cicloergômetro, o aparelho de reabilitação do Hospital Universitário.
 
-<p>
-  <img src="assets\img\Assembly.png" width="800em" height="auto"/>
+Repositório contendo o firmware do **Cicloergômetro**, equipamento desenvolvido para reabilitação de pacientes no **Hospital Universitário (HU)**.
+Aqui estão organizados todos os códigos utilizados no **ESP32**, bem como as instruções para configuração do ambiente e compilação.
+
+<p align="center">
+  <img src="assets/img/Assembly.png" width="800px">
 </p>
 
-## 💥  Como usar
+---
 
-- Depois de já ter instalado tudo da lista de requerimentos, adicione o o caminho desse repositório na IDE do arduino na aba de "preferências", como na imagem:
+## Como usar este repositório
 
-![caminho na IDE do arduino](assets/img/path.png)
+Após instalar todos os requisitos listados abaixo, adicione o caminho deste repositório na Arduino IDE em:
 
-Depois disso, os arquivos do repositório podem ser executados normalmente.
+> Arquivo → Preferências → Caminho dos Sketchbooks
 
-## ➕ Submódulos
+Como mostrado na imagem:
 
-### Como adicionar Submódulos - template
+<p align="center">
+  <img src="assets/img/path.png" width="500px">
+</p>
+
+Depois disso, abra o firmware na Arduino IDE, selecione a placa correta e faça o upload para o ESP32.
+
+---
+
+## Selecionando a placa correta
+
+Para compilar o firmware, selecione a placa:
+
+> **DOIT ESP32 DEVKIT V1**
+
+<p align="center">
+  <img src="assets/img/add-board-url.png" width="650px">
+</p>
+
+---
+
+## Requisitos
+
+### Arduino IDE
+
+Para compilar o firmware, é necessário instalar a Arduino IDE:
+
+* Versão 2.x (moderna)
+* ou Versão 1.8.19 (legacy)
+
+Links oficiais para download (Windows, macOS e Linux):
+
+**[https://www.arduino.cc/en/software/#ide](https://www.arduino.cc/en/software/#ide)**
+
+No Linux, também é possível instalar:
+
+* via o repositório da distribuição
+* via Flathub (versão 2.x)
+
+---
+
+## Configuração da Arduino IDE
+
+### 1. Permissões de acesso à porta serial (Linux)
+
+Por padrão, usuários comuns não possuem permissão para acessar portas seriais (USB).
+Sem essa permissão, não é possível realizar o upload para o ESP32.
+
+---
+
+#### Verificar seu nome de usuário
+
 ```bash
-git submodule add --name [NOME] [URL DO REPOSITÓRIO] libraries/[NOME DO REPOSITÓRIO]
+whoami
 ```
-#### Exemplo - Adicionar sensor de temperatura
+
+---
+
+#### Distribuições baseadas em Debian (Ubuntu, Mint, etc.)
+
+Adicione seu usuário ao grupo **dialout**:
+
 ```bash
-git submodule add --name Temperature_sensor https://github.com/adafruit/DHT-sensor-library.git libraries/DHT-sensor-library
+sudo usermod -aG dialout <seu-usuario>
 ```
-### Atualizar e Iniciar sumódulos
+
+Finalize a sessão e entre novamente.
+Depois confirme:
+
 ```bash
-git submodule init
-
-git submodule update
+groups
 ```
 
-## 📦 Requeriments
+---
 
-### 1° Instalar o uncrustify
+#### Arch Linux e derivados
 
-- Ubuntu:
+Adicione seu usuário ao grupo **uucp**:
+
 ```bash
-sudo apt install uncrustify
+sudo usermod -aG uucp <seu-usuario>
 ```
 
-- Windows:
+Finalize a sessão e entre novamente.
+Depois confirme:
 
-```
-Download zip
-On Windows, download the latest version of Uncrustify here: https://sourceforge.net/projects/uncrustify/files/latest/download
-
-Extract zip
-
-The program is a standalone exe, so just extract the downloaded uncrustify-...-win32.zip file anywhere. For this example, I'll use C:\Uncrustify. So, the uncrustify.exe would be in that directory.
-
-Add directory to PATH System Environment Variable
-- In Windows 7+: Type Winkey + env - Select "Edit the system environment variables"
-- On the Advanced tab, click the Environment Variables button at the bottom.
-- In the System variables section at the bottom, click the Path variable, then click the Edit... button.
-- Click the New button, and type C:\Uncrustify, or the directory that you extracted uncrustify.exe to.
-- Important: Click OK to close the dialog boxes or your change will not save.
-Verify
-- In a CMD window, typing where uncrustify should return the path to the uncrustify.exe. In my case it shows C:\Uncrustify\uncrustify.exe
-- Close Atom and reopen it. Now you should be able to atom-beautify and it will use Uncrustify to format your selection
+```bash
+groups
 ```
 
-### 2° Instalar a IDE do arduino 
+---
 
-Para poder baixa  ***[Clique aqui](https://www.arduino.cc/en/software)***
+### 2. Instalando o pacote do ESP32
 
-Depois disso, adicione o ESP32 como uma das opções de microcontroladores a ser utilizado.
+Para adicionar suporte ao ESP32:
 
-Para fazer isso, ***[Clique aqui](https://www.usinainfo.com.br/blog/programar-esp32-com-a-ide-arduino-tutorial-completo/)***
+1. Abra **Arquivo → Preferências**
+2. No campo *Additional Boards Manager URLs*, adicione a seguinte URL oficial da Espressif:
 
+```
+https://espressif.github.io/arduino-esp32/package_esp32_index.json
+```
 
-### 3° Instale os copiladores de C++ 
-Para ver um guia ensina a instalar o copilador e usar ele com o VSCode ***[Clique aqui](https://code.visualstudio.com/docs/cpp/config-mingw)***
+**Observação:** caso a URL deixe de funcionar, consulte a documentação oficial da Espressif para a URL mais recente:
+**[https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html](https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html)**
+
+<p align="center">
+  <img src="assets/img/add-board-url.png" width="650px">
+</p>
+
+Em seguida:
+
+1. Abra **Ferramentas → Board → Boards Manager**
+2. Pesquise por **ESP32 by Espressif Systems**
+3. Instale a versão **2.0.17**
+
+### Observações importantes
+
+* Não utilize versões **3.x** ou superiores, pois algumas funções usadas neste projeto foram removidas nessas versões.
+* Existe uma versão publicada pela própria Arduino chamada “ESP32” — **não utilize essa**, pois ela não é compatível com o projeto.
+
+<p align="center">
+  <img src="assets/img/add-board-url.png" width="650px">
+</p>

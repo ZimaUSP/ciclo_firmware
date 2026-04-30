@@ -76,8 +76,8 @@
 //#define kp  0.00008
 //#define ki  0.000020
 #define kp  1.4
-#define ki  0.008
-#define kd  0
+#define ki  11
+#define kd  0.03
 #define wind_up_saturation 60
 
 //Rele

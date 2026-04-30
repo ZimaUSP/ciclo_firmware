@@ -391,9 +391,9 @@ bool resetEncoderIfExceedsLimit() {
 // PID control
 void controlMotorSpeedWithPID() {
   output = PID_vel->computePID(actual_rpm, goal_rpm, 0.5); //, error, integrative_term, d_error);
-  Serial.print("; output: ");
-  Serial.print(output);
-  PID_vel->imprimir();
+  //Serial.print("; output: ");
+  //Serial.print(output);
+  //PID_vel->imprimir();
   // Não há diferença de tempo entre o momento que o PID é chamado e o momento
   // que o output é calculado, e o momento que o output é aplicado no motor.
   //Serial.print("; Tempo PID: ");
@@ -406,7 +406,7 @@ void controlMotorSpeedWithPID() {
     output = min(output, (double)75);
     motorController->Set_L(output);
   }
-  Serial.println("---------------------------------------------------------------------------------------");
+  //Serial.println("---------------------------------------------------------------------------------------");
 }
 
 // Turns it off and on to reset the program
@@ -433,14 +433,14 @@ void passivo() {
     // que precisa chamar uma outra função diminui a latência no cálculo do próprio tempo
     double dt = rpmTime.getTimePassed() - previous_time;
     if (dt > sample_t) {      
-      Serial.print("; dt: ");
-      Serial.print(dt);
+      //Serial.print("; dt: ");
+      //Serial.print(dt);
       current_pulses = encoder->getPulses();
       delta_pulses = current_pulses - last_pulses;
       double revolutions = delta_pulses/pulses_per_rev;
       actual_rpm = revolutions*(60000/dt); // Ao invés de dividir por sample_t, deve ser dividido pelo tempo que um loop demora
-      Serial.print("; Rpm: ");
-      Serial.print(actual_rpm);
+      //Serial.print("; Rpm: ");
+      //Serial.print(actual_rpm);
 
       previous_time = rpmTime.getTimePassed(); //rpmTime.reset();
       last_pulses = current_pulses;
@@ -452,8 +452,8 @@ void passivo() {
 
       controlMotorSpeedWithPID();
     } else {
-      Serial.print("; dt: ");
-      Serial.print(dt);
+      //Serial.print("; dt: ");
+      //Serial.print(dt);
       Serial.println("; TIME PASSED < SAMPLE_T");
     }
     

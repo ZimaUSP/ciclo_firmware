@@ -51,6 +51,7 @@ unsigned long current_t;
 unsigned long last_t;
 unsigned long delta_t;
 unsigned long previous_time = 0; // passivo
+unsigned long previous_time_register = 0;
 //int t_Duration;
 //char t[2];
 
@@ -81,6 +82,9 @@ int verif = 1;
 int n_sessions;
 double lista_values [MAX_SAMPLES];
 int tempo [MAX_SAMPLES];
+
+//passivo
+int duration_register;
 
 //Parametros para joystick
 uint32_t adc_register;
@@ -432,6 +436,7 @@ void passivo() {
     // Usar dt para calcular a passagem de tempo ao invés de usar um timer separado
     // que precisa chamar uma outra função diminui a latência no cálculo do próprio tempo
     double dt = rpmTime.getTimePassed() - previous_time;
+    double dt_register = rpmTime.getTimePassed() - previous_time_register;
     if (dt > sample_t) {      
       //Serial.print("; dt: ");
       //Serial.print(dt);
@@ -443,12 +448,22 @@ void passivo() {
       //Serial.print(actual_rpm);
 
       previous_time = rpmTime.getTimePassed(); //rpmTime.reset();
-      last_pulses = current_pulses;
-      if(contador <= MAX_SAMPLES) {
-        lista_values[contador] = actual_rpm;
-        tempo[contador]=contador*sample_t;
-        contador++;
+
+      int sample_t_register = duration_register/100;
+      Serial.print("duration reg: ");
+      Serial.print(duration_register);
+      Serial.print("dt");
+      Serial.println(dt_register);
+      if(dt_register > sample_t_register){
+        if(contador <= MAX_SAMPLES) {
+          lista_values[contador] = actual_rpm;
+          tempo[contador]=contador*sample_t;
+          contador++;
+        }
+        previous_time_register = rpmTime.getTimePassed();
       }
+
+      last_pulses = current_pulses;
 
       controlMotorSpeedWithPID();
     } else {
@@ -472,7 +487,8 @@ void executarLogicaResistivo() {
     pwm_motor = def_pwm_motor();
 
     delay(500);
-    lcd_timer.setInterval(duration() * 10000);
+    duration_register = duration() * 60000;
+    lcd_timer.setInterval(duration_register);
     delay(500);
     lcd.clear();
 
@@ -964,7 +980,8 @@ void loop() {
       Serial.println("modo passivo");
       goal_rpm = goalRPM();
       delay(500);
-      lcd_timer.setInterval(duration() * 10000);
+      duration_register = duration() * 60000;
+      lcd_timer.setInterval(duration_register);
       delay(500);
       lcd.clear();
       verif = verificationPassivo();

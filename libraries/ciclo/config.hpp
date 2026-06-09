@@ -76,9 +76,10 @@
 //#define kp  0.00008
 //#define ki  0.000020
 #define kp  1.4
-#define ki  11
+#define ki  3
 #define kd  0.03
-#define wind_up_saturation 60
+#define wind_up_saturation 15
+#define passive_pid_output_limit 75
 
 //Rele
 #define stand_by_active 9

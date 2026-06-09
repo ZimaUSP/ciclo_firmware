@@ -404,10 +404,10 @@ void controlMotorSpeedWithPID() {
   //Serial.println(lcd_timer.getTimePassed());
   
   if (output < 0) {
-    output = max(output, -(double)75);
+    output = max(output, -(double)passive_pid_output_limit);
     motorController->Set_R(-output);
   } else {
-    output = min(output, (double)75);
+    output = min(output, (double)passive_pid_output_limit);
     motorController->Set_L(output);
   }
   //Serial.println("---------------------------------------------------------------------------------------");

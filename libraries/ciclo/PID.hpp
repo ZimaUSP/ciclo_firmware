@@ -44,7 +44,7 @@ class PID {
         double previous_error;
         double previous_output;
 
-        int wind_up_saturation;
+        int wind_up_limit;
     public:
         /**
          * @brief Default constructor of a PID base class

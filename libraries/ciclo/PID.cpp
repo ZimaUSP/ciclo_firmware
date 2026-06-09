@@ -12,6 +12,7 @@
 
 
 #include "PID.hpp"
+#include "config.hpp"
 
 /*****************************************
  * Class Methods Bodies Definitions
@@ -21,7 +22,7 @@ PID::PID(double k_p,double k_i,double k_d,int i_sat) {
   this->k_p = k_p;
   this->k_i = k_i;
   this->k_d = k_d; 
-  this->wind_up_saturation = i_sat;
+  this->wind_up_limit = i_sat;
   this->previous_input = 0;
   this->integrative_term = 0;
   this->error = 0;
@@ -50,13 +51,9 @@ double PID::computePID(double input,float setpoint,float tolerancia) {
 
   this->current_time = millis(); // get current time
   this->delta_time = (double)(this->current_time - this->previous_time); // time since previous
+  double dt_seconds = this->delta_time / 1000.0;
 
   this->error = setpoint - input; // determine error
-  
-  if (abs(integrative_term) < wind_up_saturation) { // anti-windup
-    double dt_seconds = this->delta_time / 1000.0;
-    integrative_term += this->error * dt_seconds; // integrative term
-  }
 
   // push new input into circular buffer of recent inputs
   this->previous_inputs[this->input_index] = input;
@@ -70,9 +67,7 @@ double PID::computePID(double input,float setpoint,float tolerancia) {
 
   // derivative = difference between current average and previous average
   double avg_derivative = 0.0;
-  if (this->delta_time > 0) {
-    // normalize by time (delta_time is in milliseconds from millis()) -> convert to seconds
-    double dt_seconds = this->delta_time / 1000.0;
+  if (dt_seconds > 0) {
     avg_derivative = (current_avg - this->previous_input_avg) / dt_seconds;
   }
   if (abs(this->error) < tolerancia) {
@@ -80,16 +75,33 @@ double PID::computePID(double input,float setpoint,float tolerancia) {
   }
 
   this->proportional = this->k_p * this->error;
-  this->integrative = this->k_i * integrative_term;
   this->derivative = -this->k_d * avg_derivative; // negative sign because derivative acts against the change
+
+  // Stop storing integral error when the controller is already saturated in the
+  // same direction as the current error. This avoids a large overspeed after a stall.
+  double unclamped_output = this->proportional + (this->k_i * this->integrative_term) + this->derivative;
+  bool saturating_high = unclamped_output >= passive_pid_output_limit && this->error > 0;
+  bool saturating_low = unclamped_output <= -passive_pid_output_limit && this->error < 0;
+
+  if (dt_seconds > 0 && !saturating_high && !saturating_low) {
+    this->integrative_term += this->error * dt_seconds;
+    if (this->integrative_term > this->wind_up_limit) {
+      this->integrative_term = this->wind_up_limit;
+    }
+    else if (this->integrative_term < -this->wind_up_limit) {
+      this->integrative_term = -this->wind_up_limit;
+    }
+  }
+
+  this->integrative = this->k_i * integrative_term;
 
   // PID output uses the average-based derivative (difference of averages)
   double out = proportional + integrative + derivative;
 
-  if (out < -150) { // Safety measure
-    out = -150;
-  } else if (out > 150) {
-    out = 150;
+  if (out < -passive_pid_output_limit) { // Safety measure
+    out = -passive_pid_output_limit;
+  } else if (out > passive_pid_output_limit) {
+    out = passive_pid_output_limit;
   }
 
   this->previous_error = this->error;                 // remember current error
@@ -104,7 +116,7 @@ void PID::reset() {
   this->integrative_term = 0;
   this->d_error = 0;
   this->input_error = 0;
-  this->previous_time = millis();
+  this->previous_time = 0;
   this->previous_error = 0;                              //remember current time
   this->previous_input = 0;
   this->previous_input_avg = 0.0;

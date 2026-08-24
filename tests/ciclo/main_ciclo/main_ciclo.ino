@@ -82,7 +82,6 @@ int verif = 1;
 int n_sessions;
 double lista_values [MAX_SAMPLES];
 int tempo [MAX_SAMPLES];
-int sample_t_register = 0;
 
 //passivo
 int duration_register;
@@ -489,7 +488,6 @@ void executarLogicaResistivo() {
 
     delay(500);
     duration_register = duration() * 60000;
-    sample_t_register = duration_register/100;
     lcd_timer.setInterval(duration_register);
     delay(500);
     lcd.clear();
@@ -555,17 +553,17 @@ void resistivo() {
     while (!lcd_timer.isReady() ) {
       acs = cur->get_current();
       torque = cur->get_torque(acs);
-      double dt_register = rpmTime.getTimePassed() - previous_time_register;
       if (torque_Time.getTimePassed() > sample_t) {
-        if(dt_register > sample_t_register){
-	  if (contador <= MAX_SAMPLES) {    
-	      lista_values[contador] = torque;
-	      tempo[contador] = contador * sample_t;
-	      contador++;
-	      torque_Time.reset();
-	  }
-	  previous_time_register = rpmTime.getTimePassed();
-        }
+          if (contador <= MAX_SAMPLES) {
+              //Serial.println("ok");
+              //Serial.print(torque);
+              //Serial.print(", ");
+              //Serial.println(lcd_timer.getTimePassed());
+              lista_values[contador] = torque;
+              tempo[contador] = contador * sample_t;
+              contador++;
+              torque_Time.reset();
+          }
       }
       lcd.setCursor(1, 1);
       lcd.print("TORQUE: ");
@@ -633,7 +631,7 @@ void normal() {
   //website_data();
   while (!lcd_timer.isReady()) {  //tempo nao acaba
 
-    if (rpmTime.getTimePassed() > sample_t_register) {
+    if (rpmTime.getTimePassed() > 400) {
       current_pulses = encoder->getPulses();
       Serial.print("; current_pulses: ");
       Serial.print(current_pulses);
@@ -983,7 +981,6 @@ void loop() {
       goal_rpm = goalRPM();
       delay(500);
       duration_register = duration() * 60000;
-      sample_t_register = duration_register/100;
       lcd_timer.setInterval(duration_register);
       delay(500);
       lcd.clear();
@@ -1013,9 +1010,7 @@ void loop() {
     case NORMAL:
       delay(100);
       motorController->Set_L(0);
-      duration_register = duration() * 60000;
-      sample_t_register = duration_register/100;
-      lcd_timer.setInterval(duration_register);
+      lcd_timer.setInterval(duration() * 60000);
       delay(500);
       lcd.clear();
 
